@@ -12,7 +12,10 @@ from pathlib import Path
 from typing import Dict, Any
 
 import numpy as np
-import tensorflow as tf
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 from PIL import Image
 
 # Resolve paths relative to this file so the script works from anywhere.
@@ -61,16 +64,24 @@ CLASS_NAMES = [
     'Tomato___healthy'
 ]
 
-_MODEL: tf.keras.Model | None = None
+_MODEL: Any | None = None
 
 
-def _load_model() -> tf.keras.Model:
+def _load_model() -> Any:
     """Load and cache the TensorFlow model."""
     global _MODEL
     if _MODEL is None:
+        if tf is None:
+            print("Warning: TensorFlow not installed. Disease detector will return error messages.")
+            return None
         if not MODEL_PATH.exists():
-            raise FileNotFoundError(f"Model file not found at {MODEL_PATH}")
-        _MODEL = tf.keras.models.load_model(str(MODEL_PATH))
+            print(f"Warning: Model file not found at {MODEL_PATH}")
+            return None
+        try:
+            _MODEL = tf.keras.models.load_model(str(MODEL_PATH))
+        except Exception as e:
+            print(f"Error loading model: {e}")
+            return None
     return _MODEL
 
 
@@ -97,6 +108,13 @@ def predict(image_path: str | os.PathLike) -> Dict[str, Any]:
     Returns a dict containing crop, disease, confidence and severity.
     """
     model = _load_model()
+    if model is None:
+        return {
+            "crop": "Error",
+            "disease": "Disease detection service is currently unavailable (TensorFlow/Model missing).",
+            "confidence": 0.0,
+            "severity": "low",
+        }
     processed = _preprocess(image_path)
     prediction = model.predict(processed, verbose=0)[0]
     class_idx = int(np.argmax(prediction))
