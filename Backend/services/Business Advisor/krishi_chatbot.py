@@ -419,15 +419,22 @@ class KrishiSaarthiAdvisor:
                 "id": "business_id_1",
                 "title": "Title 1",
                 "reason": "Brief reason why it matches",
-                "detailed_description": "A comprehensive 3-4 sentence overview of the business, explaining what it involves and why it succeeds.",
+                "detailed_description": "A comprehensive 5-6 sentence overview of the business. Explain the daily operations, why it is profitable in the long run, and how it scales. Include specific details about the product and value addition.",
                 "match_score": 95,
-                "estimated_cost": "Cost range",
-                "profit_potential": "Profit range",
+                "estimated_cost": "Cost range (e.g., ₹2-5 Lakhs)",
+                "profit_potential": "Profit range (e.g., ₹30-50k/month)",
                 "timeline": "Time to first harvest/profit (e.g., 3-4 months)",
-                "requirements": ["Req 1", "Req 2"],
-                "risk_factors": ["Risk 1", "Risk 2"],
-                "market_demand": "High/Moderate/Low with brief explanation",
-                "implementation_steps": ["Step 1: Land prep", "Step 2: Sowing", "Step 3: Harvesting"]
+                "requirements": ["Requirement 1 (Land/Water)", "Requirement 2 (Equipment)", "Requirement 3 (Labor)", "Requirement 4 (Skill)", "Requirement 5 (License/Compliance)"],
+                "risk_factors": ["Risk 1 - Mitigation Strategy", "Risk 2 - Mitigation Strategy", "Risk 3 - Mitigation Strategy"],
+                "market_demand": "High/Moderate/Low",
+                "market_demand_analysis": "3-4 sentences explaining WHO buys this product (local/export), seasonal demand peaks, and pricing trends.",
+                "implementation_steps": [
+                    "Step 1: Planning and Sourcing (Detailed)", 
+                    "Step 2: Infrastructure Setup (Detailed)", 
+                    "Step 3: Planting/Production Start",
+                    "Step 4: Maintenance and Quality Control",
+                    "Step 5: Harvesting and Marketing"
+                ]
             }}
         ]
         

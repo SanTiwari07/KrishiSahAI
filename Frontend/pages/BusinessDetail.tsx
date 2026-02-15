@@ -14,6 +14,7 @@ interface BusinessDetail {
     requirements: string[];
     risk_factors: string[];
     market_demand: string;
+    market_demand_analysis?: string; // New field
     timeline?: string;
     implementation_steps?: string[];
 }
@@ -42,14 +43,15 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
             setBusiness({
                 id: id || 'unknown',
                 title: `Business Opportunity: ${id}`,
-                description: "Detailed analysis of this business opportunity. This includes market trends, operational requirements, and financial projections.",
+                description: "Detailed analysis of this business opportunity. This includes market trends, operational requirements, and financial projections. It is designed to be comprehensive and actionable for farmers looking to diversify their income.",
                 investment: "₹5-10 Lakhs",
                 profit: "₹50k-1L/month",
-                requirements: ["Land: 2 Acres", "Water: Moderate", "Skill: Basic"],
-                risk_factors: ["Market volatility", "Disease outbreaks"],
+                requirements: ["Land: 2 Acres", "Water: Moderate", "Skill: Basic", "Labor: 2 Workers", "Capital: Medium"],
+                risk_factors: ["Market volatility - Diversify crops", "Disease outbreaks - Regular monitoring", "Weather risks - Insurance"],
                 market_demand: "High in local markets",
+                market_demand_analysis: "There is a consistent high demand for this product in local mandis and urban centers. Prices peak during festival seasons.",
                 timeline: "3-6 months",
-                implementation_steps: ["Market Survey", "Land Preparation", "Procurement"]
+                implementation_steps: ["Market Survey", "Land Preparation", "Procurement", "Planting", "Harvesting"]
             });
             setLoading(false);
         }
@@ -84,8 +86,10 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
                     <div className="absolute top-0 right-0 p-10 opacity-10">
                         <Briefcase className="w-64 h-64" />
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-extrabold mb-4 relative z-10">{business.title}</h1>
-                    <p className="text-lg opacity-90 max-w-2xl relative z-10 leading-relaxed">{business.description}</p>
+                    <h1 className="text-3xl md:text-5xl font-extrabold mb-6 relative z-10">{business.title}</h1>
+                    <div className="text-lg opacity-90 max-w-3xl relative z-10 leading-loose whitespace-pre-line">
+                        {business.description}
+                    </div>
 
                     {business.timeline && (
                         <div className="mt-8 inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-bold border border-white/30">
@@ -123,14 +127,21 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
                                 </div>
                                 <h3 className="text-lg font-bold text-[#1E1E1E]">Risks & Market</h3>
                             </div>
-                            <div className="space-y-2">
-                                <p className="text-sm font-bold text-[#555555]">Market Demand:</p>
-                                <p className="text-[#1E1E1E] font-medium mb-4">{business.market_demand}</p>
+                            <div className="space-y-4">
+                                <div>
+                                    <p className="text-sm font-bold text-[#555555]">Market Demand:</p>
+                                    <p className="text-[#1E1E1E] font-medium">{business.market_demand}</p>
+                                    {business.market_demand_analysis && (
+                                        <p className="text-sm text-[#555555] mt-1 italic">{business.market_demand_analysis}</p>
+                                    )}
+                                </div>
 
-                                <p className="text-sm font-bold text-[#555555]">Key Risks:</p>
-                                <ul className="list-disc pl-5 text-sm text-[#555555]">
-                                    {business.risk_factors.map((r, i) => <li key={i}>{r}</li>)}
-                                </ul>
+                                <div>
+                                    <p className="text-sm font-bold text-[#555555] mb-1">Key Risks:</p>
+                                    <ul className="list-disc pl-5 text-sm text-[#555555] space-y-1">
+                                        {business.risk_factors.map((r, i) => <li key={i}>{r}</li>)}
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>

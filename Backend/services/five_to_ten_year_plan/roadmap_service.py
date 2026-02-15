@@ -115,34 +115,37 @@ Please write a detailed report using the exact structure below. Do NOT output JS
 # Title: 10-Year Roadmap for {context['business_name']}
 
 # Overview
-[Write a 1-sentence summary of the business plan here]
+[Write a detailed 2-3 sentence summary of the business plan here, focusing on long-term sustainability and profitability.]
 
 # Phase 1: Foundation (Year 0-2)
 - Timeframe: Months 1-24
-- Focus: Initial setup and stabilization
-- Actions: [List 3 key startup actions]
-- Milestones: [List 2 key milestones]
+- Focus: Initial setup, infrastructure, and stabilization
+- Actions: [List 5 detailed startup actions, be specific about equipment, licenses, or soil preparation]
+- Milestones: [List 3 key milestones to track progress]
 - Financial Target: Revenue ₹[Amount]
+- Profit Margin: [Percentage]% (Estimates based on current market rates)
 
 # Phase 2: Growth (Year 3-5)
 - Timeframe: Months 25-60
-- Focus: Expansion and market penetration
-- Actions: [List 3 growth actions]
-- Milestones: [List 2 expansion milestones]
+- Focus: Expansion, scaling production, and market penetration
+- Actions: [List 5 detailed growth actions, including marketing and logistics]
+- Milestones: [List 3 expansion milestones]
 - Financial Target: Revenue ₹[Amount]
+- Profit Margin: [Percentage]%
 
 # Phase 3: Maturity (Year 6-10)
 - Timeframe: Months 61-120
-- Focus: Automation and succession planning
-- Actions: [List 3 sustainability actions]
-- Milestones: [List 2 final milestones]
+- Focus: Automation, value addition, and succession planning
+- Actions: [List 5 sustainability and automation actions]
+- Milestones: [List 3 final milestones]
 - Financial Target: Revenue ₹[Amount]
+- Profit Margin: [Percentage]%
 
 # Financial Resilience
-[Write 1 sentence on how to handle bad years or market risks]
+[Write 2-3 sentences on how to handle bad years, market risks, and crop failure.]
 
 # Final Verdict
-[Highly Feasible / Feasible / Challenging]
+[Highly Feasible / Feasible / Challenging] - [Reason]
 """
         
         # 4. Call LLM
@@ -257,7 +260,7 @@ Please write a detailed report using the exact structure below. Do NOT output JS
                     "phase": f"Phase {i+1}",
                     "timeframe": get_val("Timeframe"),
                     "focus": get_val("Focus"),
-                    "profit_margin": "N/A", # Not in simplified prompt
+                    "profit_margin": get_val("Profit Margin"),
                     "quarters": [
                         {
                             "period": default_period,

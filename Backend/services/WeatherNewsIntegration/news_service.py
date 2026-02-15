@@ -81,27 +81,33 @@ class NewsService:
     def _generate_news_query(self, crops, location, personalized=True):
         """
         Generates a search query for GNews.
-        For personalized: Prioritizes crop + location specific news with farming context.
+        For personalized: 
+          - If crops exist: Crops + Location + Farming Context
+          - If no crops: Location + Farming Context (Avoids fallback to generic)
         For general: Broad agriculture news, schemes, and technology.
         """
-        if personalized and crops:
-            # Personalized mode: Focus on specific crops and location
-            # "wheat OR rice"
-            crop_terms = " OR ".join([f'"{c}"' for c in crops])
-            crop_query = f"({crop_terms})"
-            
-            # Context keywords from user request: "farming", "schemes", "market", "weather", "subsidy"
+        if personalized:
+            # Context keywords for personalized news
             context_keywords = "(farming OR market OR price OR scheme OR subsidy OR weather OR disease OR pest)"
             
-            query = f"{crop_query} AND {context_keywords}"
-            
-            # Add location for local news priority if known
-            if location and location.lower() not in ["unknown", "india", "none"]:
-                # Prioritize location-specific news
+            if crops:
+                # Case 1: Crops + (Location?)
+                crop_terms = " OR ".join([f'"{c}"' for c in crops])
+                query = f"({crop_terms}) AND {context_keywords}"
+            else:
+                # Case 2: No Crops -> Focus on Location + Farming
+                # If location is unknown/invalid, strictly use "Indian Farming" to keep it distinct from "AgriTech"
+                safe_location = location if location and location.lower() not in ["unknown", "india", "none"] else "India"
+                query = f'"{safe_location}" AND {context_keywords}'
+
+            # Add specific location constraint if available and not already added in Case 2
+            if crops and location and location.lower() not in ["unknown", "india", "none"]:
                 query += f' AND "{location}"'
+                
         else:
-            # General mode: Broad agriculture news, Government schemes, Innovation
-            # Keywords to ensure it's distinct from specific crop news
+            # Case 3: General News
+            # Focus on National/Global trends, Government, Tech
+            # Exclude specific local terms to avoid overlap
             query = "(Agriculture OR Farming OR AgTech OR Hydroponics OR Organic Farming)"
             query += " AND (Government Scheme OR Subsidy OR New Technology OR Innovation OR Startup OR Policy)"
             

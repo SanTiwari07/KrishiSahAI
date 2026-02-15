@@ -221,9 +221,7 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
                     {t.analyze}... {cropInput}
                 </h2>
                 <div className="max-w-md space-y-4 w-full">
-                    <div className="h-2 w-full bg-[#E6E6E6] rounded-full overflow-hidden">
-                        <div className="h-full bg-[#043744] rounded-full animate-pulse w-2/3"></div>
-                    </div>
+
                     <p className="text-[#555555] animate-pulse text-sm">Identifying composition & opportunities...</p>
                 </div>
             </div>
