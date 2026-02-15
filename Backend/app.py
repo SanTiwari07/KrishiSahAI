@@ -9,6 +9,8 @@ from pathlib import Path
 from werkzeug.utils import secure_filename
 import pandas as pd
 import json
+import uuid
+from datetime import datetime
 from middleware.auth import init_firebase, require_auth
 import firebase_admin
 
@@ -24,7 +26,13 @@ def ping():
 
 @app.before_request
 def log_request():
-    print(f"Incoming: {request.method} {request.url}")
+    try:
+        msg = f"Incoming: {request.method} {request.url}\n"
+        print(msg.strip())
+        with open("app_debug.log", "a") as f:
+            f.write(msg)
+    except:
+        pass
 
 # CORS Configuration - Must be set BEFORE Talisman
 allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173,http://localhost:3001').split(',')
@@ -100,7 +108,7 @@ BUSINESS_ADVISOR_DIR = Path(__file__).resolve().parent / 'services' / 'Business 
 if str(BUSINESS_ADVISOR_DIR) not in sys.path:
     sys.path.append(str(BUSINESS_ADVISOR_DIR))
 
-from krishi_chatbot import KrishiSaarthiAdvisor, FarmerProfile
+from krishi_chatbot import KrishiSahAIAdvisor, FarmerProfile
 advisor_sessions = {}
 
 # --- Waste To Value Setup ---
@@ -331,7 +339,7 @@ def init_advisor():
         
         import uuid
         session_id = str(uuid.uuid4())
-        advisor = KrishiSaarthiAdvisor(profile)
+        advisor = KrishiSahAIAdvisor(profile)
         advisor_sessions[session_id] = advisor
         
         try:
@@ -669,19 +677,35 @@ def uploaded_audio(filename):
 @require_auth
 def speech_to_text():
     try:
+        with open("app_debug.log", "a") as f:
+            f.write(f"\n[STT] Request received at {datetime.now()}\n")
+
         if 'audio' not in request.files:
+            with open("app_debug.log", "a") as f: f.write("[STT] No audio file provided\n")
             return jsonify({'error': 'No audio file provided'}), 400
             
         file = request.files['audio']
         if file.filename == '':
+            with open("app_debug.log", "a") as f: f.write("[STT] No file selected\n")
             return jsonify({'error': 'No file selected'}), 400
             
         # Save temporarily
         filename = f"stt_{uuid.uuid4()}.wav"
-        filepath = os.path.join(AUDIO_FOLDER, filename)
+        
+        # Ensure AUDIO_FOLDER is a string
+        audio_folder_str = str(AUDIO_FOLDER)
+        filepath = os.path.join(audio_folder_str, filename)
+        
+        with open("app_debug.log", "a") as f:
+            f.write(f"[STT] Saving file to: {filepath}\n")
+            
         file.save(filepath)
         
+        with open("app_debug.log", "a") as f: f.write("[STT] File saved, calling transcribe...\n")
+        
         result = voice_service.transcribe(filepath)
+        
+        with open("app_debug.log", "a") as f: f.write(f"[STT] Transcription result: {result}\n")
         
         # Cleanup
         try:
@@ -695,7 +719,15 @@ def speech_to_text():
         return jsonify({'success': True, 'text': result['text']})
         
     except Exception as e:
-        print(f"STT Route Error: {e}")
+        error_msg = f"[STT] Route Error: {str(e)}"
+        print(error_msg)
+        try:
+            with open("app_debug.log", "a") as f:
+                import traceback
+                f.write(f"{error_msg}\n")
+                f.write(traceback.format_exc())
+        except:
+            pass
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/voice/tts', methods=['POST'])
@@ -745,10 +777,12 @@ def generate_pdf():
         print(f"[PDF] Generating PDF for user {user_id}, chat {chat_id}")
         
         # Generate PDF
+        print(f"[PDF_ROUTE] Calling generate_chat_pdf...")
         pdf_buffer = generate_chat_pdf(user_id, chat_id)
+        print(f"[PDF_ROUTE] PDF generated successfully. Size: {pdf_buffer.getbuffer().nbytes} bytes")
         
         # Create filename with current date
-        filename = f'KrishiAI_Advisory_{datetime.now().strftime("%d-%m-%Y")}.pdf'
+        filename = f'KrishiSahAI_Advisory_{datetime.now().strftime("%d-%m-%Y")}.pdf'
         
         print(f"[PDF] Success - Generated {filename}")
         
@@ -789,5 +823,5 @@ if __name__ == '__main__':
     for rule in app.url_map.iter_rules():
         print(f"{rule.endpoint}: {rule.rule} {list(rule.methods)}")
     print("=========================\n")
-    app.run(port=5000)
+    app.run(host='0.0.0.0', port=5000)
 

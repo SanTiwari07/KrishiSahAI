@@ -120,7 +120,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
             heightLeft -= pdfHeight;
         }
 
-        pdf.save(`KrishiAI_10_Year_Strategy_${decodedName.replace(/\s+/g, '_')}.pdf`);
+        pdf.save(`KrishiSahAI_10_Year_Strategy_${decodedName.replace(/\s+/g, '_')}.pdf`);
     };
 
     if (loading) {

@@ -1,6 +1,6 @@
-# Krishi AI: Advanced Agricultural Intelligence Platform
+# KrishiSahAI: Advanced Agricultural Intelligence Platform
 
-Krishi AI is a comprehensive full-stack platform designed to empower farmers with modern technology. It integrates artificial intelligence, real-time data analysis, and expert agricultural knowledge to provide actionable insights for crop care, pest management, and farming best practices.
+KrishiSahAI is a comprehensive full-stack platform designed to empower farmers with modern technology. It integrates artificial intelligence, real-time data analysis, and expert agricultural knowledge to provide actionable insights for crop care, pest management, and farming best practices.
 
 ## Core Features
 

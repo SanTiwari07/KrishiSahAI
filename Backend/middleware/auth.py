@@ -28,9 +28,14 @@ def require_auth(f):
     """Decorator to require Firebase ID Token authentication"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        try:
+            with open("app_debug.log", "a") as logf:
+                logf.write(f"[AUTH] Checking auth for {request.url}\n")
+        except:
+            pass
+
         if request.method == 'OPTIONS':
             return jsonify({'status': 'ok'}), 200
-
 
         auth_header = request.headers.get('Authorization')
         
@@ -40,6 +45,10 @@ def require_auth(f):
              return f(*args, **kwargs)
 
         if not auth_header or not auth_header.startswith('Bearer '):
+            try:
+                with open("app_debug.log", "a") as logf:
+                    logf.write(f"[AUTH] Missing header: {auth_header}\n")
+            except: pass
             return jsonify({'error': 'Missing or invalid authorization header'}), 401
 
         token = auth_header.split(' ')[1]
@@ -49,6 +58,10 @@ def require_auth(f):
             request.user = decoded_token
         except Exception as e:
             print(f"[AUTH] Token verification failed: {e}")
+            try:
+                with open("app_debug.log", "a") as logf:
+                    logf.write(f"[AUTH] Verification failed: {e}\n")
+            except: pass
             return jsonify({'error': 'Invalid or expired token'}), 401
             
         return f(*args, **kwargs)

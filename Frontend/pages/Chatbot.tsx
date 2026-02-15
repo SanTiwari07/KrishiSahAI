@@ -325,7 +325,7 @@ const Chatbot: React.FC<{ lang: Language }> = ({ lang }) => {
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `KrishiAI_Advisory_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.pdf`;
+            link.download = `KrishiSahAI_Advisory_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -567,10 +567,39 @@ const Chatbot: React.FC<{ lang: Language }> = ({ lang }) => {
                                     </div>
                                 )}
 
-                                <div className={`max-w-[85%] md:max-w-[70%] p-5 rounded-[24px] shadow-sm ${msg.role === 'user'
+                                <div className={`relative max-w-[85%] md:max-w-[70%] p-5 rounded-[24px] shadow-sm ${msg.role === 'user'
                                     ? 'bg-[#043744] text-white rounded-tr-sm'
-                                    : 'bg-[#FAFCFC] text-[#000D0F] border border-[#E0E6E6] rounded-tl-sm'
+                                    : 'bg-[#FAFCFC] text-[#000D0F] border border-[#E0E6E6] rounded-tl-sm pr-20'
                                     }`}>
+
+                                    {/* Message Actions (TTS & PDF) - Only for Assistant */}
+                                    {msg.role !== 'user' && (
+                                        <div className="absolute top-3 right-3 flex items-center gap-1">
+                                            {/* TTS Button */}
+                                            <button
+                                                onClick={() => handleTextToSpeech(msg.content, idx)}
+                                                className="p-1.5 text-stone-400 hover:text-[#043744] hover:bg-stone-100 rounded-full transition-all"
+                                                title="Listen to response"
+                                            >
+                                                {playingMessageId === idx ? <Square className="w-4 h-4 text-red-500 fill-current" /> : <Volume2 className="w-4 h-4" />}
+                                            </button>
+
+                                            {/* PDF Button */}
+                                            <button
+                                                onClick={handleDownloadPDF}
+                                                disabled={isGeneratingPDF}
+                                                className="p-1.5 text-stone-400 hover:text-[#043744] hover:bg-stone-100 rounded-full transition-all disabled:opacity-50"
+                                                title="Download PDF"
+                                            >
+                                                {isGeneratingPDF ? (
+                                                    <div className="w-4 h-4 border-2 border-stone-300 border-t-[#043744] rounded-full animate-spin"></div>
+                                                ) : (
+                                                    <FileDown className="w-4 h-4" />
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
+
                                     <div className={`text-[15px] leading-relaxed markdown-body whitespace-pre-wrap ${msg.role === 'user' ? 'text-white' : ''}`}>
                                         <ReactMarkdown
                                             remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -588,17 +617,6 @@ const Chatbot: React.FC<{ lang: Language }> = ({ lang }) => {
                                         </ReactMarkdown>
                                     </div>
                                 </div>
-
-                                {/* TTS Button for AI messages */}
-                                {msg.role !== 'user' && (
-                                    <button
-                                        onClick={() => handleTextToSpeech(msg.content, idx)}
-                                        className="mt-2 ml-2 p-2 text-stone-400 hover:text-[#043744] hover:bg-stone-100 rounded-full transition-all"
-                                        title="Listen to response"
-                                    >
-                                        {playingMessageId === idx ? <Square className="w-4 h-4 text-red-500 fill-current" /> : <Volume2 className="w-4 h-4" />}
-                                    </button>
-                                )}
 
                                 {msg.role === 'user' && (
                                     <div className="w-8 h-8 rounded-full bg-[#E8F5F5] flex items-center justify-center mt-2 flex-shrink-0">

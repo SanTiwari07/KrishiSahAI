@@ -18,6 +18,7 @@ import { onSnapshot, doc, setDoc, getDoc } from 'firebase/firestore';
 import { RefreshCw, Sun, Moon, User, LogOut, Settings } from 'lucide-react';
 import { api } from './services/api';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import logo from './src/assets/logo.png';
 
 const getBestLocation = (u: UserProfile | null) => {
   if (!u) return "";
@@ -62,11 +63,9 @@ const Header: React.FC<{
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#E6E6E6] py-4 px-6 shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[#043744] rounded-xl flex items-center justify-center shadow-sm">
-            <span className="text-white font-bold text-lg">K</span>
-          </div>
-          <span className="text-2xl font-bold tracking-tight text-[#1E1E1E]">KrishiAI</span>
+        <Link to="/" className="flex items-center gap-2">
+          <img src={logo} alt="KrishiSahAI Logo" className="h-9 w-auto object-contain translate-y-[3px]" />
+          <span className="text-xl font-bold tracking-tight text-[#1E1E1E]">KrishiSahAI</span>
         </Link>
 
         {user && (
@@ -176,11 +175,8 @@ const LoginFlow: React.FC<{ onLogin: (e: string, p: string) => void; onSwitch: (
     <div className="min-h-[80vh] flex items-center justify-center p-6">
       <div className="bg-white border border-[#E6E6E6] p-10 rounded-[48px] shadow-2xl w-full max-w-lg animate-in fade-in slide-in-from-bottom-8 duration-500">
         <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 bg-[#043744] rounded-2xl flex items-center justify-center shadow-lg mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M2.7 10.3l9.3-9.3 9.3 9.3" /><path d="M4 11v11h16V11" /><path d="M9 14h6v8H9z" /></svg>
-          </div>
-          <h1 className="text-3xl font-extrabold text-[#1E1E1E]">{t.loginTitle}</h1>
-          <p className="text-[#043744] font-bold text-sm tracking-widest">{t.loginSub}</p>
+          <img src={logo} alt="KrishiSahAI Logo" className="h-48 w-auto object-contain mb-4" />
+          <p className="text-[#043744] font-bold text-sm tracking-widest uppercase">{t.loginSub}</p>
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>

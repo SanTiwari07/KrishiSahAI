@@ -246,7 +246,7 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
                             <MessageCircle className="w-6 h-6 text-[#043744]" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-xl text-[#1E1E1E]">KrishiAI Advisor</h3>
+                            <h3 className="font-bold text-xl text-[#1E1E1E]">KrishiSahAI Advisor</h3>
                             <p className="text-sm text-[#555555] font-medium">{t.chatPlaceholder}</p>
                         </div>
                     </div>

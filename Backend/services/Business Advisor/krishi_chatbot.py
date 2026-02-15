@@ -1,5 +1,5 @@
 """
-KrishiSaarthi Business Advisor Chatbot
+KrishiSahAI Business Advisor Chatbot
 AI-powered business advisor for Indian farmers using LangChain + Ollama
 """
 
@@ -278,7 +278,7 @@ Hinglish (Hindi-English mix) mein respond kariye."""
 # CHATBOT CLASS
 # ============================================
 
-class KrishiSaarthiAdvisor:
+class KrishiSahAIAdvisor:
     """Main chatbot class with memory and profile awareness"""
     
     def __init__(self, farmer_profile: FarmerProfile):
@@ -534,7 +534,7 @@ class KrishiSaarthiAdvisor:
 def collect_farmer_profile() -> FarmerProfile:
     """Interactive questionnaire to collect farmer data"""
     print("\n" + "="*60)
-    print("KRISHISAARTHI BUSINESS ADVISOR - FARMER PROFILING")
+    print("KRISHISAHAI BUSINESS ADVISOR - FARMER PROFILING")
     print("="*60)
     print("\nPlease answer the following questions to help us assist you better:\n")
     
@@ -603,10 +603,10 @@ def collect_farmer_profile() -> FarmerProfile:
 # MAIN CHAT INTERFACE
 # ============================================
 
-def start_chat_interface(advisor: KrishiSaarthiAdvisor):
+def start_chat_interface(advisor: KrishiSahAIAdvisor):
     """Interactive chat loop"""
     print("\n" + "="*60)
-    print("CHAT WITH KRISHISAARTHI BUSINESS ADVISOR")
+    print("CHAT WITH KRISHISAHAI BUSINESS ADVISOR")
     print("="*60)
     print("\nCommands:")
     print("  /profile - View your profile")
@@ -617,7 +617,7 @@ def start_chat_interface(advisor: KrishiSaarthiAdvisor):
     
     # Initial greeting
     greeting = advisor.chat("Hello! Please introduce yourself and ask how you can help me.")
-    print(f"KrishiSaarthi: {greeting}\n")
+    print(f"KrishiSahAI: {greeting}\n")
     
     while True:
         user_input = input("You: ").strip()
@@ -627,7 +627,7 @@ def start_chat_interface(advisor: KrishiSaarthiAdvisor):
         
         # Handle commands
         if user_input.lower() == "/exit":
-            print("\nThank you for using KrishiSaarthi! Best wishes for your business journey!")
+            print("\nThank you for using KrishiSahAI! Best wishes for your business journey!")
             break
         
         elif user_input.lower() == "/profile":
@@ -645,7 +645,7 @@ def start_chat_interface(advisor: KrishiSaarthiAdvisor):
         
         # Get AI response
         response = advisor.chat(user_input)
-        print(f"\nKrishiSaarthi: {response}\n")
+        print(f"\nKrishiSahAI: {response}\n")
 
 
 # ============================================
@@ -654,14 +654,14 @@ def start_chat_interface(advisor: KrishiSaarthiAdvisor):
 
 def main():
     """Main entry point"""
-    print("\nWelcome to KrishiSaarthi Business Advisor!")
+    print("\nWelcome to KrishiSahAI Business Advisor!")
     print("AI-powered business guidance for Indian farmers\n")
     
     # Step 1: Collect farmer profile
     farmer_profile = collect_farmer_profile()
     
     # Step 2: Initialize chatbot with profile
-    advisor = KrishiSaarthiAdvisor(farmer_profile)
+    advisor = KrishiSahAIAdvisor(farmer_profile)
     
     # Step 3: Start chat interface
     start_chat_interface(advisor)

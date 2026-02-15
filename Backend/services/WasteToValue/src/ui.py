@@ -14,7 +14,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 
 # Import Business Advisor modules
 try:
-    from BusinessAdvisor.krishi_chatbot import KrishiSaarthiAdvisor, FarmerProfile, BUSINESS_OPTIONS
+    from BusinessAdvisor.krishi_chatbot import KrishiSahAIAdvisor, FarmerProfile, BUSINESS_OPTIONS
 except ImportError as e:
     st.error(f"Error importing Business Advisor: {e}. Please ensure directory structure is correct.")
 
@@ -69,7 +69,7 @@ def render_waste_to_value():
                 message_placeholder.error(f"Error: {e}. (Ensure Ollama is running locally)")
 
 def render_business_advisor():
-    st.header("KrishiSaarthi Business Advisor")
+    st.header("KrishiSahAI Business Advisor")
     st.markdown("*AI-powered business guidance for Indian farmers*")
 
     # Check if profile exists
@@ -172,7 +172,7 @@ def render_business_advisor():
                         
                         st.session_state.advisor_profile = profile
                         # Initialize advisor
-                        st.session_state.advisor_bot = KrishiSaarthiAdvisor(profile)
+                        st.session_state.advisor_bot = KrishiSahAIAdvisor(profile)
                         
                         # Initial greeting
                         greeting = st.session_state.advisor_bot.chat("Hello! Based on my profile, what do you suggest?")

@@ -9,7 +9,6 @@ import { getUserProfile } from '../services/firebase_db';
 
 const Home: React.FC<{ lang: Language }> = ({ lang }) => {
     const t = translations[lang];
-    // Weather logic removed as it is handled in App.tsx
 
     const scrollToSection = (id: string) => {
         const element = document.getElementById(id);
@@ -21,32 +20,35 @@ const Home: React.FC<{ lang: Language }> = ({ lang }) => {
     return (
         <div className="h-[calc(100vh-73px)] overflow-y-scroll snap-y snap-mandatory scroll-smooth bg-[#F5F8F8]">
             {/* Section 1: Hero */}
-            <section id="hero" className="h-full w-full snap-start relative flex items-center justify-center bg-gradient-to-br from-[#043744] via-[#065A6F] to-[#0A5F73] text-white overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#0A5F73]/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+            <section id="hero" className="h-full w-full snap-start relative flex items-center justify-center bg-[#F5F8F8] p-4 md:p-8">
+                <div className="relative w-full max-w-6xl mx-auto bg-gradient-to-br from-[#043744] via-[#065A6F] to-[#0A5F73] text-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col items-center justify-center py-20 px-6 md:py-32 md:px-12">
+                    {/* Background Blobs inside the card */}
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#0A5F73]/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
 
-                <div className="relative z-10 max-w-7xl mx-auto text-center px-8">
-                    <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight animate-in fade-in slide-in-from-bottom-8">
-                        {t.heroTitle}
-                    </h1>
-                    <p className="text-xl md:text-2xl font-medium text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed">
-                        {t.heroSub}
-                    </p>
-                    <Link
-                        to="/chat"
-                        className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#043744] rounded-2xl font-bold text-lg hover:bg-[#0A5F73] hover:text-white transition-all shadow-lg hover:scale-105"
+                    <div className="relative z-10 max-w-4xl mx-auto text-center">
+                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-8 leading-tight animate-in fade-in slide-in-from-bottom-8">
+                            {t.heroTitle}
+                        </h1>
+                        <p className="text-lg md:text-2xl font-medium text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
+                            {t.heroSub}
+                        </p>
+                        <Link
+                            to="/chat"
+                            className="inline-flex items-center gap-3 px-8 py-4 bg-white text-[#043744] rounded-2xl font-bold text-lg hover:bg-[#E8F5F5] transition-all shadow-lg hover:scale-105"
+                        >
+                            {t.startConv} <ArrowRight className="w-5 h-5" />
+                        </Link>
+                    </div>
+
+                    {/* Scroll indicator inside the card */}
+                    <button
+                        onClick={() => scrollToSection('problem')}
+                        className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer p-2 hover:bg-white/10 rounded-full transition-colors"
                     >
-                        {t.startConv} <ArrowRight className="w-5 h-5" />
-                    </Link>
+                        <ChevronDown className="w-8 h-8 text-white/80" />
+                    </button>
                 </div>
-
-                {/* Scroll indicator */}
-                <button
-                    onClick={() => scrollToSection('problem')}
-                    className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer p-2 hover:bg-white/10 rounded-full transition-colors"
-                >
-                    <ChevronDown className="w-10 h-10 text-white/80" />
-                </button>
             </section>
 
             {/* Section 2: Crop Disease Problem */}
@@ -210,26 +212,32 @@ const Home: React.FC<{ lang: Language }> = ({ lang }) => {
             </section>
 
             {/* Section 6: Footer / CTA */}
-            <section id="footer" className="h-full w-full snap-start relative flex items-center justify-center bg-gradient-to-br from-[#043744] via-[#065A6F] to-[#0A5F73] text-white">
-                <div className="max-w-5xl mx-auto text-center px-8">
-                    <h2 className="text-4xl md:text-6xl font-extrabold mb-8 animate-in fade-in slide-in-from-bottom-8">
-                        Ready to Transform Your Farming Journey?
-                    </h2>
-                    <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
-                        Join thousands of farmers using AI-powered tools to increase productivity, sustainability, and profitability.
-                    </p>
-                    <div className="flex flex-col md:flex-row gap-6 justify-center">
-                        <Link
-                            to="/chat"
-                            className="inline-flex items-center justify-center gap-2 px-10 py-5 bg-white text-[#043744] rounded-2xl font-bold text-xl hover:bg-[#f0f9fa] transition-all shadow-xl hover:scale-105"
-                        >
-                            Start with AI Assistant <ArrowRight className="w-6 h-6" />
-                        </Link>
+            <section id="footer" className="h-full w-full snap-start relative flex items-center justify-center bg-[#F5F8F8] p-4 md:p-8">
+                <div className="relative w-full max-w-6xl mx-auto bg-gradient-to-br from-[#043744] via-[#065A6F] to-[#0A5F73] text-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col items-center justify-center py-12 px-6 md:py-20 md:px-12">
+                    <div className="max-w-5xl mx-auto text-center relative z-10">
+                        <h2 className="text-3xl md:text-5xl font-extrabold mb-6 animate-in fade-in slide-in-from-bottom-8">
+                            Ready to Transform Your Farming Journey?
+                        </h2>
+                        <p className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
+                            Join thousands of farmers using AI-powered tools to increase productivity, sustainability, and profitability.
+                        </p>
+                        <div className="flex flex-col md:flex-row gap-6 justify-center">
+                            <Link
+                                to="/chat"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-[#043744] rounded-2xl font-bold text-lg hover:bg-[#f0f9fa] transition-all shadow-xl hover:scale-105"
+                            >
+                                Start with AI Assistant <ArrowRight className="w-5 h-5" />
+                            </Link>
+                        </div>
+
+                        <div className="mt-12 pt-6 border-t border-white/10 text-white/60 text-sm">
+                            <p>© 2025 KrishiSahAI TechFiesta. Empowering Farmers with Technology.</p>
+                        </div>
                     </div>
 
-                    <div className="mt-24 pt-8 border-t border-white/10 text-white/60 text-sm">
-                        <p>© 2025 KrishiAI TechFiesta. Empowering Farmers with Technology.</p>
-                    </div>
+                    {/* Background Blobs inside the card */}
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#0A5F73]/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
                 </div>
             </section>
         </div>
@@ -237,5 +245,3 @@ const Home: React.FC<{ lang: Language }> = ({ lang }) => {
 };
 
 export default Home;
-
-

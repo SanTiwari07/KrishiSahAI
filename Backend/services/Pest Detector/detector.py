@@ -47,7 +47,7 @@ def init_model():
         return _model
     
     try:
-        model_path = Path(__file__).parent / 'krishiai_yolo_final.pt'
+        model_path = Path(__file__).parent / 'krishisahai_yolo_final.pt'
         
         if not model_path.exists():
             raise FileNotFoundError(f"Model file not found: {model_path}")

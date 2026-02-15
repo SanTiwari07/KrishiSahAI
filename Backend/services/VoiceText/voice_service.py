@@ -33,30 +33,49 @@ class VoiceService:
     def __init__(self):
         self.model = None
 
+    def _log(self, message):
+        try:
+            with open("stt_debug.log", "a") as f:
+                f.write(f"{message}\n")
+        except:
+            print(message)
+
     def _load_model(self):
+        self._log("Loading model...")
         if not WHISPER_AVAILABLE:
+            self._log("Whisper not installed!")
             raise ImportError("Whisper is not installed")
         
         if self.model is None:
-            print("Loading Whisper model (base)... this may take a moment.")
+            self._log("Model is None, loading base model...")
             try:
                 # Use 'base' model for balance of speed/accuracy
+                import whisper
                 self.model = whisper.load_model("base") 
+                self._log("Whisper model loaded successfully.")
             except Exception as e:
-                print(f"Error loading whisper model: {e}")
+                self._log(f"Error loading whisper model: {e}")
+                import traceback
+                self._log(traceback.format_exc())
                 raise e
 
     def transcribe(self, file_path):
         """Transcribe audio file to text"""
+        self._log(f"Transcribing file: {file_path}")
         if not WHISPER_AVAILABLE:
+            self._log("Whisper not available in transcribe()")
             return {"error": "STT service unavailable (missing dependency)"}
         
         try:
             self._load_model()
-            result = self.model.transcribe(file_path)
-            return {"text": result["text"].strip()}
+            result = self.model.transcribe(str(file_path))
+            text = result["text"].strip()
+            self._log(f"Transcription success: {text[:50]}...")
+            return {"text": text}
         except Exception as e:
-            print(f"Transcription error: {e}")
+            self._log(f"Transcription error: {e}")
+            import traceback
+            self._log(traceback.format_exc())
             return {"error": str(e)}
 
     def text_to_speech(self, text, language='en'):
