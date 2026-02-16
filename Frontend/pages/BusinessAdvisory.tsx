@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Language } from '../types';
-import { translations } from '../translations';
+import { translations } from '../src/i18n/translations';
 import { api } from '../services/api';
 import { auth } from '../firebase';
-// import { getUserProfile } from '../services/firebase_db'; // Removed - using prop
 import { UserProfile } from '../types';
 import {
     Briefcase,
@@ -53,7 +52,7 @@ interface Recommendation {
 }
 
 const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> = ({ lang, user }) => {
-    const t = translations[lang];
+    const t = translations[lang] || translations['EN'];
     const navigate = useNavigate();
     const location = useLocation(); // To check for restored state
     const [step, setStep] = useState<number>(0); // 0: Landing, 1: Form, 2: Results
@@ -61,11 +60,11 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
     const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
 
     const [formData, setFormData] = useState<FormData>({
-        budget: '', // Ghost placeholder
-        totalLand: '', // Ghost placeholder
-        businessLand: '', // Ghost placeholder
-        waterSource: '', // Ghost placeholder (select default)
-        experience: '', // Ghost placeholder
+        budget: '',
+        totalLand: '',
+        businessLand: '',
+        waterSource: '',
+        experience: '',
         interests: [],
         marketAccess: '',
         sellingPreference: '',
@@ -129,7 +128,7 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
         }
 
         if (!isNaN(total) && business > total) {
-            alert("Selected land exceeds your total available land.");
+            alert(t.landExceedsTotal);
             return;
         }
 
@@ -150,7 +149,8 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                 loss_tolerance: formData.lossAttitude,
                 risk_preference: formData.riskPreference,
                 // Optional: Pass total land if backend needs it validating (not currently used by backend logic but good for record)
-                total_land: total
+                total_land: total,
+                language: lang.toLowerCase()
             };
 
             const response = await api.post('/business-advisor/init', payload);
@@ -221,15 +221,15 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                     <div className="w-24 h-24 bg-[#E0E7FF] rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
                         <Briefcase className="w-12 h-12 text-[#4F46E5]" />
                     </div>
-                    <h1 className="text-4xl font-extrabold text-[#1E1E1E] mb-4">Business Advisor</h1>
+                    <h1 className="text-4xl font-extrabold text-[#1E1E1E] mb-4">{t.businessAdvisorTitle}</h1>
                     <p className="text-[#555555] font-medium text-lg max-w-xl mx-auto mb-10">
-                        Get personalized investment guidance based on your resources and preferences.
+                        {t.businessAdvisorSub}
                     </p>
                     <button
                         onClick={() => setStep(1)}
                         className="px-8 py-4 bg-[#043744] text-white rounded-2xl font-bold text-xl hover:bg-[#000D0F] transition-all shadow-lg hover:scale-105 flex items-center justify-center gap-3 mx-auto"
                     >
-                        Start Assessment <ArrowRight className="w-6 h-6" />
+                        {t.startAssessment} <ArrowRight className="w-6 h-6" />
                     </button>
                 </div>
             </div>
@@ -241,18 +241,17 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
         return (
             <div className="p-4 md:p-8 max-w-4xl mx-auto">
                 <button onClick={() => setStep(0)} className="flex items-center gap-2 text-[#555555] font-bold mb-6 hover:text-[#043744] transition-colors">
-                    <ArrowLeft className="w-5 h-5" /> Back
+                    <ArrowLeft className="w-5 h-5" /> {t.back}
                 </button>
 
                 <div className="bg-white rounded-[32px] border border-[#E6E6E6] shadow-xl p-6 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <h1 className="text-3xl font-extrabold text-[#1E1E1E] mb-8">Tell us about your resources</h1>
+                    <h1 className="text-3xl font-extrabold text-[#1E1E1E] mb-8">{t.assessmentFormTitle}</h1>
 
                     {/* Resources Section */}
-                    {/* Image 1 & 2: Ghost Placeholders & Consistent Theme */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
                         <div>
                             <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">
-                                <DollarSign className="w-4 h-4 text-[#22C55E]" /> Budget (₹)
+                                <DollarSign className="w-4 h-4 text-[#22C55E]" /> {t.budgetLabel}
                             </label>
                             <input
                                 type="number"
@@ -263,21 +262,14 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                             />
                         </div>
 
-
-                        {/* Image 4: Business Land with Validation against Total Land */}
-                        {/* Note: We fetch totalLand from profile. If it's missing or 0, we should allow user to edit it or at least see it. 
-                            For now, if totalLand is > 0, we hide the input and show text. 
-                            If totalLand is 0 or empty, we show the input so they can enter it. 
-                        */}
-
                         <div>
                             <div className="flex justify-between items-end mb-2 ml-2">
                                 <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#555555]">
-                                    <Ruler className="w-4 h-4 text-[#3B82F6]" /> Business Land (Acres)
+                                    <Ruler className="w-4 h-4 text-[#3B82F6]" /> {t.businessLandLabel}
                                 </label>
                                 {formData.totalLand && parseFloat(formData.totalLand) > 0 && (
                                     <span className="text-xs font-bold text-[#043744] bg-[#E6F4EA] px-2 py-1 rounded-lg">
-                                        Total Acre: {formData.totalLand}
+                                        {t.totalAcre}: {formData.totalLand}
                                     </span>
                                 )}
                             </div>
@@ -292,13 +284,13 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                                 onChange={e => setFormData({ ...formData, businessLand: e.target.value })}
                             />
                             {parseFloat(formData.businessLand) > parseFloat(formData.totalLand) && (
-                                <p className="text-red-500 text-xs font-bold mt-2 ml-2">Selected land exceeds your total available land ({formData.totalLand} acres).</p>
+                                <p className="text-red-500 text-xs font-bold mt-2 ml-2">{t.landExceedsTotal} ({formData.totalLand} acres).</p>
                             )}
                         </div>
 
                         <div>
                             <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">
-                                <Droplets className="w-4 h-4 text-[#06B6D4]" /> Water Source
+                                <Droplets className="w-4 h-4 text-[#06B6D4]" /> {t.waterAvailability}
                             </label>
                             <select
                                 className={`w-full p-4 bg-[#FAFAF7] border border-[#E6E6E6] rounded-2xl focus:outline-none focus:border-[#043744] font-medium transition-all ${!formData.waterSource ? 'text-gray-400' : 'text-[#1E1E1E]'}`}
@@ -314,7 +306,7 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                         </div>
                         <div>
                             <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">
-                                <User className="w-4 h-4 text-[#A855F7]" /> Experience (Years)
+                                <User className="w-4 h-4 text-[#A855F7]" /> {t.experienceYears}
                             </label>
                             <input
                                 type="number"
@@ -328,7 +320,7 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
 
                     {/* Interests Section */}
                     <div className="mb-10">
-                        <h3 className="text-lg font-bold text-[#1E1E1E] mb-4">Interests</h3>
+                        <h3 className="text-lg font-bold text-[#1E1E1E] mb-4">{t.interestsTitle}</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             {interestOptions.map(interest => (
                                 <button
@@ -350,7 +342,7 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
 
                     {/* Market & Strategy Section (Gray Box) */}
                     <div className="bg-[#F5F5F4] rounded-[24px] p-6 md:p-8 mb-8 border border-[#E6E6E6]">
-                        <h3 className="text-xl font-bold text-[#1E1E1E] mb-6 border-b border-gray-200 pb-2">Market & Strategy</h3>
+                        <h3 className="text-xl font-bold text-[#1E1E1E] mb-6 border-b border-gray-200 pb-2">{t.marketStrategyTitle}</h3>
 
                         <div className="space-y-6">
                             {/* Q1 */}
@@ -481,15 +473,14 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                             <Info className="w-5 h-5" />
                         </div>
                         <div>
-                            <h4 className="text-[#92400E] font-bold text-sm uppercase tracking-wider mb-1">Important Note</h4>
+                            <h4 className="text-[#92400E] font-bold text-sm uppercase tracking-wider mb-1">{t.importantNoteTitle}</h4>
                             <p className="text-[#92400E] text-xs leading-relaxed">
-                                All business ideas and data shown here are research-based and approximate. Actual costs and profits may vary by region, city, market demand, and season.
+                                {t.importantNoteDesc}
                             </p>
                         </div>
                     </div>
 
                     {/* Agreement & Analyze */}
-                    {/* Image 3: Green Checkbox */}
                     <div className="bg-[#FAFAF7] rounded-2xl p-6 border border-[#E6E6E6]">
                         <label className="flex items-start gap-3 cursor-pointer mb-6 group">
                             <input
@@ -499,7 +490,7 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                                 onChange={e => setFormData({ ...formData, agreement: e.target.checked })}
                             />
                             <span className="text-xs text-[#555555] leading-relaxed group-hover:text-black transition-colors">
-                                I have read and understood the above points and acknowledge that the data shown is indicative. I will consider local conditions, market demand, and legal requirements before making any investment decision.
+                                {t.agreementText}
                             </span>
                         </label>
 
@@ -508,11 +499,11 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                             disabled={loading || parseFloat(formData.businessLand) > parseFloat(formData.totalLand)}
                             className={`w-full py-4 bg-[#043744] text-white rounded-xl font-bold text-xl transition-all shadow-md hover:scale-[1.01] flex items-center justify-center gap-2 ${loading ? 'opacity-75 cursor-not-allowed' : 'hover:bg-[#000D0F]'}`}
                         >
-                            {loading ? <><Loader2 className="animate-spin" /> Analyzing...</> : "Analyze"}
+                            {loading ? <><Loader2 className="animate-spin" /> {t.analyzingBtn}</> : t.analyze}
                         </button>
                     </div>
                 </div>
-            </div>
+            </div >
         );
     }
 
@@ -522,14 +513,14 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
             <div className="p-4 md:p-8 max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <button onClick={() => setStep(1)} className="flex items-center gap-2 text-[#555555] font-bold hover:text-[#043744] transition-colors">
-                        <ArrowLeft className="w-5 h-5" /> Back
+                        <ArrowLeft className="w-5 h-5" /> {t.back}
                     </button>
                     <button onClick={() => setStep(1)} className="text-[#043744] font-bold hover:underline">
-                        Retake Assessment
+                        {t.retakeAssessment}
                     </button>
                 </div>
 
-                <h1 className="text-3xl font-extrabold text-[#1E1E1E] mb-10">Recommended Businesses</h1>
+                <h1 className="text-3xl font-extrabold text-[#1E1E1E] mb-10">{t.recommendedBusinesses}</h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {recommendations.map((rec) => (
@@ -540,7 +531,7 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                                     <Briefcase className="w-16 h-16 text-white" />
                                 </div>
                                 <div className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs font-bold mb-4">
-                                    {rec.match_score}% Match
+                                    {rec.match_score}% {t.matchScore}
                                 </div>
                                 <h2 className="text-xl font-extrabold text-white leading-tight uppercase tracking-wide">
                                     {rec.title}
@@ -555,17 +546,17 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
 
                                 <div className="grid grid-cols-2 gap-4 mb-6">
                                     <div>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Investment</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{t.investmentLabel}</p>
                                         <p className="text-[#1E1E1E] font-bold text-sm">{rec.estimated_cost}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-bold text-[#043744] uppercase tracking-widest mb-1">Profit</p>
+                                        <p className="text-[10px] font-bold text-[#043744] uppercase tracking-widest mb-1">{t.profitLabel}</p>
                                         <p className="text-[#0A5F73] font-bold text-sm">{rec.profit_potential}</p>
                                     </div>
                                 </div>
 
                                 <div className="mb-8 flex-grow">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Requirements</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">{t.requirementsLabel}</p>
                                     <div className="flex flex-wrap gap-2">
                                         {rec.requirements.map((req, i) => (
                                             <span key={i} className="px-2 py-1 bg-[#FAFAF7] border border-[#E6E6E6] rounded-lg text-xs text-[#555555] font-medium">
@@ -590,7 +581,7 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                                         })}
                                         className="w-full py-4 bg-[#043744] text-white rounded-xl font-bold text-lg hover:bg-[#000D0F] transition-all shadow-lg flex items-center justify-center gap-2 transform hover:scale-[1.02]"
                                     >
-                                        <TrendingUp className="w-5 h-5" /> Simulate 10-Year Sustainability
+                                        <TrendingUp className="w-5 h-5" /> {t.simulateBtn}
                                     </button>
 
                                     <div className="flex gap-3">
@@ -598,13 +589,13 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                                             onClick={() => handleAskChatbot(rec.title)}
                                             className="flex-1 py-3 bg-white border border-[#043744] text-[#043744] rounded-xl font-bold text-sm hover:bg-[#E8F5F5] transition-colors flex items-center justify-center gap-2"
                                         >
-                                            <MessageCircle className="w-4 h-4" /> Ask Chatbot
+                                            <MessageCircle className="w-4 h-4" /> {t.askChatbotBtn}
                                         </button>
                                         <button
                                             onClick={() => handleKnowMore(rec)}
                                             className="flex-1 py-3 bg-white border border-gray-200 text-[#555555] rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                                         >
-                                            <Info className="w-4 h-4" /> Know More
+                                            <Info className="w-4 h-4" /> {t.knowMore}
                                         </button>
                                     </div>
                                 </div>
@@ -620,4 +611,3 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
 };
 
 export default BusinessAdvisory;
-

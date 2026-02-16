@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Language, UserProfile } from '../types';
-import { translations } from '../translations';
+import { translations } from '../src/i18n/translations';
 import { api } from '../services/api';
 import { auth } from '../firebase';
 
@@ -80,12 +80,12 @@ const NewsPage: React.FC<NewsPageProps> = ({ lang, user }) => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
                     <h1 className="text-4xl font-extrabold text-[#000D0F] tracking-tight mb-3">
-                        {lang === 'HI' ? 'कृषि समाचार' : lang === 'MR' ? 'कृषी बातम्या' : 'Agriculture News'}
+                        {t.newsTitle}
                     </h1>
                     <p className="text-lg text-[#043744] font-medium">
                         {newsMode === 'personalized'
-                            ? (lang === 'HI' ? 'आपके लिए नवीनतम खेती की जानकारी' : lang === 'MR' ? 'तुमच्यासाठी नवीनतम शेतीची माहिती' : 'Latest insights curated for your crops and location')
-                            : (lang === 'HI' ? 'सामान्य कृषि समाचार' : lang === 'MR' ? 'सामान्य कृषी बातम्या' : 'General agriculture news from across India')
+                            ? t.newsSubtitlePersonalized
+                            : t.newsSubtitleGeneral
                         }
                     </p>
                 </div>
@@ -99,7 +99,7 @@ const NewsPage: React.FC<NewsPageProps> = ({ lang, user }) => {
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={loading ? 'animate-spin' : ''}>
                         <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
                     </svg>
-                    {lang === 'HI' ? 'ताज़ा करें' : lang === 'MR' ? 'रीफ्रेश करा' : 'Refresh'}
+                    {t.refresh}
                 </button>
             </div>
 
@@ -112,7 +112,7 @@ const NewsPage: React.FC<NewsPageProps> = ({ lang, user }) => {
                         : 'bg-white text-[#6B7878] border-2 border-[#E0E6E6] hover:border-[#043744]'
                         }`}
                 >
-                    {lang === 'HI' ? 'व्यक्तिगत समाचार' : lang === 'MR' ? 'वैयक्तिक बातम्या' : 'Personalized News'}
+                    {t.personalizedNews}
                 </button>
                 <button
                     onClick={() => handleModeChange('general')}
@@ -121,7 +121,7 @@ const NewsPage: React.FC<NewsPageProps> = ({ lang, user }) => {
                         : 'bg-white text-[#6B7878] border-2 border-[#E0E6E6] hover:border-[#043744]'
                         }`}
                 >
-                    {lang === 'HI' ? 'सामान्य समाचार' : lang === 'MR' ? 'सामान्य बातम्या' : 'General News'}
+                    {t.generalNews}
                 </button>
             </div>
 
@@ -133,12 +133,12 @@ const NewsPage: React.FC<NewsPageProps> = ({ lang, user }) => {
                 <div className="bg-red-50 border border-red-200 text-red-600 p-6 rounded-2xl text-center">
                     <p className="font-bold">{error}</p>
                     <button onClick={handleRefresh} className="mt-4 px-4 py-2 bg-white border border-red-200 rounded-lg text-sm hover:bg-gray-50">
-                        Retry
+                        {t.retry}
                     </button>
                 </div>
             ) : news.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-3xl border border-[#E0E6E6]">
-                    <p className="text-[#6B7878] text-lg">No news found at this time.</p>
+                    <p className="text-[#6B7878] text-lg">{t.noNewsFound}</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -170,7 +170,7 @@ const NewsPage: React.FC<NewsPageProps> = ({ lang, user }) => {
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-2 text-[#043744] font-bold hover:underline mt-auto"
                                 >
-                                    {lang === 'HI' ? 'पूरा पढ़ें' : lang === 'MR' ? 'संपूर्ण वाचा' : 'Read Full Article'}
+                                    {t.readFullArticle}
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
                                 </a>
                             </div>
@@ -183,4 +183,3 @@ const NewsPage: React.FC<NewsPageProps> = ({ lang, user }) => {
 };
 
 export default NewsPage;
-

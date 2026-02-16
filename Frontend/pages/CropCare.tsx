@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Language } from '../types';
-import { translations } from '../translations';
+import { translations } from '../src/i18n/translations';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { Sprout, Upload, Bug, MessageCircle } from 'lucide-react';
@@ -128,7 +128,7 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
                 </div>
                 <h1 className="text-3xl md:text-4xl font-extrabold text-[#1E1E1E] mb-4">{t.cropCare}</h1>
                 <p className="text-[#555555] font-medium text-lg max-w-2xl mx-auto">
-                    Upload images to detect diseases and pests affecting your crops
+                    {t.cropCareSub}
                 </p>
             </div>
 
@@ -140,7 +140,7 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
                         <div className="w-12 h-12 bg-[#E8F5E9] rounded-2xl flex items-center justify-center">
                             <Sprout className="w-6 h-6 text-[#043744]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1E1E]">Disease Detector</h2>
+                        <h2 className="text-2xl font-bold text-[#1E1E1E]">{t.diseaseDetector}</h2>
                     </div>
 
                     <div className="space-y-6">
@@ -156,8 +156,8 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
                             ) : (
                                 <div className="text-gray-500 flex flex-col items-center">
                                     <Upload className="w-10 h-10 mb-2 text-gray-400" />
-                                    <p className="font-semibold">Click to upload or drag & drop</p>
-                                    <p className="text-sm">Supports JPG, PNG</p>
+                                    <p className="font-semibold">{t.uploadPrompt}</p>
+                                    <p className="text-sm">{t.supportedFormats}</p>
                                 </div>
                             )}
                         </div>
@@ -170,7 +170,7 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
                                 : 'bg-[#043744] hover:bg-[#000D0F] shadow-lg hover:shadow-xl'
                                 }`}
                         >
-                            {diseaseLoading ? 'Analyzing...' : 'Detect Disease'}
+                            {diseaseLoading ? t.analyzingBtn : t.detectDisease}
                         </button>
 
                         {diseaseError && (
@@ -181,17 +181,17 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
 
                         {diseaseResult && (
                             <div className="bg-[#FAFAF7] rounded-2xl p-6 border border-[#E6E6E6] text-left animate-fade-in">
-                                <h3 className="text-xl font-bold text-[#043744] mb-2">Analysis Result</h3>
+                                <h3 className="text-xl font-bold text-[#043744] mb-2">{t.analysisResult}</h3>
                                 <div className="space-y-2">
-                                    <p><span className="font-semibold">Crop:</span> {diseaseResult.crop}</p>
-                                    <p><span className="font-semibold">Disease:</span> {diseaseResult.disease}</p>
-                                    <p><span className="font-semibold">Confidence:</span> {(diseaseResult.confidence * 100).toFixed(1)}%</p>
-                                    <p><span className="font-semibold">Severity:</span> <span className={`capitalize ${diseaseResult.severity === 'high' ? 'text-red-500' : 'text-yellow-600'}`}>{diseaseResult.severity}</span></p>
-                                    {diseaseResult.pathogen && <p><span className="font-semibold">Pathogen:</span> {diseaseResult.pathogen}</p>}
+                                    <p><span className="font-semibold">{t.labelCrop}:</span> {diseaseResult.crop}</p>
+                                    <p><span className="font-semibold">{t.labelDisease}:</span> {diseaseResult.disease}</p>
+                                    <p><span className="font-semibold">{t.labelConfidence}:</span> {(diseaseResult.confidence * 100).toFixed(1)}%</p>
+                                    <p><span className="font-semibold">{t.labelSeverity}:</span> <span className={`capitalize ${diseaseResult.severity === 'high' ? 'text-red-500' : 'text-yellow-600'}`}>{diseaseResult.severity}</span></p>
+                                    {diseaseResult.pathogen && <p><span className="font-semibold">{t.labelPathogen}:</span> {diseaseResult.pathogen}</p>}
 
                                     {diseaseResult.treatment && diseaseResult.treatment.length > 0 && (
                                         <div className="mt-4 pt-4 border-t border-gray-200">
-                                            <h4 className="font-bold text-[#1E1E1E] mb-2">Recommended Treatment:</h4>
+                                            <h4 className="font-bold text-[#1E1E1E] mb-2">{t.labelTreatment}:</h4>
                                             <ul className="list-disc list-inside space-y-1 text-gray-700">
                                                 {diseaseResult.treatment.map((t: string, i: number) => (
                                                     <li key={i}>{t}</li>
@@ -204,7 +204,7 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
                                         onClick={handleDiseaseAskChatbot}
                                         className="w-full mt-6 py-3 bg-[#043744] text-white rounded-xl font-bold hover:bg-[#000D0F] transition-all flex items-center justify-center gap-2 shadow-md"
                                     >
-                                        <MessageCircle className="w-5 h-5" /> Ask Chatbot
+                                        <MessageCircle className="w-5 h-5" /> {t.askChatbotBtn}
                                     </button>
                                 </div>
                             </div>
@@ -218,7 +218,7 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
                         <div className="w-12 h-12 bg-[#FFF4E6] rounded-2xl flex items-center justify-center">
                             <Bug className="w-6 h-6 text-[#D97706]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-[#1E1E1E]">Pest Detector</h2>
+                        <h2 className="text-2xl font-bold text-[#1E1E1E]">{t.pestDetector}</h2>
                     </div>
 
                     <div className="space-y-6">
@@ -234,8 +234,8 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
                             ) : (
                                 <div className="text-gray-500 flex flex-col items-center">
                                     <Upload className="w-10 h-10 mb-2 text-gray-400" />
-                                    <p className="font-semibold">Click to upload or drag & drop</p>
-                                    <p className="text-sm">Supports JPG, PNG</p>
+                                    <p className="font-semibold">{t.uploadPrompt}</p>
+                                    <p className="text-sm">{t.supportedFormats}</p>
                                 </div>
                             )}
                         </div>
@@ -248,7 +248,7 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
                                 : 'bg-[#D97706] hover:bg-[#B45309] shadow-lg hover:shadow-xl'
                                 }`}
                         >
-                            {pestLoading ? 'Analyzing...' : 'Detect Pest'}
+                            {pestLoading ? t.analyzingBtn : t.detectPest}
                         </button>
 
                         {pestError && (
@@ -259,11 +259,11 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
 
                         {pestResult && (
                             <div className="bg-[#FFF4E6] rounded-2xl p-6 border border-[#FED7AA] text-left animate-fade-in">
-                                <h3 className="text-xl font-bold text-[#D97706] mb-2">Analysis Result</h3>
+                                <h3 className="text-xl font-bold text-[#D97706] mb-2">{t.analysisResult}</h3>
                                 <div className="space-y-2">
-                                    <p><span className="font-semibold">Pest:</span> {pestResult.pest_name}</p>
-                                    <p><span className="font-semibold">Confidence:</span> {(pestResult.confidence * 100).toFixed(1)}%</p>
-                                    <p><span className="font-semibold">Severity:</span> <span className={`capitalize ${pestResult.severity === 'high' ? 'text-red-500' : 'text-yellow-600'}`}>{pestResult.severity}</span></p>
+                                    <p><span className="font-semibold">{t.labelPest}:</span> {pestResult.pest_name}</p>
+                                    <p><span className="font-semibold">{t.labelConfidence}:</span> {(pestResult.confidence * 100).toFixed(1)}%</p>
+                                    <p><span className="font-semibold">{t.labelSeverity}:</span> <span className={`capitalize ${pestResult.severity === 'high' ? 'text-red-500' : 'text-yellow-600'}`}>{pestResult.severity}</span></p>
                                     {pestResult.description && (
                                         <p className="text-sm text-gray-700 mt-2">{pestResult.description}</p>
                                     )}
@@ -272,7 +272,7 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
                                         onClick={handlePestAskChatbot}
                                         className="w-full mt-6 py-3 bg-[#D97706] text-white rounded-xl font-bold hover:bg-[#B45309] transition-all flex items-center justify-center gap-2 shadow-md"
                                     >
-                                        <MessageCircle className="w-5 h-5" /> Ask Chatbot
+                                        <MessageCircle className="w-5 h-5" /> {t.askChatbotBtn}
                                     </button>
                                 </div>
                             </div>
@@ -285,4 +285,3 @@ const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
 };
 
 export default CropCare;
-

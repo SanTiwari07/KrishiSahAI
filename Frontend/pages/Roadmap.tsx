@@ -5,7 +5,7 @@ import { ArrowLeft, Download, CheckCircle, AlertTriangle, TrendingUp, Users, Cal
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Language } from '../types';
-import { translations } from '../translations';
+import { translations } from '../src/i18n/translations';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -45,6 +45,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
     const { businessName } = useParams<{ businessName: string }>();
     const navigate = useNavigate();
     const location = useLocation();
+    const t = translations[lang];
     const [loading, setLoading] = useState(true);
     const [roadmap, setRoadmap] = useState<RoadmapData | null>(null);
     const [error, setError] = useState('');
@@ -127,8 +128,8 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-[#FAFAF7]">
                 <Loader2 className="w-16 h-16 text-[#043744] animate-spin mb-4" />
-                <h2 className="text-2xl font-bold text-[#1E1E1E]">Generating 10-Year Sustainability Roadmap...</h2>
-                <p className="text-[#555555] mt-2">Analyzing market trends, labor projections, and financial resilience.</p>
+                <h2 className="text-2xl font-bold text-[#1E1E1E]">{t.generatingRoadmap}</h2>
+                <p className="text-[#555555] mt-2">{t.analyzingRoadmap}</p>
             </div>
         );
     }
@@ -137,13 +138,13 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-[#FAFAF7] p-8">
                 <AlertTriangle className="w-16 h-16 text-red-500 mb-4" />
-                <h2 className="text-2xl font-bold text-[#1E1E1E] mb-2">Detailed Analysis Failed</h2>
+                <h2 className="text-2xl font-bold text-[#1E1E1E] mb-2">{t.analysisFailed}</h2>
                 <p className="text-red-500 mb-6 text-center max-w-md">{error}</p>
                 <button
                     onClick={() => navigate('/advisory')}
                     className="px-6 py-3 bg-[#043744] text-white rounded-xl font-bold hover:bg-[#000D0F] transition-all"
                 >
-                    Return to Advisory
+                    {t.returnToAdvisory}
                 </button>
             </div>
         );
@@ -160,13 +161,13 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                         onClick={() => navigate('/advisory')}
                         className="flex items-center gap-2 text-[#555555] font-bold hover:text-[#043744] transition-colors"
                     >
-                        <ArrowLeft className="w-5 h-5" /> Back to Options
+                        <ArrowLeft className="w-5 h-5" /> {t.backToOptions}
                     </button>
                     <button
                         onClick={handleDownloadPDF}
                         className="flex items-center gap-2 px-6 py-3 bg-[#043744] text-white rounded-xl font-bold hover:bg-[#000D0F] transition-all shadow-md"
                     >
-                        <Download className="w-5 h-5" /> Download PDF
+                        <Download className="w-5 h-5" /> {t.downloadPDF}
                     </button>
                 </div>
 
@@ -195,7 +196,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
 
                     {/* Verdict Banner */}
                     <div className="mb-10 bg-[#FAFAF7] border-l-4 border-[#043744] p-6 rounded-r-xl">
-                        <h3 className="text-sm font-bold text-[#043744] uppercase tracking-widest mb-2">Final Strategic Verdict</h3>
+                        <h3 className="text-sm font-bold text-[#043744] uppercase tracking-widest mb-2">{t.strategicVerdict}</h3>
                         <p className="text-xl font-bold text-[#1E1E1E]">{roadmap.final_verdict}</p>
                     </div>
 
@@ -205,7 +206,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                             <div className="bg-white border border-[#E6E6E6] rounded-2xl p-6 hover:shadow-md transition-shadow">
                                 <div className="flex items-center gap-3 mb-4">
                                     <Users className="w-6 h-6 text-[#3B82F6]" />
-                                    <h3 className="text-lg font-bold text-[#1E1E1E]">Labor & Aging Projection</h3>
+                                    <h3 className="text-lg font-bold text-[#1E1E1E]">{t.laborAging}</h3>
                                 </div>
                                 <p className="text-[#555555] leading-relaxed text-sm">{roadmap.labor_aging_projection}</p>
                             </div>
@@ -216,7 +217,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                     <div className="bg-white border border-[#E6E6E6] rounded-2xl p-6 hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-3 mb-4">
                             <Shield className="w-6 h-6 text-[#EAB308]" />
-                            <h3 className="text-lg font-bold text-[#1E1E1E]">Financial Resilience Strategy</h3>
+                            <h3 className="text-lg font-bold text-[#1E1E1E]">{t.financialResilience}</h3>
                         </div>
                         <p className="text-[#555555] leading-relaxed text-sm">{roadmap.financial_resilience_strategy}</p>
                     </div>
@@ -226,7 +227,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                         <div className="bg-white border border-[#E6E6E6] rounded-2xl p-6 hover:shadow-md transition-shadow">
                             <div className="flex items-center gap-3 mb-4">
                                 <AlertTriangle className="w-6 h-6 text-[#F59E0B]" />
-                                <h3 className="text-lg font-bold text-[#1E1E1E]">Risk Mitigation</h3>
+                                <h3 className="text-lg font-bold text-[#1E1E1E]">{t.riskMitigation}</h3>
                             </div>
                             <p className="text-[#555555] leading-relaxed text-sm">{roadmap.risk_mitigation}</p>
                         </div>
@@ -237,7 +238,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                 <div className="mb-12">
                     <div className="flex items-center gap-3 mb-8">
                         <Calendar className="w-6 h-6 text-[#043744]" />
-                        <h2 className="text-2xl font-bold text-[#1E1E1E]">Strategic Timeline with Quarterly Breakdown</h2>
+                        <h2 className="text-2xl font-bold text-[#1E1E1E]">{t.strategicTimeline}</h2>
                     </div>
 
                     <div className="space-y-10">
@@ -259,17 +260,17 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                                         <div className="p-3 bg-white rounded-xl shadow-sm mb-3">
                                             <TrendingUp className="w-6 h-6 text-[#1F5F4A]" />
                                         </div>
-                                        <h4 className="text-sm font-bold text-[#555555] uppercase tracking-widest mb-2">Estimated Profit Margin</h4>
+                                        <h4 className="text-sm font-bold text-[#555555] uppercase tracking-widest mb-2">{t.estimatedProfitMargin}</h4>
                                         <div className="text-3xl font-extrabold text-[#1F5F4A]">
-                                            {phase.profit_margin && phase.profit_margin !== "N/A" ? phase.profit_margin : "Analyzing..."}
+                                            {phase.profit_margin && phase.profit_margin !== "N/A" ? phase.profit_margin : t.analyzingBtn}
                                         </div>
                                         <p className="text-xs text-[#555555] mt-2 max-w-xs mx-auto">
-                                            Based on current market rates and projected yield for {roadmap.title}.
+                                            {t.profitMarginDesc} {roadmap.title}.
                                         </p>
                                     </div>
 
                                     <div className="text-base font-semibold text-[#043744] mt-6 prose prose-sm max-w-none">
-                                        <span className="font-bold mr-2 text-lg">Focus:</span>
+                                        <span className="font-bold mr-2 text-lg">{t.focus}:</span>
                                         <div className="mt-2 text-[#555555] leading-relaxed">
                                             <ReactMarkdown
                                                 remarkPlugins={[remarkGfm]}
@@ -298,7 +299,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
 
                                                 {/* Actions */}
                                                 <div className="mb-4">
-                                                    <h5 className="text-sm font-bold text-[#555555] uppercase tracking-wide mb-2">Actions</h5>
+                                                    <h5 className="text-sm font-bold text-[#555555] uppercase tracking-wide mb-2">{t.actions}</h5>
                                                     <ul className="space-y-2">
                                                         {quarter.actions.map((action, aIndex) => (
                                                             <li key={aIndex} className="flex items-start gap-2 text-sm text-[#555555]">
@@ -311,7 +312,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
 
                                                 {/* Milestones */}
                                                 <div>
-                                                    <h5 className="text-sm font-bold text-[#555555] uppercase tracking-wide mb-2">Milestones</h5>
+                                                    <h5 className="text-sm font-bold text-[#555555] uppercase tracking-wide mb-2">{t.milestones}</h5>
                                                     <div className="space-y-2">
                                                         {quarter.milestones.map((milestone, mIndex) => (
                                                             <div key={mIndex} className="flex items-start gap-2 text-sm text-[#1E1E1E] bg-[#E6F4EA] px-3 py-2 rounded-lg">
@@ -327,8 +328,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                                 ) : (
                                     <div className="mb-6 p-6 bg-amber-50 border border-amber-200 rounded-xl">
                                         <p className="text-sm text-amber-800">
-                                            <strong>Note:</strong> Detailed quarterly breakdown is being generated. The system is currently showing a simplified roadmap.
-                                            Please refresh in a moment for the complete timeline with quarterly milestones and financial targets.
+                                            {t.roadmapSimplified}
                                         </p>
                                     </div>
                                 )}
@@ -337,43 +337,43 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-[#F8FAFC] rounded-xl border border-slate-200">
                                     {phase.cumulative_investment && (
                                         <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">Investment</p>
+                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.investment}</p>
                                             <p className="text-sm font-bold text-[#1E1E1E]">{phase.cumulative_investment}</p>
                                         </div>
                                     )}
                                     {phase.expected_revenue && (
                                         <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">Revenue</p>
+                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.revenue}</p>
                                             <p className="text-sm font-bold text-[#1E1E1E]">{phase.expected_revenue}</p>
                                         </div>
                                     )}
                                     {phase.break_even && (
                                         <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">Break-even</p>
+                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.breakEven}</p>
                                             <p className="text-sm font-bold text-[#1E1E1E]">{phase.break_even}</p>
                                         </div>
                                     )}
                                     {phase.profit_margin && (
                                         <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">Profit Margin</p>
+                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.profitLabel}</p>
                                             <p className="text-sm font-bold text-[#1E1E1E]">{phase.profit_margin}</p>
                                         </div>
                                     )}
                                     {phase.cumulative_wealth && (
                                         <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">Wealth</p>
+                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.wealth}</p>
                                             <p className="text-sm font-bold text-[#1E1E1E]">{phase.cumulative_wealth}</p>
                                         </div>
                                     )}
                                     {phase.passive_income && (
                                         <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">Passive Income</p>
+                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.passiveIncome}</p>
                                             <p className="text-sm font-bold text-[#1E1E1E]">{phase.passive_income}</p>
                                         </div>
                                     )}
                                     {phase.succession_readiness && (
                                         <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">Succession</p>
+                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.succession}</p>
                                             <p className="text-sm font-bold text-[#1E1E1E]">{phase.succession_readiness}</p>
                                         </div>
                                     )}
@@ -386,7 +386,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                 {/* Automation Recommendations */}
                 {roadmap.automation_recommendations && roadmap.automation_recommendations.length > 0 && (
                     <div className="bg-[#F8FAFC] rounded-2xl p-8 border border-slate-100">
-                        <h3 className="text-lg font-bold text-[#1E1E1E] mb-6">Automation Recommendations</h3>
+                        <h3 className="text-lg font-bold text-[#1E1E1E] mb-6">{t.automation}</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {roadmap.automation_recommendations.map((rec, i) => {
                                 // Handle both string and object formats
@@ -407,9 +407,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                 {/* Disclaimer */}
                 <div className="mt-12 p-6 bg-gray-50 border border-gray-200 rounded-xl text-center">
                     <p className="text-xs text-gray-500 leading-relaxed italic">
-                        <strong>Disclaimer:</strong> This roadmap is a long-term projection generated by AI based on the data provided.
-                        Actual results may vary due to market conditions, weather patterns, and execution quality.
-                        Please consult with financial and agricultural experts before making significant investment decisions.
+                        <strong>{t.disclaimer}:</strong> {t.disclaimerText}
                     </p>
                 </div>
 
@@ -419,4 +417,3 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
 };
 
 export default Roadmap;
-

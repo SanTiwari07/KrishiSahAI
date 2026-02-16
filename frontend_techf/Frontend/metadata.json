@@ -1,0 +1,7 @@
+{
+  "name": "KrishiAI Prototype",
+  "description": "A professional AI-powered advisory system for farmers, focusing on crop care, income security, and business planning.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

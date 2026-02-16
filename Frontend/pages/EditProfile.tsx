@@ -5,7 +5,7 @@ import { UserProfile, Language } from '../types';
 import { auth, db } from '../firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Save, ArrowLeft, User, MapPin, Sprout, Briefcase } from 'lucide-react';
-import { translations } from '../translations';
+import { translations } from '../src/i18n/translations';
 
 const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
     const t = translations[lang];
@@ -90,24 +90,24 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
             await updateDoc(userRef, updatedData);
 
             // Force a reload or notify user
-            alert("Profile updated successfully!");
+            alert(t.profileUpdated);
             navigate('/');
             window.location.reload(); // Simple way to refresh app state in App.tsx
         } catch (error) {
             console.error("Error updating profile:", error);
-            alert("Failed to update profile.");
+            alert(t.profileUpdateFailed);
         } finally {
             setLoading(false);
         }
     };
 
-    if (fetching) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    if (fetching) return <div className="min-h-screen flex items-center justify-center">{t.analyzingBtn}</div>;
 
     return (
         <div className="min-h-screen bg-[#F5F8F8] p-4 md:p-8">
             <div className="max-w-4xl mx-auto">
                 <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-[#555555] font-bold mb-6 hover:text-[#043744] transition-colors">
-                    <ArrowLeft className="w-5 h-5" /> Back
+                    <ArrowLeft className="w-5 h-5" /> {t.back}
                 </button>
 
                 <div className="bg-white rounded-[32px] border border-[#E6E6E6] shadow-xl p-6 md:p-10">
@@ -116,8 +116,8 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                             <User className="w-8 h-8" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-extrabold text-[#1E1E1E]">Edit Profile</h1>
-                            <p className="text-[#555555] font-medium">Update your personal and farm details</p>
+                            <h1 className="text-3xl font-extrabold text-[#1E1E1E]">{t.editProfile}</h1>
+                            <p className="text-[#555555] font-medium">{t.updateProfileDesc}</p>
                         </div>
                     </div>
 
@@ -125,11 +125,11 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                         {/* Personal Details */}
                         <div className="space-y-4">
                             <h2 className="text-xl font-bold text-[#1E1E1E] flex items-center gap-2">
-                                <User className="w-5 h-5 text-[#043744]" /> Personal Information
+                                <User className="w-5 h-5 text-[#043744]" /> {t.personalInfo}
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">Full Name</label>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.fullName}</label>
                                     <input
                                         name="name"
                                         value={formData.name}
@@ -138,7 +138,7 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">Email</label>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.email}</label>
                                     <input
                                         name="email"
                                         value={formData.email}
@@ -147,7 +147,7 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">Phone</label>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.phoneNumber}</label>
                                     <input
                                         name="phone"
                                         value={formData.phone}
@@ -156,7 +156,7 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">Age</label>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.age}</label>
                                     <input
                                         name="age"
                                         type="number"
@@ -171,23 +171,23 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                         {/* Location Details */}
                         <div className="space-y-4">
                             <h2 className="text-xl font-bold text-[#1E1E1E] flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-[#043744]" /> Location Details
+                                <MapPin className="w-5 h-5 text-[#043744]" /> {t.locationDetails}
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">State</label>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.state}</label>
                                     <select
                                         name="state"
                                         value={formData.state}
                                         onChange={handleChange}
                                         className="w-full p-4 bg-[#FAFAF7] border border-[#E6E6E6] rounded-2xl focus:outline-none focus:border-[#043744] text-[#1E1E1E]"
                                     >
-                                        <option value="">Select State</option>
+                                        <option value="">{t.selectState}</option>
                                         <option>Maharashtra</option><option>Karnataka</option><option>Punjab</option><option>Uttar Pradesh</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">District</label>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.district}</label>
                                     <input
                                         name="district"
                                         value={formData.district}
@@ -196,7 +196,7 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">Village</label>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.village}</label>
                                     <input
                                         name="village"
                                         value={formData.village}
@@ -210,11 +210,11 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                         {/* Farm Details */}
                         <div className="space-y-4">
                             <h2 className="text-xl font-bold text-[#1E1E1E] flex items-center gap-2">
-                                <Briefcase className="w-5 h-5 text-[#043744]" /> Farm Details
+                                <Briefcase className="w-5 h-5 text-[#043744]" /> {t.farmInfo}
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">Land Size (Acres)</label>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.landSizeAcres}</label>
                                     <input
                                         name="landSize"
                                         type="number"
@@ -224,7 +224,7 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">Water Source</label>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.waterAvailability}</label>
                                     <select
                                         name="waterAvailability"
                                         value={formData.waterAvailability}
@@ -236,7 +236,7 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">Crops Grown</label>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.mainCrops}</label>
                                 <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                                     {/* Standard Crops */}
                                     {cropsList.map(crop => (
@@ -277,7 +277,7 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                                                                 };
                                                             });
                                                         }}
-                                                        placeholder="Type crop..."
+                                                        placeholder={t.typeCrop}
                                                         className="w-full h-full px-2 py-2 rounded-xl text-xs font-bold border bg-[#043744] text-white border-[#043744] focus:outline-none placeholder:text-white/50"
                                                     />
                                                 ) : (
@@ -286,7 +286,7 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                                                         onClick={() => setFormData(prev => ({ ...prev, mainCrops: [...prev.mainCrops, ""] }))}
                                                         className="w-full h-full px-2 py-2 rounded-xl text-xs font-bold border bg-[#FAFAF7] text-[#555555] border-[#E6E6E6] hover:border-[#043744] hover:text-[#043744]"
                                                     >
-                                                        Other
+                                                        {t.other}
                                                     </button>
                                                 )}
                                             </div>
@@ -301,7 +301,7 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
                             disabled={loading}
                             className="w-full py-5 bg-[#043744] text-white rounded-2xl font-bold text-xl hover:bg-[#000D0F] transition-all shadow-lg flex items-center justify-center gap-2"
                         >
-                            {loading ? "Saving..." : <><Save className="w-5 h-5" /> Save Changes</>}
+                            {loading ? t.saving : <><Save className="w-5 h-5" /> {t.saveChanges}</>}
                         </button>
                     </form>
                 </div>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Briefcase, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Language } from '../types';
-import { translations } from '../translations';
+import { translations } from '../src/i18n/translations';
 import { api } from '../services/api';
 
 interface BusinessDetail {
@@ -67,10 +67,10 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
     };
 
     if (loading) {
-        return <div className="p-10 text-center">Loading...</div>;
+        return <div className="p-10 text-center">{t.analyzingBtn}</div>;
     }
 
-    if (!business) return <div className="p-10 text-center">Business not found</div>;
+    if (!business) return <div className="p-10 text-center">{t.businessNotFound}</div>;
 
     return (
         <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen">
@@ -78,7 +78,7 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
                 onClick={handleBack}
                 className="flex items-center gap-2 text-[#555555] font-bold mb-6 hover:text-[#043744] transition-colors"
             >
-                <ArrowLeft className="w-5 h-5" /> Back to Recommendations
+                <ArrowLeft className="w-5 h-5" /> {t.backToRecs}
             </button>
 
             <div className="bg-white rounded-[40px] border border-[#E6E6E6] shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -94,7 +94,7 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
                     {business.timeline && (
                         <div className="mt-8 inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-bold border border-white/30">
                             <TrendingUp className="w-4 h-4" />
-                            <span>Timeline to Profit: {business.timeline}</span>
+                            <span>{t.timelineToProfit}: {business.timeline}</span>
                         </div>
                     )}
                 </div>
@@ -106,15 +106,15 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
                                 <div className="p-3 bg-white rounded-xl shadow-sm">
                                     <DollarSign className="w-6 h-6 text-[#043744]" />
                                 </div>
-                                <h3 className="text-lg font-bold text-[#1E1E1E]">Financials</h3>
+                                <h3 className="text-lg font-bold text-[#1E1E1E]">{t.financials}</h3>
                             </div>
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center border-b border-gray-200 pb-2">
-                                    <span className="text-[#555555] font-medium">Initial Investment</span>
+                                    <span className="text-[#555555] font-medium">{t.initialInvestment}</span>
                                     <span className="text-[#1E1E1E] font-bold">{business.investment}</span>
                                 </div>
                                 <div className="flex justify-between items-center border-b border-gray-200 pb-2">
-                                    <span className="text-[#555555] font-medium">Monthly Profit</span>
+                                    <span className="text-[#555555] font-medium">{t.monthlyProfit}</span>
                                     <span className="text-[#043744] font-bold">{business.profit}</span>
                                 </div>
                             </div>
@@ -125,11 +125,11 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
                                 <div className="p-3 bg-white rounded-xl shadow-sm">
                                     <AlertTriangle className="w-6 h-6 text-[#F59E0B]" />
                                 </div>
-                                <h3 className="text-lg font-bold text-[#1E1E1E]">Risks & Market</h3>
+                                <h3 className="text-lg font-bold text-[#1E1E1E]">{t.risksMarket}</h3>
                             </div>
                             <div className="space-y-4">
                                 <div>
-                                    <p className="text-sm font-bold text-[#555555]">Market Demand:</p>
+                                    <p className="text-sm font-bold text-[#555555]">{t.marketDemand}:</p>
                                     <p className="text-[#1E1E1E] font-medium">{business.market_demand}</p>
                                     {business.market_demand_analysis && (
                                         <p className="text-sm text-[#555555] mt-1 italic">{business.market_demand_analysis}</p>
@@ -137,7 +137,7 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
                                 </div>
 
                                 <div>
-                                    <p className="text-sm font-bold text-[#555555] mb-1">Key Risks:</p>
+                                    <p className="text-sm font-bold text-[#555555] mb-1">{t.keyRisks}:</p>
                                     <ul className="list-disc pl-5 text-sm text-[#555555] space-y-1">
                                         {business.risk_factors.map((r, i) => <li key={i}>{r}</li>)}
                                     </ul>
@@ -148,7 +148,7 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
-                            <h3 className="text-2xl font-bold text-[#1E1E1E] mb-6">Requirements</h3>
+                            <h3 className="text-2xl font-bold text-[#1E1E1E] mb-6">{t.requirements}</h3>
                             <div className="flex flex-wrap gap-3">
                                 {business.requirements.map((req, i) => (
                                     <span key={i} className="px-4 py-3 bg-white border border-[#E6E6E6] rounded-xl text-[#555555] font-bold shadow-sm">
@@ -160,7 +160,7 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
 
                         {business.implementation_steps && (
                             <div>
-                                <h3 className="text-2xl font-bold text-[#1E1E1E] mb-6">Steps to Start</h3>
+                                <h3 className="text-2xl font-bold text-[#1E1E1E] mb-6">{t.stepsToStart}</h3>
                                 <div className="space-y-3">
                                     {business.implementation_steps.map((step, i) => (
                                         <div key={i} className="flex gap-3">
@@ -181,4 +181,3 @@ const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
 };
 
 export default BusinessDetail;
-

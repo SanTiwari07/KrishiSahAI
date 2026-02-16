@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { api } from '../services/api';
 import { auth } from '../firebase';
 import { Language, ChatMessage } from '../types';
-import { translations } from '../translations';
+import { translations } from '../src/i18n/translations';
 import {
     ArrowLeft,
     Recycle,
@@ -218,11 +218,11 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
                     <Recycle className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-[#043744]" />
                 </div>
                 <h2 className="text-3xl font-bold text-[#1E1E1E] mt-8 mb-4">
-                    {t.analyze}... {cropInput}
+                    {t.analyzingBtn}... {cropInput}
                 </h2>
                 <div className="max-w-md space-y-4 w-full">
 
-                    <p className="text-[#555555] animate-pulse text-sm">Identifying composition & opportunities...</p>
+                    <p className="text-[#555555] animate-pulse text-sm">{t.identifyingOpportunities}</p>
                 </div>
             </div>
         );
@@ -246,7 +246,7 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
                             <MessageCircle className="w-6 h-6 text-[#043744]" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-xl text-[#1E1E1E]">KrishiSahAI Advisor</h3>
+                            <h3 className="font-bold text-xl text-[#1E1E1E]">{t.knowledgeAssistant}</h3>
                             <p className="text-sm text-[#555555] font-medium">{t.chatPlaceholder}</p>
                         </div>
                     </div>
@@ -326,7 +326,7 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
                     <h1 className="text-3xl font-extrabold text-[#1E1E1E] flex items-center gap-2">
                         <Recycle className="w-8 h-8 text-[#043744]" /> {t.wasteValue}
                     </h1>
-                    <p className="text-[#555555]">{t.results} for: <strong>{resultData.crop}</strong></p>
+                    <p className="text-[#555555]">{t.resultsFor}: <strong>{resultData.crop}</strong></p>
                 </div>
             </div>
 
@@ -342,7 +342,7 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
                         </div>
                         <div className="p-6 flex-grow flex flex-col justify-between">
                             <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-                                {opt.subtitle || opt.fullDetails?.basicIdea?.[0] || "Revolutionary way to use waste."}
+                                {opt.subtitle || opt.fullDetails?.basicIdea?.[0] || t.defaultWasteDesc}
                             </p>
 
                             {/* Dual Buttons */}
@@ -351,7 +351,7 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
                                     onClick={() => handleAskChatbot(opt.title)}
                                     className="w-full py-3 bg-[#043744] text-white rounded-xl font-bold text-sm hover:bg-[#000D0F] transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-[#043744]/30"
                                 >
-                                    <MessageCircle className="w-4 h-4" /> Ask Chatbot
+                                    <MessageCircle className="w-4 h-4" /> {t.askChatbotBtn}
                                 </button>
                                 <button
                                     onClick={() => handleKnowMore(opt)}
@@ -369,7 +369,7 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
             {resultData.conclusion && (
                 <div className="bg-gradient-to-r from-[#FAFAF7] to-white rounded-3xl p-8 border border-[#043744]/20 relative overflow-hidden shadow-sm">
                     <h2 className="text-2xl font-bold text-[#043744] mb-4 flex items-center gap-2 relative z-10">
-                        <Sprout className="w-6 h-6" /> Conclusion
+                        <Sprout className="w-6 h-6" /> {t.conclusion}
                     </h2>
                     <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-[#E6E6E6] relative z-10">
                         <h3 className="text-xl font-bold text-[#1E1E1E] mb-3">
@@ -416,7 +416,7 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
                             {(selectedOption.fullDetails?.basicIdea?.length > 0) && (
                                 <div className="bg-green-50 p-6 rounded-2xl border border-green-100">
                                     <h4 className="text-lg font-bold text-[#043744] mb-3 flex items-center gap-2">
-                                        <Info className="w-5 h-5" /> Basic Idea
+                                        <Info className="w-5 h-5" /> {t.basicIdea}
                                     </h4>
                                     <ul className="list-disc list-inside space-y-2 text-[#555555] text-lg">
                                         {selectedOption.fullDetails.basicIdea.map((line: string, idx: number) => (
@@ -454,4 +454,3 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
 };
 
 export default WasteToValue;
-

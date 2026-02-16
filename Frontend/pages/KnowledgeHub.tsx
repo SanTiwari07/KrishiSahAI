@@ -1,6 +1,6 @@
 import React from 'react';
 import { Language } from '../types';
-import { translations } from '../translations';
+import { translations } from '../src/i18n/translations';
 import { BookOpen } from 'lucide-react';
 
 const KnowledgeHub: React.FC<{ lang: Language }> = ({ lang }) => {
@@ -14,11 +14,10 @@ const KnowledgeHub: React.FC<{ lang: Language }> = ({ lang }) => {
                 </div>
                 <h1 className="text-4xl font-extrabold text-[#1E1E1E] mb-4">{t.navKnowledge}</h1>
                 <p className="text-[#555555] font-medium text-lg max-w-xl mx-auto">{t.learn}</p>
-                <div className="mt-12 opacity-50 text-sm font-bold uppercase tracking-widest text-[#043744]">Coming Soon</div>
+                <div className="mt-12 opacity-50 text-sm font-bold uppercase tracking-widest text-[#043744]">{t.comingSoon}</div>
             </div>
         </div>
     );
 };
 
 export default KnowledgeHub;
-

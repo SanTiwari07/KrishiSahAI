@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Chatbot from './pages/Chatbot';
 import BusinessAdvisory from './pages/BusinessAdvisory';
@@ -12,13 +11,14 @@ import Roadmap from './pages/Roadmap';
 import NewsPage from './pages/NewsPage';
 import EditProfile from './pages/EditProfile';
 import { Language, UserProfile } from './types';
-import { translations } from './translations';
 import { auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from './firebase';
-import { onSnapshot, doc, setDoc, getDoc } from 'firebase/firestore';
-import { RefreshCw, Sun, Moon, User, LogOut, Settings } from 'lucide-react';
+import { onSnapshot, doc, setDoc } from 'firebase/firestore';
+import { RefreshCw, LogOut, Settings } from 'lucide-react';
 import { api } from './services/api';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
 import logo from './src/assets/logo.png';
+import WeatherModal from './components/WeatherModal';
 
 const getBestLocation = (u: UserProfile | null) => {
   if (!u) return "";
@@ -32,8 +32,6 @@ const getDisplayLocation = (u: UserProfile | null) => {
 };
 
 const Header: React.FC<{
-  lang: Language;
-  setLang: (l: Language) => void;
   toggleNotifications: () => void;
   toggleWeather: () => void;
   user: UserProfile | null;
@@ -41,9 +39,9 @@ const Header: React.FC<{
   weatherData?: any;
   weatherLoading?: boolean;
   refreshWeather: () => void;
-}> = ({ lang, setLang, toggleNotifications, toggleWeather, user, logout, weatherData, weatherLoading, refreshWeather }) => {
+}> = ({ toggleNotifications, toggleWeather, user, logout, weatherData, weatherLoading, refreshWeather }) => {
   const location = useLocation();
-  const t = translations[lang];
+  const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
 
   const navItems = [
@@ -65,7 +63,7 @@ const Header: React.FC<{
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <img src={logo} alt="KrishiSahAI Logo" className="h-9 w-auto object-contain translate-y-[3px]" />
-          <span className="text-xl font-bold tracking-tight text-[#1E1E1E]">KrishiSahAI</span>
+          <span className="text-xl font-bold tracking-tight text-[#1E1E1E]">{t.brandName}</span>
         </Link>
 
         {user && (
@@ -107,15 +105,13 @@ const Header: React.FC<{
             {[{ code: 'EN', label: 'ENG' }, { code: 'HI', label: 'हिंदी' }, { code: 'MR', label: 'मराठी' }].map((l) => (
               <button
                 key={l.code}
-                onClick={() => setLang(l.code as Language)}
-                className={`px-3 py-1.5 text-[12px] font-bold rounded-lg transition-all ${lang === l.code ? 'bg-[#043744] text-white shadow-md' : 'text-stone-400 hover:text-[#043744]'} ${l.code !== 'EN' ? 'devanagari' : ''}`}
+                onClick={() => setLanguage(l.code as Language)}
+                className={`px-3 py-1.5 text-[12px] font-bold rounded-lg transition-all ${language === l.code ? 'bg-[#043744] text-white shadow-md' : 'text-stone-400 hover:text-[#043744]'} ${l.code !== 'EN' ? 'devanagari' : ''}`}
               >
                 {l.label}
               </button>
             ))}
           </div>
-
-
 
           {user && (
             <div className="relative group">
@@ -150,9 +146,8 @@ const Header: React.FC<{
   );
 };
 
-
-const LoginFlow: React.FC<{ onLogin: (e: string, p: string) => void; onSwitch: () => void; lang: Language }> = ({ onLogin, onSwitch, lang }) => {
-  const t = translations[lang];
+const LoginFlow: React.FC<{ onLogin: (e: string, p: string) => void; onSwitch: () => void }> = ({ onLogin, onSwitch }) => {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -213,7 +208,7 @@ const LoginFlow: React.FC<{ onLogin: (e: string, p: string) => void; onSwitch: (
             disabled={loading}
             className="w-full py-5 bg-[#043744] text-white rounded-3xl font-extrabold text-xl hover:bg-[#000D0F] transition-all shadow-lg hover:scale-[1.02] disabled:opacity-50"
           >
-            {loading ? "Logging in..." : t.login}
+            {loading ? t.loggingIn : t.login}
           </button>
 
           <div className="text-center mt-8">
@@ -227,8 +222,8 @@ const LoginFlow: React.FC<{ onLogin: (e: string, p: string) => void; onSwitch: (
   );
 };
 
-const SignupFlow: React.FC<{ onSignup: (p: UserProfile, pass: string) => void; onSwitch: () => void; lang: Language }> = ({ onSignup, onSwitch, lang }) => {
-  const t = translations[lang];
+const SignupFlow: React.FC<{ onSignup: (p: UserProfile, pass: string) => void; onSwitch: () => void }> = ({ onSignup, onSwitch }) => {
+  const { t } = useLanguage();
   const [step, setStep] = useState(1);
   const [password, setPassword] = useState('');
   const [formData, setFormData] = useState<UserProfile>({
@@ -281,7 +276,7 @@ const SignupFlow: React.FC<{ onSignup: (p: UserProfile, pass: string) => void; o
             <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
               <div className="text-center mb-6">
                 <h2 className="text-xl font-bold text-[#1E1E1E]">{t.personalInfo}</h2>
-                <p className="text-xs text-[#555555] font-bold uppercase tracking-widest mt-1">Step 1 of 3</p>
+                <p className="text-xs text-[#555555] font-bold uppercase tracking-widest mt-1">{t.step} 1 / 3</p>
               </div>
               <div className="space-y-4">
                 <div>
@@ -329,13 +324,13 @@ const SignupFlow: React.FC<{ onSignup: (p: UserProfile, pass: string) => void; o
             <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
               <div className="text-center mb-6">
                 <h2 className="text-xl font-bold text-[#1E1E1E]">{t.locationDetails}</h2>
-                <p className="text-xs text-[#555555] font-bold uppercase tracking-widest mt-1">Step 2 of 3</p>
+                <p className="text-xs text-[#555555] font-bold uppercase tracking-widest mt-1">{t.step} 2 / 3</p>
               </div>
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.state} *</label>
                   <select className="w-full p-4 bg-[#FAFAF7] border border-[#E6E6E6] rounded-2xl focus:outline-none focus:border-[#1F5F4A]" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })}>
-                    <option value="">Select state</option>
+                    <option value="">{t.selectState}</option>
                     <option>Maharashtra</option><option>Karnataka</option><option>Punjab</option><option>Uttar Pradesh</option>
                   </select>
                 </div>
@@ -344,7 +339,6 @@ const SignupFlow: React.FC<{ onSignup: (p: UserProfile, pass: string) => void; o
                   <input required placeholder="Enter district name" className="w-full p-4 bg-[#FAFAF7] border border-[#E6E6E6] rounded-2xl focus:outline-none focus:border-[#1F5F4A]" value={formData.district} onChange={e => setFormData({ ...formData, district: e.target.value })} />
                 </div>
                 <div>
-
                   <label className="block text-xs font-bold uppercase tracking-widest text-[#555555] mb-2 ml-2">{t.village} *</label>
                   <input required placeholder="Enter village/town name" className="w-full p-4 bg-[#FAFAF7] border border-[#E6E6E6] rounded-2xl focus:outline-none focus:border-[#1F5F4A]" value={formData.village} onChange={e => setFormData({ ...formData, village: e.target.value })} />
                 </div >
@@ -363,7 +357,7 @@ const SignupFlow: React.FC<{ onSignup: (p: UserProfile, pass: string) => void; o
               <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-bold text-[#1E1E1E]">{t.farmInfo}</h2>
-                  <p className="text-xs text-[#555555] font-bold uppercase tracking-widest mt-1">Step 3 of 3</p>
+                  <p className="text-xs text-[#555555] font-bold uppercase tracking-widest mt-1">{t.step} 3 / 3</p>
                 </div>
                 <div className="space-y-4">
                   <div>
@@ -406,10 +400,8 @@ const SignupFlow: React.FC<{ onSignup: (p: UserProfile, pass: string) => void; o
   );
 };
 
-import WeatherModal from './components/WeatherModal';
-
-const App: React.FC = () => {
-  const [lang, setLang] = useState<Language>('EN');
+const AppContent: React.FC = () => {
+  const { language: lang, t } = useLanguage();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [authView, setAuthView] = useState<'login' | 'signup'>('login');
   const [loading, setLoading] = useState(true);
@@ -493,18 +485,16 @@ const App: React.FC = () => {
   };
 
   return (
-    <ThemeProvider>
+    <>
       {loading ? (
-        <div className="min-h-screen flex items-center justify-center text-[#1F5F4A] bg-[#FAFAF7]">Loading...</div>
+        <div className="min-h-screen flex items-center justify-center text-[#1F5F4A] bg-[#FAFAF7]">{t.loading}</div>
       ) : !user ? (
-        authView === 'login' ? <LoginFlow onLogin={handleLogin} onSwitch={() => setAuthView('signup')} lang={lang} /> : <SignupFlow onSignup={handleSignup} onSwitch={() => setAuthView('login')} lang={lang} />
+        authView === 'login' ? <LoginFlow onLogin={handleLogin} onSwitch={() => setAuthView('signup')} /> : <SignupFlow onSignup={handleSignup} onSwitch={() => setAuthView('login')} />
       ) : (
         <Router>
           <div className="min-h-screen bg-[#FDFDFC]">
             {/* Updated Header with refresh and loading props */}
             <Header
-              lang={lang}
-              setLang={setLang}
               toggleNotifications={() => { }}
               toggleWeather={handleToggleWeather}
               user={user}
@@ -537,9 +527,18 @@ const App: React.FC = () => {
           </div>
         </Router>
       )}
+    </>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
     </ThemeProvider>
   );
 };
 
 export default App;
-

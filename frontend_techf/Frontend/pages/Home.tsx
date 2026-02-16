@@ -1,15 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Language } from '../types';
-import { translations } from '../src/i18n/translations';
+import React from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { Link } from 'react-router-dom';
 import { Briefcase, Sprout, Recycle, ArrowRight, BookOpen, ChevronDown } from 'lucide-react';
 import { api } from '../services/api';
-import { auth } from '../firebase';
-import { getUserProfile } from '../services/firebase_db';
 
-const Home: React.FC<{ lang: Language }> = ({ lang }) => {
-    // Fallback to EN if language not found, though App passes valid lang
-    const t = translations[lang] || translations['EN'];
+const Home: React.FC = () => {
+    const { t } = useLanguage();
 
     const scrollToSection = (id: string) => {
         const element = document.getElementById(id);
