@@ -17,6 +17,7 @@ from reportlab.pdfgen import canvas
 import firebase_admin
 from firebase_admin import credentials, firestore
 import re
+import xml.sax.saxutils as saxutils
 
 # Initialize Firebase Admin if not already initialized
 if not firebase_admin._apps:
@@ -73,6 +74,9 @@ def format_markdown_to_pdf_content(text: str) -> List[str]:
             formatted_content.append(('spacer', ''))
             continue
         
+        # Escape XML special characters (&, <, >) to prevent Paragraph from crashing
+        line = saxutils.escape(line)
+        
         # Headers
         if line.startswith('### '):
             formatted_content.append(('h3', line[4:]))
@@ -80,7 +84,7 @@ def format_markdown_to_pdf_content(text: str) -> List[str]:
             formatted_content.append(('h2', line[3:]))
         elif line.startswith('# '):
             formatted_content.append(('h1', line[2:]))
-        # Bold text
+        # Bold text - handle cases where ** might be escaped or not
         elif '**' in line:
             # Convert **text** to <b>text</b>
             formatted_line = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', line)

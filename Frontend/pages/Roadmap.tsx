@@ -1,12 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-<<<<<<< HEAD
-import { api } from '../services/api';
-import { ArrowLeft, Download, CheckCircle, AlertTriangle, TrendingUp, Users, Calendar, Shield, Loader2, Share2 } from 'lucide-react';
-=======
 import { api } from '../src/services/api';
-import { ArrowLeft, Download, CheckCircle, AlertTriangle, TrendingUp, Users, Calendar, Shield, Loader2 } from 'lucide-react';
->>>>>>> 4290ab36ead05baf34b51964aa899bc1042c0f33
+import { ArrowLeft, Download, CheckCircle, AlertTriangle, TrendingUp, Users, Calendar, Shield, Loader2, Share2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Language } from '../types';
@@ -14,37 +9,24 @@ import { translations } from '../src/i18n/translations';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-interface Quarter {
-    period: string;
-    actions: string[];
-    milestones: string[];
-    financial_target: string;
-}
-
-interface Phase {
-    phase_name: string;
-    description: string;
-    timeframe: string;
+interface YearPlan {
+    year: string;
+    goal: string;
     focus: string;
-    quarters: Quarter[];
-    cumulative_investment?: string;
-    expected_revenue?: string;
-    break_even?: string;
-    profit_margin?: string;
-    cumulative_wealth?: string;
-    passive_income?: string;
-    succession_readiness?: string;
+    actions: string[];
+    profit: string;
 }
 
 interface RoadmapData {
     title: string;
     overview: string;
-    labor_aging_projection?: string;
-    phases: Phase[];
-    automation_recommendations: (string | { recommendation: string } | any)[];
-    financial_resilience_strategy: string;
-    risk_mitigation?: string;
-    final_verdict: string;
+    years?: YearPlan[];
+    phases?: any[]; // Backward compatibility
+    labor_analysis: string;
+    sustainability_plan: string;
+    resilience_strategy: string;
+    verdict: string;
+    disclaimer?: string;
 }
 
 const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
@@ -92,42 +74,46 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
     const handleDownloadPDF = async () => {
         if (!contentRef.current || !roadmap) return;
 
-        const element = contentRef.current;
-        const canvas = await html2canvas(element, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            windowHeight: element.scrollHeight,
-            windowWidth: element.scrollWidth
-        });
-        const imgData = canvas.toDataURL('image/png');
+        setLoading(true); // Show loader during PDF generation
+        try {
+            const element = contentRef.current;
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            });
+            const imgData = canvas.toDataURL('image/png');
 
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgWidth = canvas.width;
-        const imgHeight = canvas.height;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+            const ratio = pdfWidth / imgWidth;
+            const scaledHeight = imgHeight * ratio;
 
-        // Calculate scaling to fit width
-        const ratio = pdfWidth / imgWidth;
-        const scaledHeight = imgHeight * ratio;
+            let heightLeft = scaledHeight;
+            let position = 0;
 
-        let heightLeft = scaledHeight;
-        let position = 0;
-
-        // Add first page
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight);
-        heightLeft -= pdfHeight;
-
-        // Add additional pages if content is longer than one page
-        while (heightLeft > 0) {
-            position = heightLeft - scaledHeight;
-            pdf.addPage();
             pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight);
             heightLeft -= pdfHeight;
-        }
 
-        pdf.save(`KrishiSahAI_10_Year_Strategy_${decodedName.replace(/\s+/g, '_')}.pdf`);
+            while (heightLeft > 0) {
+                position = heightLeft - scaledHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight);
+                heightLeft -= pdfHeight;
+            }
+
+            pdf.save(`KrishiSahAI_Planner_${decodedName.replace(/\s+/g, '_')}.pdf`);
+        } catch (err) {
+            console.error("PDF Export error:", err);
+            alert("Failed to export PDF. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (loading) {
@@ -170,11 +156,11 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                         <ArrowLeft className="w-5 h-5" /> {t.backToAdvisory}
                     </button>
                     <div className="flex gap-4">
-                        <button className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-deep-green text-deep-green font-bold hover:bg-deep-green hover:text-white transition-all shadow-sm uppercase tracking-wider">
+                        <button 
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-deep-green text-deep-green font-bold hover:bg-deep-green hover:text-white transition-all shadow-sm uppercase tracking-wider"
+                        >
                             <Download className="w-5 h-5" /> {t.exportPlan}
-                        </button>
-                        <button className="flex items-center gap-2 px-6 py-3 bg-deep-green text-white font-bold hover:bg-deep-green/90 transition-all shadow-md uppercase tracking-wider">
-                            <Share2 className="w-5 h-5" /> {t.sharePlan}
                         </button>
                     </div>
                 </div>
@@ -203,226 +189,180 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                     </div>
 
                     {/* Verdict Banner */}
-                    <div className="mb-10 bg-[#E8F5E9] border-l-4 border-[#1B5E20] p-6 rounded-r-xl">
-                        <h3 className="text-sm font-bold text-[#1B5E20] uppercase tracking-widest mb-2">{t.strategicVerdict}</h3>
-                        <p className="text-xl font-bold text-[#1E1E1E]">{roadmap.final_verdict}</p>
+                    <div className="mb-10 bg-[#E8F5E9] border-l-4 border-[#1B5E20] p-8 rounded-r-xl">
+                        <h3 className="text-sm font-bold text-[#1B5E20] uppercase tracking-widest mb-3">5. {t.strategicVerdict}</h3>
+                        <div className="text-xl font-bold text-[#1E1E1E] prose prose-green max-w-none">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{roadmap.verdict}</ReactMarkdown>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                    <div className="space-y-8">
                         {/* Labor Projection */}
-                        {roadmap.labor_aging_projection && (
-                            <div className="bg-white border border-[#E6E6E6] rounded-2xl p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Users className="w-6 h-6 text-[#3B82F6]" />
-                                    <h3 className="text-lg font-bold text-[#1E1E1E]">{t.laborAging}</h3>
-                                </div>
-                                <p className="text-[#555555] leading-relaxed text-sm">{roadmap.labor_aging_projection}</p>
+                        <div className="bg-white border-2 border-[#E6E6E6] rounded-2xl p-8 hover:shadow-md transition-shadow">
+                            <div className="flex items-center gap-3 mb-6">
+                                <Users className="w-8 h-8 text-[#1B5E20]" />
+                                <h3 className="text-xl font-extrabold text-[#1E1E1E] uppercase tracking-tight">2. {t.laborAging}</h3>
                             </div>
-                        )}
-                    </div>
-
-                    {/* Financial Resilience */}
-                    <div className="bg-white border border-[#E6E6E6] rounded-2xl p-6 hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-3 mb-4">
-                            <Shield className="w-6 h-6 text-[#EAB308]" />
-                            <h3 className="text-lg font-bold text-[#1E1E1E]">{t.financialResilience}</h3>
-                        </div>
-                        <p className="text-[#555555] leading-relaxed text-sm">{roadmap.financial_resilience_strategy}</p>
-                    </div>
-
-                    {/* Risk Mitigation (if available) */}
-                    {roadmap.risk_mitigation && (
-                        <div className="bg-white border border-[#E6E6E6] rounded-2xl p-6 hover:shadow-md transition-shadow">
-                            <div className="flex items-center gap-3 mb-4">
-                                <AlertTriangle className="w-6 h-6 text-[#F59E0B]" />
-                                <h3 className="text-lg font-bold text-[#1E1E1E]">{t.riskMitigation}</h3>
+                            <div className="text-[#555555] leading-relaxed font-medium prose prose-green max-w-none">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{roadmap.labor_analysis}</ReactMarkdown>
                             </div>
-                            <p className="text-[#555555] leading-relaxed text-sm">{roadmap.risk_mitigation}</p>
                         </div>
-                    )}
+
+                        {/* Sustainability */}
+                        <div className="bg-white border-2 border-[#E6E6E6] rounded-2xl p-8 hover:shadow-md transition-shadow">
+                            <div className="flex items-center gap-3 mb-6">
+                                <Shield className="w-8 h-8 text-[#1B5E20]" />
+                                <h3 className="text-xl font-extrabold text-[#1E1E1E] uppercase tracking-tight">3. {t.succession}</h3>
+                            </div>
+                            <div className="text-[#555555] leading-relaxed font-medium prose prose-green max-w-none">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{roadmap.sustainability_plan}</ReactMarkdown>
+                            </div>
+                        </div>
+
+                        {/* Resilience */}
+                        <div className="bg-white border-2 border-[#E6E6E6] rounded-2xl p-8 hover:shadow-md transition-shadow">
+                            <div className="flex items-center gap-3 mb-6">
+                                <AlertTriangle className="w-8 h-8 text-[#1B5E20]" />
+                                <h3 className="text-xl font-extrabold text-[#1E1E1E] uppercase tracking-tight">4. {t.financialResilience}</h3>
+                            </div>
+                            <div className="text-[#555555] leading-relaxed font-medium prose prose-green max-w-none">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{roadmap.resilience_strategy}</ReactMarkdown>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {/* 3-Phase Timeline with Quarterly Breakdown */}
-                <div className="mb-12">
+                {/* 10-Year Plan Section */}
+                <div className="mt-12 mb-12">
                     <div className="flex items-center gap-3 mb-8">
-                        <Calendar className="w-6 h-6 text-[#1B5E20]" />
-                        <h2 className="text-2xl font-bold text-[#1E1E1E]">{t.strategicTimeline}</h2>
+                        <Calendar className="w-8 h-8 text-[#1B5E20]" />
+                        <h2 className="text-3xl font-extrabold text-[#1E1E1E] uppercase tracking-tight">1. {t.strategicTimeline}</h2>
                     </div>
 
-                    <div className="space-y-10">
-                        {roadmap.phases.map((phase, phaseIndex) => (
-                            <div key={phaseIndex} className="bg-white border-2 border-[#E6E6E6] p-8 shadow-sm relative overflow-hidden group hover:border-deep-green transition-colors">
-                                <div className="absolute top-0 left-0 w-2 h-full bg-deep-green"></div>
-                                <div className="flex items-start gap-6">
-                                    <div className="flex-shrink-0">
-                                        <div className="flex items-center justify-center w-12 h-12 bg-deep-green text-white shadow-md font-bold text-xl">
-                                            {phaseIndex + 1}
-                                        </div>
-                                    </div>
-                                    <div className="flex-grow">
-                                        <h3 className="text-2xl font-extrabold text-deep-green mb-2 uppercase tracking-tight">
-                                            {phase.phase_name}
-                                        </h3>
-                                        <p className="text-text-secondary leading-relaxed mb-6 font-medium">
-                                            {phase.description}
-                                        </p>
-                                    </div>
-                                    {/* Profit Margin Card - Detailed & Centered */}
-                                    <div className="mt-6 bg-[#E8F5E9] border border-[#E6E6E6] rounded-2xl p-6 flex flex-col items-center text-center shadow-sm">
-                                        <div className="p-3 bg-white rounded-xl shadow-sm mb-3">
-                                            <TrendingUp className="w-6 h-6 text-[#1F5F4A]" />
-                                        </div>
-                                        <h4 className="text-sm font-bold text-[#555555] uppercase tracking-widest mb-2">{t.estimatedProfitMargin}</h4>
-                                        <div className="text-3xl font-extrabold text-[#1F5F4A]">
-                                            {phase.profit_margin && phase.profit_margin !== "N/A" ? phase.profit_margin : t.analyzingBtn}
-                                        </div>
-                                        <p className="text-xs text-[#555555] mt-2 max-w-xs mx-auto">
-                                            {t.profitMarginDesc} {roadmap.title}.
-                                        </p>
-                                    </div>
-
-                                    <div className="text-base font-semibold text-[#1B5E20] mt-6 prose prose-sm max-w-none">
-                                        <span className="font-bold mr-2 text-lg">{t.focus}:</span>
-                                        <div className="mt-2 text-[#555555] leading-relaxed">
-                                            <ReactMarkdown
-                                                remarkPlugins={[remarkGfm]}
-                                                components={{
-                                                    strong: ({ node, ...props }) => <span className="font-extrabold text-[#1B5E20]" {...props} />,
-                                                    p: ({ node, ...props }) => <div className="mb-2" {...props} />
-                                                }}
-                                            >
-                                                {phase.focus}
-                                            </ReactMarkdown>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Quarterly Breakdown - Only if quarters exist */}
-                                {phase.quarters && phase.quarters.length > 0 ? (
-                                    <div className="space-y-6 mb-6">
-                                        {phase.quarters.map((quarter, qIndex) => (
-                                            <div key={qIndex} className="bg-white rounded-2xl border border-[#E6E6E6] p-6 shadow-sm hover:shadow-md transition-shadow">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <h4 className="text-lg font-bold text-[#1E1E1E]">{quarter.period}</h4>
-                                                    <span className="text-xs font-bold text-white bg-[#1B5E20] px-3 py-1 rounded-full">
-                                                        {quarter.financial_target}
-                                                    </span>
+                    <div className="space-y-8">
+                        {roadmap.years ? (
+                            roadmap.years.map((year, idx) => (
+                                <div key={idx} className="bg-white border-2 border-[#E6E6E6] p-8 shadow-sm relative overflow-hidden group hover:border-deep-green transition-colors">
+                                    <div className="absolute top-0 left-0 w-2 h-full bg-deep-green"></div>
+                                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                                        <div className="flex-grow">
+                                            <h3 className="text-2xl font-extrabold text-deep-green mb-4 uppercase tracking-tighter">
+                                                {year.year}: {year.goal}
+                                            </h3>
+                                            
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <h4 className="text-xs font-bold text-[#1B5E20] uppercase tracking-widest mb-1">Strategic Focus</h4>
+                                                    <p className="text-[#333] font-bold text-lg">{year.focus}</p>
                                                 </div>
 
-                                                {/* Actions */}
-                                                <div className="mb-4">
-                                                    <h5 className="text-sm font-bold text-[#555555] uppercase tracking-wide mb-2">{t.actions}</h5>
-                                                    <ul className="space-y-2">
-                                                        {quarter.actions.map((action, aIndex) => (
-                                                            <li key={aIndex} className="flex items-start gap-2 text-sm text-[#555555]">
-                                                                <CheckCircle className="w-4 h-4 text-[#1B5E20] mt-0.5 flex-shrink-0" />
-                                                                <span>{action}</span>
+                                                <div>
+                                                    <h4 className="text-xs font-bold text-[#1B5E20] uppercase tracking-widest mb-2">Key Actions</h4>
+                                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                        {year.actions?.map((action, aIdx) => (
+                                                            <li key={aIdx} className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                                                <CheckCircle className="w-5 h-5 text-deep-green flex-shrink-0" />
+                                                                <span className="text-sm font-bold text-[#555]">{action}</span>
                                                             </li>
                                                         ))}
                                                     </ul>
                                                 </div>
-
-                                                {/* Milestones */}
-                                                <div>
-                                                    <h5 className="text-sm font-bold text-[#555555] uppercase tracking-wide mb-2">{t.milestones}</h5>
-                                                    <div className="space-y-2">
-                                                        {quarter.milestones.map((milestone, mIndex) => (
-                                                            <div key={mIndex} className="flex items-start gap-2 text-sm text-[#1E1E1E] bg-[#E6F4EA] px-3 py-2 rounded-lg">
-                                                                <TrendingUp className="w-4 h-4 text-[#1B5E20] mt-0.5 flex-shrink-0" />
-                                                                <span className="font-medium">{milestone}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="mb-6 p-6 bg-amber-50 border border-amber-200 rounded-xl">
-                                        <p className="text-sm text-amber-800">
-                                            {t.roadmapSimplified}
-                                        </p>
-                                    </div>
-                                )}
+                                        </div>
 
-                                {/* Phase Summary Metrics */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-[#F8FAFC] rounded-xl border border-slate-200">
-                                    {phase.cumulative_investment && (
-                                        <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.investment}</p>
-                                            <p className="text-sm font-bold text-[#1E1E1E]">{phase.cumulative_investment}</p>
+                                        {/* Profit Badge */}
+                                        <div className="flex-shrink-0 md:text-right">
+                                            <div className="inline-block bg-[#E8F5E9] border-2 border-deep-green/20 p-4 rounded-2xl">
+                                                <p className="text-[10px] font-bold text-deep-green uppercase tracking-[0.2em] mb-1">Expected Profit</p>
+                                                <p className="text-2xl font-black text-deep-green">{year.profit}</p>
+                                            </div>
                                         </div>
-                                    )}
-                                    {phase.expected_revenue && (
-                                        <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.revenue}</p>
-                                            <p className="text-sm font-bold text-[#1E1E1E]">{phase.expected_revenue}</p>
-                                        </div>
-                                    )}
-                                    {phase.break_even && (
-                                        <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.breakEven}</p>
-                                            <p className="text-sm font-bold text-[#1E1E1E]">{phase.break_even}</p>
-                                        </div>
-                                    )}
-                                    {phase.profit_margin && (
-                                        <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.profitLabel}</p>
-                                            <p className="text-sm font-bold text-[#1E1E1E]">{phase.profit_margin}</p>
-                                        </div>
-                                    )}
-                                    {phase.cumulative_wealth && (
-                                        <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.wealth}</p>
-                                            <p className="text-sm font-bold text-[#1E1E1E]">{phase.cumulative_wealth}</p>
-                                        </div>
-                                    )}
-                                    {phase.passive_income && (
-                                        <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.passiveIncome}</p>
-                                            <p className="text-sm font-bold text-[#1E1E1E]">{phase.passive_income}</p>
-                                        </div>
-                                    )}
-                                    {phase.succession_readiness && (
-                                        <div className="text-center">
-                                            <p className="text-xs text-[#555555] uppercase tracking-wide mb-1">{t.succession}</p>
-                                            <p className="text-sm font-bold text-[#1E1E1E]">{phase.succession_readiness}</p>
-                                        </div>
-                                    )}
+                                    </div>
+                                </div>
+                            ))
+                        ) : roadmap.phases ? (
+                            <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl">
+                                <p className="text-amber-800 font-bold mb-2">Legacy Roadmap Format Detected</p>
+                                <p className="text-amber-700 text-sm">This roadmap was generated using an older version of the planner. Please re-generate your roadmap for the full 10-year Year-wise experience.</p>
+                                <div className="mt-4">
+                                    <button 
+                                        onClick={() => navigate('/advisory')}
+                                        className="px-4 py-2 bg-amber-600 text-white rounded-lg font-bold text-sm hover:bg-amber-700 transition-colors"
+                                    >
+                                        Back to Advisory
+                                    </button>
                                 </div>
                             </div>
-                        ))}
+                        ) : (
+                            <div className="text-center py-10 opacity-50">
+                                <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                                <p>No yearly plan data found.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
+            </div>
 
-                {/* Automation Recommendations */}
-                {roadmap.automation_recommendations && roadmap.automation_recommendations.length > 0 && (
-                    <div className="bg-[#F8FAFC] rounded-2xl p-8 border border-slate-100">
-                        <h3 className="text-lg font-bold text-[#1E1E1E] mb-6">{t.automation}</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {roadmap.automation_recommendations.map((rec, i) => {
-                                // Handle both string and object formats
-                                const recText = typeof rec === 'string' ? rec : ((rec as any)?.recommendation || JSON.stringify(rec));
-                                return (
-                                    <div key={i} className="flex items-start gap-3 bg-white p-4 rounded-xl border border-slate-200">
-                                        <div className="p-2 bg-[#E8F5E9] rounded-lg text-[#1B5E20]">
-                                            <TrendingUp className="w-4 h-4" />
-                                        </div>
-                                        <p className="text-sm font-medium text-[#555555]">{recText}</p>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
+            {/* Floating Interaction Button - Fixed at bottom center */}
+            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 flex gap-4 no-print">
+                <button
+                    onClick={() => {
+                        const profileSummary = `Budget: ${roadmap.years[0]?.profit || 'N/A'}, Experience: High, Market Access: Village only, Risk Preference: Safe income`;
+                        const comprehensivePrompt = `I want a comprehensive 10-Year Sustainability & Profit Planner for starting a ${decodedName} business.
 
+Please analyze my profile and generate a high-accuracy report with these specific sections:
+
+1. 10-Year Growth & Profit Planner
+Provide a Year-wise (Year 1 to Year 10) breakdown. Format each year as a clear block with:
+Year X: [Main Goal]
+Strategic Focus: What is the primary objective?
+Key Actions: 2-3 specific, actionable steps.
+Expected Profit: Realistic annual profit projection in ₹.
+
+2. Labor & Aging Analysis
+How labor requirements will shift as I age. Include automation triggers for years 4, 7, and 10.
+
+3. Sustainability & Succession
+A plan for multi-generational wealth transfer and soil/resource health.
+
+4. Financial Resilience
+How to handle 1 "bad year" (drought/pest) during Phase 1 vs Phase 3.
+
+5. Final Verdict
+Feasibility score and long-term ROI.
+
+DISCLAIMER: This roadmap is an AI-generated simulation... [rest of disclaimer]
+
+Farmer Details:
+${profileSummary}
+
+Format: Please use Markdown with headers and bold text for a professional "Planner" look. STRICTLY NO EMOJIS. Ensure the Disclaimer is clearly visible at the end.`;
+
+                        navigate('/chat', { 
+                            state: { 
+                                initialMessage: comprehensivePrompt,
+                                isRoadmapPlanner: true,
+                                businessName: decodedName,
+                                previousState: { roadmap }
+                            } 
+                        });
+                    }}
+                    className="flex items-center gap-3 px-10 py-5 bg-[#1B5E20] text-white font-black rounded-full shadow-2xl hover:bg-[#000D0F] hover:scale-105 active:scale-95 transition-all uppercase tracking-[0.2em] border-4 border-white/20 text-sm"
+                >
+                    <Users className="w-6 h-6" /> {t.askChatbotBtn}
+                </button>
+            </div>
+
+            {/* Padding for fixed button */}
+            <div className="h-40"></div>
+
+            <div className="max-w-5xl mx-auto">
                 {/* Disclaimer */}
-                <div className="mt-12 p-6 bg-gray-50 border border-gray-200 rounded-xl text-center">
-                    <p className="text-xs text-gray-500 leading-relaxed italic">
-                        <strong>{t.disclaimer}:</strong> {t.disclaimerText}
+                <div className="mt-12 p-8 bg-gray-100 border-2 border-dashed border-gray-300 rounded-[32px] text-center">
+                    <p className="text-xs text-gray-600 leading-relaxed uppercase tracking-widest font-bold">
+                        {t.disclaimer}: {roadmap.disclaimer || t.disclaimerText}
                     </p>
                 </div>
-
             </div>
         </div>
     );

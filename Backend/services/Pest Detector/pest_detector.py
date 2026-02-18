@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import numpy as np
 from PIL import Image
-import torch
+from ultralytics import YOLO
 
 # Global model instance
 _model = None
@@ -54,11 +54,8 @@ def init_model():
         
         print(f"Loading YOLO pest detection model from {model_path}")
         
-        # Force CPU execution to avoid GPU issues
-        _model = torch.hub.load('ultralytics/yolov5', 'custom', 
-                                path=str(model_path), 
-                                force_reload=False,
-                                device='cpu')
+        # Use ultralytics YOLO for more robust loading
+        _model = YOLO(str(model_path))
         
         # Load class names
         if not _classes:
@@ -94,12 +91,10 @@ def predict(image_path):
         img = Image.open(image_path)
         
         # Run inference
-        results = _model(img)
+        results = _model(img, verbose=False)[0]
         
         # Get predictions
-        predictions = results.pandas().xyxy[0]  # Pandas DataFrame
-        
-        if len(predictions) == 0:
+        if not results or len(results.boxes) == 0:
             return {
                 'pest_name': 'No Pest Detected',
                 'confidence': 0.0,
@@ -108,9 +103,9 @@ def predict(image_path):
             }
         
         # Get the detection with highest confidence
-        best_detection = predictions.iloc[0]
-        class_id = int(best_detection['class'])
-        confidence = float(best_detection['confidence'])
+        best_detection = results.boxes[0]
+        class_id = int(best_detection.cls[0])
+        confidence = float(best_detection.conf[0])
         
         # Map class ID to pest name
         if 0 <= class_id < len(_classes):

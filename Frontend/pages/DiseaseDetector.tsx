@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Language } from '../types';
 import { translations } from '../src/i18n/translations';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../services/api';
+import { api } from '../src/services/api';
 import { Sprout, Upload, MessageCircle, ArrowLeft } from 'lucide-react';
 
 const DiseaseDetector: React.FC<{ lang: Language }> = ({ lang }) => {

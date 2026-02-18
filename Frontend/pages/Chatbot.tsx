@@ -17,20 +17,20 @@ import {
     Square
 } from 'lucide-react';
 import { translations } from '../src/i18n/translations';
-import { api } from '../services/api';
-import { auth } from '../firebase';
-import { getUserProfile } from '../services/firebase_db';
-import { chatService, ChatSession, Message } from '../services/chatService';
-=======
-import { translations } from '../translations';
 import { api } from '../src/services/api';
-import { auth } from '../src/firebase';
+import { auth, onAuthStateChanged } from '../firebase';
+
+
+
+
+
+
 import { getUserProfile } from '../src/services/firebase_db';
 import { chatService, ChatSession, Message } from '../src/services/chatService';
 import { ChatLayout } from '../components/ChatLayout';
 import { ChatSidebar } from '../components/ChatSidebar';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
-import { onAuthStateChanged } from 'firebase/auth';
+
 
 const Chatbot: React.FC = () => {
     const { t, language: lang } = useLanguage();
@@ -62,6 +62,7 @@ const Chatbot: React.FC = () => {
 
     // Backend Session State
     const [backendSessionId, setBackendSessionId] = useState<string | null>(null);
+    const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -70,6 +71,7 @@ const Chatbot: React.FC = () => {
     // Voice State
     const [isRecording, setIsRecording] = useState(false);
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+    const [isLoadingTTS, setIsLoadingTTS] = useState<number | null>(null); // message index loading TTS
     const [playingMessageId, setPlayingMessageId] = useState<number | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -90,6 +92,7 @@ const Chatbot: React.FC = () => {
             audioRef.current.pause();
         }
 
+        setIsLoadingTTS(messageId);
         try {
             const token = await user?.getIdToken();
             const response = await fetch('http://localhost:5000/api/voice/tts', {
@@ -115,6 +118,8 @@ const Chatbot: React.FC = () => {
             }
         } catch (error) {
             console.error("TTS Error:", error);
+        } finally {
+            setIsLoadingTTS(null);
         }
     };
 
@@ -442,6 +447,7 @@ const Chatbot: React.FC = () => {
                                     await chatService.updateChatBackendSession(user.uid, currentChatId, currentBackendId);
                                 }
 
+                                
                                 if (currentBackendId) {
                                     console.log("[Chatbot] Session reinitialized, retrying stream...");
                                     // Retry the stream
@@ -476,6 +482,33 @@ const Chatbot: React.FC = () => {
                     content: responseText,
                     createdAt: new Date()
                 });
+
+                // Generate smart title if this was the first exchange of a NEW chat
+                if (!activeChatId) {
+                    try {
+                        setIsGeneratingTitle(true);
+                        const token = await user?.getIdToken();
+                        const titleRes = await fetch('http://localhost:5000/api/chat/generate-title', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ session_id: currentBackendId })
+                        });
+                        const titleData = await titleRes.json();
+                        if (titleData.success) {
+                            await chatService.updateChatTitle(user.uid, currentChatId, titleData.title);
+                            setChats(prev => prev.map(c => 
+                                c.id === currentChatId ? { ...c, title: titleData.title } : c
+                            ));
+                        }
+                    } catch (tError) {
+                        console.error("Title error:", tError);
+                    } finally {
+                        setIsGeneratingTitle(false);
+                    }
+                }
             }
 
         } catch (e) {
@@ -501,18 +534,22 @@ const Chatbot: React.FC = () => {
         <div className="h-[calc(100vh-80px)] md:h-[calc(100vh-100px)] max-w-7xl mx-auto md:p-6 p-0">
             <ChatLayout sidebar={Sidebar}>
                 {/* Header for Back Navigation (if from Advisory OR CropCare) - Visible on both Mobile & Desktop */}
-                {(location.state?.fromAdvisory || location.state?.fromCropCare) && (
+                {(location.state?.fromAdvisory || location.state?.fromCropCare || location.state?.isRoadmapPlanner) && (
                     <div className="flex items-center justify-between p-4 border-b border-[#E0E6E6] bg-white/80 backdrop-blur-md sticky top-0 z-30">
                         <button
                             onClick={() => {
                                 // Navigate back to source with restored state
-                                const targetPath = location.state?.fromAdvisory ? '/advisory' : '/crop-care';
-                                navigate(targetPath, { state: location.state.previousState });
+                                if (location.state?.isRoadmapPlanner) {
+                                    navigate(`/roadmap/${location.state.businessName}`, { state: location.state.previousState });
+                                } else {
+                                    const targetPath = location.state?.fromAdvisory ? '/advisory' : '/crop-care';
+                                    navigate(targetPath, { state: location.state.previousState });
+                                }
                             }}
                             className="flex items-center gap-2 text-[#6B7878] font-bold hover:text-[#1B5E20] transition-colors"
                         >
                             <ArrowLeft className="w-5 h-5" />
-                            {t.back} to {location.state?.fromAdvisory ? 'Recommendations' : 'Assessment'}
+                            {t.back} to {location.state?.isRoadmapPlanner ? 'Strategy Planner' : (location.state?.fromAdvisory ? 'Recommendations' : 'Assessment')}
                         </button>
 
                         {/* PDF Download Button */}
@@ -551,7 +588,9 @@ const Chatbot: React.FC = () => {
                         <button onClick={() => setIsSidebarOpen(true)} className="p-2 mr-2">
                             <Menu className="w-6 h-6 text-[#002105]" />
                         </button>
-                        <h1 className="text-lg font-bold text-[#002105]">Knowledge Assistant</h1>
+                        <h1 className="text-lg font-bold text-[#002105]">
+                            {location.state?.isRoadmapPlanner ? `Making 10 year plan for ${location.state?.businessName}...` : t.navAskAI}
+                        </h1>
                     </div>
                 )}
 
@@ -585,10 +624,21 @@ const Chatbot: React.FC = () => {
                                             {/* TTS Button */}
                                             <button
                                                 onClick={() => handleTextToSpeech(msg.content, idx)}
-                                                className="p-1.5 text-stone-400 hover:text-[#1B5E20] hover:bg-stone-100 rounded-full transition-all"
-                                                title="Listen to response"
+                                                className={`p-1.5 rounded-full transition-all ${
+                                                    playingMessageId === idx 
+                                                    ? 'text-red-500 hover:bg-red-50' 
+                                                    : 'text-stone-400 hover:text-[#1B5E20] hover:bg-stone-100'
+                                                }`}
+                                                title={playingMessageId === idx ? "Stop playback" : "Listen to response"}
+                                                disabled={isLoadingTTS === idx}
                                             >
-                                                {playingMessageId === idx ? <Square className="w-4 h-4 text-red-500 fill-current" /> : <Volume2 className="w-4 h-4" />}
+                                                {isLoadingTTS === idx ? (
+                                                    <div className="w-4 h-4 border-2 border-stone-300 border-t-[#1B5E20] rounded-full animate-spin"></div>
+                                                ) : playingMessageId === idx ? (
+                                                    <Square className="w-4 h-4 fill-current" />
+                                                ) : (
+                                                    <Volume2 className="w-4 h-4" />
+                                                )}
                                             </button>
 
                                             {/* PDF Button */}
@@ -633,6 +683,20 @@ const Chatbot: React.FC = () => {
                             </div>
                         ))
                     )}
+                    
+                    {/* Roadmap Planner Status Message */}
+                    {location.state?.isRoadmapPlanner && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && !messages[messages.length - 1].content && (
+                        <div className="flex flex-col items-center justify-center p-12 text-center animate-pulse">
+                            <div className="w-16 h-16 bg-deep-green/10 rounded-full flex items-center justify-center mb-4">
+                                <Bot className="w-8 h-8 text-deep-green" />
+                            </div>
+                            <h3 className="text-xl font-bold text-deep-green">
+                                Making 10 year plan for {location.state?.businessName}...
+                            </h3>
+                            <p className="text-stone-500 mt-2">Analyzing market trends and regional data.</p>
+                        </div>
+                    )}
+
                     <div ref={messagesEndRef} />
                 </div>
 

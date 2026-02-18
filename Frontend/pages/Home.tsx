@@ -1,25 +1,11 @@
 import React, { Suspense } from 'react';
 import { useLanguage } from '../src/context/LanguageContext';
 import { Link } from 'react-router-dom';
-<<<<<<< HEAD
-import { ArrowRight, Sprout, Recycle, Briefcase, BookOpen, Loader2 } from 'lucide-react';
+import { ArrowRight, Sprout, Recycle, Briefcase, BookOpen, Loader2, Sparkles, ChevronDown } from 'lucide-react';
 import HomeChatPanel from '../components/Home/HomeChatPanel';
 import logo from '../src/assets/logo.png';
 
 const PhaseZero = React.lazy(() => import('../components/Home/PhaseZero'));
-=======
-<<<<<<< HEAD
-import { ArrowRight, Sparkles } from 'lucide-react';
-import PhaseZero from '../components/Home/PhaseZero';
-import NewsFeed from '../components/Home/NewsFeed';
-import logo from '../src/assets/logo.png'; // Assuming logo is available
-=======
-import { Briefcase, Sprout, Recycle, ArrowRight, BookOpen, ChevronDown } from 'lucide-react';
-import { api } from '../src/services/api';
-import { auth } from '../src/firebase';
-import { getUserProfile } from '../src/services/firebase_db';
->>>>>>> 655364a (i have add notification servie)
->>>>>>> 4290ab36ead05baf34b51964aa899bc1042c0f33
 
 const Home: React.FC = () => {
     const { t } = useLanguage();

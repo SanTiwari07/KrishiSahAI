@@ -1,4 +1,4 @@
-import { auth } from "../firebase";
+import { auth } from "../../firebase";
 
 // Use environment variable or default to localhost
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';

@@ -271,6 +271,9 @@ export const translations = {
         retry: "Retry",
         noNewsFound: "No news found at this time.",
         readFullArticle: "Read Full Article",
+        latestNews: "Latest News",
+        viewAll: "View All",
+        readMore: "Read More",
         comingSoon: "Coming Soon"
     },
     HI: {
@@ -544,6 +547,9 @@ export const translations = {
         retry: "पुनः प्रयास करें",
         noNewsFound: "इस समय कोई समाचार नहीं मिला।",
         readFullArticle: "पूरा लेख पढ़ें",
+        latestNews: "ताजा खबरें",
+        viewAll: "सभी देखें",
+        readMore: "अधिक पढ़ें",
         comingSoon: "जल्द आ रहा है"
     },
     MR: {
@@ -817,6 +823,9 @@ export const translations = {
         retry: "पुन्हा प्रयत्न करा",
         noNewsFound: "यावेळी कोणतीही बातमी आढळली नाही.",
         readFullArticle: "संपूर्ण लेख वाचा",
+        latestNews: "ताजी बातमी",
+        viewAll: "सर्व पहा",
+        readMore: "अधिक वाचा",
         comingSoon: "लवकरच येत आहे"
     }
 };

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { api } from '../src/services/api';
-import { auth } from '../src/firebase';
+import { auth } from '../firebase';
 import { Language, ChatMessage } from '../types';
 import { translations } from '../src/i18n/translations';
 import {
@@ -18,7 +18,9 @@ import {
     X,
     Sprout,
     Send,
-    Loader2
+    Loader2,
+    Camera,
+    Upload
 } from 'lucide-react';
 
 /* 
@@ -28,7 +30,7 @@ import {
   - Back button added to 'chat' view.
 */
 
-type ViewState = 'input' | 'processing' | 'results' | 'chat';
+type ViewState = 'input' | 'processing' | 'results' | 'chat' | 'intro';
 
 const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
     const t = translations[lang];
@@ -176,10 +178,10 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
                             <span className="text-sm font-bold uppercase tracking-widest">Circular Economy</span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4 tracking-tight">
-                            {t.wasteTitle || "Turn Waste into Wealth"}
+                            {t.wasteOptimizer || "Turn Waste into Wealth"}
                         </h1>
                         <p className="text-white/80 text-lg leading-relaxed max-w-md">
-                            {t.wasteSubtitle || "Upload a photo of your farm waste and discover profitable ways to reuse, sell, or compost it."}
+                            {t.wasteOptimizerSub || "Upload a photo of your farm waste and discover profitable ways to reuse, sell, or compost it."}
                         </p>
                     </div>
 

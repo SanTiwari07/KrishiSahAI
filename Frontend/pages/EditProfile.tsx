@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile, Language } from '../types';
-import { auth, db } from "../src/firebase";
+import { auth, db } from "../firebase";
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Save, ArrowLeft, User, MapPin, Sprout, Briefcase } from 'lucide-react';
 import { translations } from '../src/i18n/translations';
@@ -26,6 +26,8 @@ const EditProfile: React.FC<{ lang: Language }> = ({ lang }) => {
         village: '',
         location: '',
         landSize: '',
+        landUnit: 'acre',
+        landType: 'Irrigated',
         soilType: 'Alluvial Soil',
         waterAvailability: 'Borewell',
         mainCrops: []

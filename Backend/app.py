@@ -10,7 +10,7 @@ from pathlib import Path
 # Ensure the Backend directory is in the Python path before local imports
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from notification_service.notification_service import get_demo_notifications
+from services.notification_service.notification_service import get_demo_notifications
 from werkzeug.utils import secure_filename
 import pandas as pd
 import json
@@ -71,7 +71,7 @@ DISEASE_DETECTOR_DIR = Path(__file__).resolve().parent / 'services' / 'Disease D
 if str(DISEASE_DETECTOR_DIR) not in sys.path:
     sys.path.append(str(DISEASE_DETECTOR_DIR))
 
-from detector import predict as detector_predict, init_model as detector_init
+from disease_detector import predict as detector_predict, init_model as detector_init
 
 # Warm up the model on server start
 detector_init()
@@ -98,7 +98,7 @@ if str(PEST_DETECTOR_DIR) not in sys.path:
     sys.path.append(str(PEST_DETECTOR_DIR))
 
 try:
-    from detector import predict as pest_predict, init_model as pest_init
+    from pest_detector import predict as pest_predict, init_model as pest_init
     # Warm up the pest detection model
     pest_init()
     print("Pest detection model initialized successfully")
@@ -430,6 +430,26 @@ def chat_advisor_stream():
         return response
     except Exception as e:
         print(f"[ADVISOR] Stream Chat Error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/chat/generate-title', methods=['POST'])
+@require_auth
+def generate_chat_title():
+    try:
+        data = request.json
+        session_id = data.get('session_id')
+        
+        if not session_id or session_id not in advisor_sessions:
+            return jsonify({'error': 'Invalid session_id'}), 404
+            
+        advisor = advisor_sessions[session_id]
+        print(f"[ADVISOR] Generating smart title for session {session_id[:8]}...")
+        title = advisor.generate_title()
+        print(f"[ADVISOR] Smart Title: \"{title}\"")
+        
+        return jsonify({'success': True, 'title': title})
+    except Exception as e:
+        print(f"[ADVISOR] Title Generation Error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/business-advisor/integrated-advice', methods=['POST'])
@@ -781,9 +801,15 @@ def generate_pdf():
         print(f"[PDF] Generating PDF for user {user_id}, chat {chat_id}")
         
         # Generate PDF
-        print(f"[PDF_ROUTE] Calling generate_chat_pdf...")
-        pdf_buffer = generate_chat_pdf(user_id, chat_id)
-        print(f"[PDF_ROUTE] PDF generated successfully. Size: {pdf_buffer.getbuffer().nbytes} bytes")
+        try:
+            print(f"[PDF_ROUTE] Calling generate_chat_pdf...")
+            pdf_buffer = generate_chat_pdf(user_id, chat_id)
+            print(f"[PDF_ROUTE] PDF generated successfully. Size: {pdf_buffer.getbuffer().nbytes} bytes")
+        except Exception as e:
+            print(f"[PDF] Generation logic failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'success': False, 'error': f"PDF Logic Error: {str(e)}"}), 500
         
         # Create filename with current date
         filename = f'KrishiSahAI_Advisory_{datetime.now().strftime("%d-%m-%Y")}.pdf'

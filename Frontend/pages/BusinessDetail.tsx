@@ -2,13 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Briefcase, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Language } from '../types';
-<<<<<<< HEAD
 import { translations } from '../src/i18n/translations';
-import { api } from '../services/api';
-=======
-import { translations } from '../translations';
 import { api } from '../src/services/api';
->>>>>>> 655364a (i have add notification servie)
 
 interface BusinessDetail {
     id: string;

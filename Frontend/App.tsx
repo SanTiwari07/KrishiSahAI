@@ -15,33 +15,15 @@ import EditProfile from './pages/EditProfile';
 import ArticleDetail from './pages/ArticleDetail';
 import { Leaf } from 'lucide-react';
 import { Language, UserProfile } from './types';
-<<<<<<< HEAD
 import { auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from './firebase';
-import { onSnapshot, doc, setDoc } from 'firebase/firestore';
-import { RefreshCw, LogOut, Settings, Menu, X } from 'lucide-react';
-import { api } from './services/api';
-=======
-import { translations } from './translations';
-import { auth, db } from './src/firebase';
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut
-} from 'firebase/auth';
-
 import { onSnapshot, doc, setDoc, getDoc } from 'firebase/firestore';
-import { RefreshCw, Sun, Moon, User, LogOut, Settings } from 'lucide-react';
+import { RefreshCw, LogOut, Settings, Menu, X, Sun, Moon, User } from 'lucide-react';
 import { api } from './src/services/api';
->>>>>>> 655364a (i have add notification servie)
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
 import logo from './src/assets/logo.png';
-<<<<<<< HEAD
 import WeatherModal from './components/WeatherModal';
-=======
 import NotificationBell from './components/NotificationBell';
->>>>>>> 655364a (i have add notification servie)
 
 const getBestLocation = (u: UserProfile | null) => {
   if (!u) return "";
@@ -113,127 +95,135 @@ const Header: React.FC<{
             </nav>
           )}
 
-<<<<<<< HEAD
-  {/* Right Side */ }
-  <div className="flex items-center gap-4">
-    {/* Mobile Menu Button */}
-    {user && (
-      <button
-        className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
-    )}
-    {user && (
-      <div className={`flex items-center gap-1 bg-[#FAFAF7] border border-[#E6E6E6] rounded-full px-1 py-0.5 transition-all group ${weatherLoading ? 'opacity-80' : ''}`}>
-        <button
-          onClick={toggleWeather}
-          className="flex items-center gap-3 px-4 py-2 bg-transparent text-xs font-bold text-white hover:bg-white/10 transition-all border-r border-white/20"
-          title="View Weather Details"
-        >
-          <span className="text-lg">☁</span>
-          <span className="uppercase tracking-wider">{getDisplayLocation(user)}: {getWeatherDisplay()}</span>
-        </button>
-        <button
-          onClick={refreshWeather}
-          className={`p-2 hover:bg-white/10 text-white transition-all ${weatherLoading ? 'animate-spin' : 'hover:rotate-180'}`}
-          title="Refresh Weather"
-        >
-          <RefreshCw size={14} />
-        </button>
-      </div>
-    )}
+          {/* Right Side */}
+          <div className="flex items-center gap-4">
+            {/* Mobile Menu Button */}
+            {user && (
+              <button
+                className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            )}
 
-    {/* Language Switcher */}
-    <div className="hidden sm:flex bg-deep-green border border-white/20 p-0 gap-0 rounded-lg overflow-hidden min-w-[120px]">
-      {[{ code: 'EN', label: 'EN' }, { code: 'HI', label: 'HI' }, { code: 'MR', label: 'MR' }].map((l) => (
-        <button
-          key={l.code}
-          onClick={() => setLanguage(l.code as Language)}
-          className={`flex-1 px-2 py-1.5 text-[11px] font-bold transition-all border-r border-white/20 last:border-r-0 ${language === l.code ? 'bg-white text-deep-green' : 'text-white hover:bg-white/10'}`}
-        >
-          {l.label}
-        </button>
-      ))}
-    </div>
+            {user && (
+              <>
+                {/* Weather Info */}
+                <div className={`hidden sm:flex items-center gap-1 bg-[#FAFAF7] border border-[#E6E6E6] rounded-full px-1 py-0.5 transition-all group ${weatherLoading ? 'opacity-80' : ''}`}>
+                  <button
+                    onClick={toggleWeather}
+                    className="flex items-center gap-3 px-4 py-2 bg-transparent text-xs font-bold text-[#1B5E20] hover:bg-green-50 transition-all border-r border-gray-200"
+                    title="View Weather Details"
+                  >
+                    <span className="text-lg">☁</span>
+                    <span className="uppercase tracking-wider">
+                      {getDisplayLocation(user)}: {getWeatherDisplay()}
+                    </span>
+                  </button>
+                  <button
+                    onClick={refreshWeather}
+                    className={`p-2 hover:bg-green-50 text-[#1B5E20] transition-all ${weatherLoading ? 'animate-spin' : 'hover:rotate-180'}`}
+                    title="Refresh Weather"
+                  >
+                    <RefreshCw size={14} />
+                  </button>
+                </div>
 
-    {user ? (
-      <div className="relative group">
-        <button className="flex items-center gap-3 bg-white/5 border border-white/20 px-4 py-2 hover:bg-white/10 transition-colors rounded-xl">
-          <div className="w-8 h-8 bg-white flex items-center justify-center text-deep-green font-bold text-sm rounded-full">
-            {user.name && user.name.charAt(0).toUpperCase()}
+                {/* Notifications */}
+                <NotificationBell />
+              </>
+            )}
+
+            {/* Language Switcher */}
+            <div className="hidden sm:flex bg-[#1B5E20] border border-white/20 p-0 gap-0 rounded-lg overflow-hidden min-w-[120px]">
+              {[{ code: 'EN', label: 'EN' }, { code: 'HI', label: 'HI' }, { code: 'MR', label: 'MR' }].map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => setLanguage(l.code as Language)}
+                  className={`flex-1 px-2 py-1.5 text-[11px] font-bold transition-all border-r border-white/20 last:border-r-0 ${language === l.code ? 'bg-white text-[#1B5E20]' : 'text-white hover:bg-white/10'}`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+
+            {user ? (
+              <div className="relative group">
+                <button className="flex items-center gap-3 bg-white/5 border border-white/20 px-4 py-2 hover:bg-white/10 transition-colors rounded-xl">
+                  <div className="w-8 h-8 bg-white flex items-center justify-center text-[#1B5E20] font-bold text-sm rounded-full">
+                    {user.name && user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="hidden md:block text-left">
+                    <p className="text-xs font-bold text-white leading-tight uppercase">{user.name}</p>
+                    <p className="text-[10px] text-white/60 uppercase tracking-wider">{user.occupation}</p>
+                  </div>
+                </button>
+
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white border-2 border-[#1B5E20] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 rounded-xl overflow-hidden">
+                  <Link to="/profile/edit" className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
+                    <Settings size={16} /> Edit Profile
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut size={16} /> {t.logout}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-0">
+                <Link to="/login" className="px-6 py-2.5 text-sm font-bold text-white uppercase hover:bg-white/10 transition-colors rounded-lg">
+                  {t.login}
+                </Link>
+                <Link to="/signup" className="px-6 py-2.5 bg-white text-[#1B5E20] text-sm font-bold uppercase hover:bg-gray-100 transition-all border-2 border-white rounded-lg">
+                  {t.signup}
+                </Link>
+              </div>
+            )}
           </div>
-          <div className="hidden md:block text-left">
-            <p className="text-xs font-bold text-white leading-tight uppercase">{user.name}</p>
-            <p className="text-[10px] text-white/60 uppercase tracking-wider">{user.occupation}</p>
-          </div>
-        </button>
-
-        <div className="absolute right-0 top-full mt-2 w-56 bg-white border-2 border-deep-green shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 rounded-xl overflow-hidden">
-          <Link to="/profile/edit" className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-deep-green hover:bg-light-green transition-colors border-b border-gray-100">
-            <Settings size={16} /> Edit Profile
-          </Link>
-          <button
-            onClick={logout}
-            className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <LogOut size={16} /> {t.logout}
-          </button>
-        </div>
-      </div>
-    ) : (
-      <div className="flex items-center gap-0">
-        <Link to="/login" className="px-6 py-2.5 text-sm font-bold text-white uppercase hover:bg-white/10 transition-colors rounded-lg">
-          {t.login}
-        </Link>
-        <Link to="/signup" className="px-6 py-2.5 bg-white text-deep-green text-sm font-bold uppercase hover:bg-gray-100 transition-all border-2 border-white rounded-lg">
-          {t.signup}
-        </Link>
-      </div>
-    )}
-  </div>
         </div >
       </div >
 
-  {/* Mobile Menu Dropdown */ }
-{
-  isMobileMenuOpen && user && (
-    <div className="lg:hidden bg-[#1B5E20] border-t border-[#2E7D32] absolute w-full left-0 top-[64px] shadow-xl animate-in slide-in-from-top-2 z-40">
-      <nav className="flex flex-col p-4 space-y-2">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            onClick={() => setIsMobileMenuOpen(false)}
-            className={`px-4 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-colors ${location.pathname === item.path ? 'bg-white/20 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
-          >
-            {item.label}
-          </Link>
-        ))}
-        {/* Mobile Profile & Logout */}
-        <div className="pt-4 mt-2 border-t border-white/10">
-          <Link
-            to="/profile/edit"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-white/80 hover:bg-white/10 rounded-lg"
-          >
-            <Settings size={18} /> Edit Profile
-          </Link>
-          <button
-            onClick={() => {
-              logout();
-              setIsMobileMenuOpen(false);
-            }}
-            className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-300 hover:bg-red-900/20 rounded-lg transition-colors"
-          >
-            <LogOut size={18} /> {t.logout}
-          </button>
-        </div>
-      </nav>
-    </div>
-  )
-}
+      {/* Mobile Menu Dropdown */}
+      {
+        isMobileMenuOpen && user && (
+          <div className="lg:hidden bg-[#1B5E20] border-t border-[#2E7D32] absolute w-full left-0 top-[64px] shadow-xl animate-in slide-in-from-top-2 z-40">
+            <nav className="flex flex-col p-4 space-y-2">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`px-4 py-3 text-sm font-bold uppercase tracking-wide rounded-lg transition-colors ${location.pathname === item.path ? 'bg-white/20 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              {/* Mobile Profile & Logout */}
+              <div className="pt-4 mt-2 border-t border-white/10">
+                <Link
+                  to="/profile/edit"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-white/80 hover:bg-white/10 rounded-lg"
+                >
+                  <Settings size={18} /> Edit Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-300 hover:bg-red-900/20 rounded-lg transition-colors"
+                >
+                  <LogOut size={18} /> {t.logout}
+                </button>
+              </div>
+            </nav>
+          </div>
+        )
+      }
     </header >
   );
 };

@@ -477,10 +477,31 @@ class KrishiSahAIAdvisor:
                 raise ValueError("No valid recommendations generated")
             
             return valid_recs[:3]
-            
         except Exception as e:
             print(f"Error generating recommendations: {e}")
             return self._get_fallback_recommendations()
+
+    def generate_title(self) -> str:
+        """Generate a short 3-5 word summary title for the chat session"""
+        if not self.llm or not self.chat_history:
+            return "New Chat"
+
+        # Get the first user message
+        first_user_msg = next((msg.content for msg in self.chat_history if isinstance(msg, HumanMessage)), None)
+        if not first_user_msg:
+            return "New Chat"
+
+        prompt_text = f"Summarize the following user request into a short 3-5 word title. Return ONLY the title without quotes or punctuation: {first_user_msg[:200]}"
+        
+        try:
+            response = self.llm.invoke(prompt_text)
+            title = response.content.strip().strip('"').strip("'")
+            # Remove trailing ellipsis or punctuation if LLM added them
+            title = re.sub(r'[.\s]+$', '', title)
+            return title if title else "New Chat"
+        except Exception as e:
+            print(f"Error generating title: {e}")
+            return "New Chat"
 
     def _get_fallback_recommendations(self):
         """Return hardcoded fallback recommendations"""

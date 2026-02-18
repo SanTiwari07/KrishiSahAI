@@ -101,51 +101,48 @@ class SustainabilityRoadmapGenerator:
             "business_name": business_meta['title'],
         }
 
-        # 3. Robust Markdown Prompt
-        # We ask for a structured report instead of JSON to help smaller models (Llama 3.2 1B)
-        prompt = f"""You are an expert agricultural consultant. Create a 10-Year Business Roadmap for '{context['business_name']}'.
-        
-Context:
-- Farmer: {context['farmer_name']} from {context['location']}
+        # 3. New Specific Roadmap Prompt
+        prompt = f"""You are an expert agricultural consultant. Create a comprehensive 10-Year Business Roadmap for '{context['business_name']}'.
+
+Farmer Details:
+- Name: {context['farmer_name']}
+- Location: {context['location']}
 - Land Size: {context['land_size']}
-- Starting Capital: {context['capital']}
+- Starting Capital/Budget: {context['capital']}
+- Experience: {profile.get('experience_years', profile.get('experience', 'Not specified'))} years
+- Market Access: {profile.get('market_access', 'Moderate')}
+- Risk Preference: {profile.get('risk_level', profile.get('risk_preference', 'Medium'))}
 
-Please write a detailed report using the exact structure below. Do NOT output JSON. Use Markdown headers.
+Please write a detailed report using the exact structure below. STRICTLY NO EMOJIS. Use Markdown headers and bold text.
 
-# Title: 10-Year Roadmap for {context['business_name']}
+# Title: 10-Year Sustainability & Profit Planner for {context['business_name']}
 
 # Overview
-[Write a detailed 2-3 sentence summary of the business plan here, focusing on long-term sustainability and profitability.]
+[Write a 2-3 sentence summary focusing on long-term sustainability and the farmer's specific context.]
 
-# Phase 1: Foundation (Year 0-2)
-- Timeframe: Months 1-24
-- Focus: Initial setup, infrastructure, and stabilization
-- Actions: [List 5 detailed startup actions, be specific about equipment, licenses, or soil preparation]
-- Milestones: [List 3 key milestones to track progress]
-- Financial Target: Revenue ₹[Amount]
-- Profit Margin: [Percentage]% (Estimates based on current market rates)
+# 1. 10-Year Growth & Profit Planner
+[Provide a Year-wise breakdown from Year 1 to Year 10. Format each year as a clear block like this:]
 
-# Phase 2: Growth (Year 3-5)
-- Timeframe: Months 25-60
-- Focus: Expansion, scaling production, and market penetration
-- Actions: [List 5 detailed growth actions, including marketing and logistics]
-- Milestones: [List 3 expansion milestones]
-- Financial Target: Revenue ₹[Amount]
-- Profit Margin: [Percentage]%
+## Year 1: [Main Goal]
+- **Strategic Focus**: [Primary objective]
+- **Key Actions**: [2-3 specific actionable steps]
+- **Expected Profit**: ₹[Amount]
 
-# Phase 3: Maturity (Year 6-10)
-- Timeframe: Months 61-120
-- Focus: Automation, value addition, and succession planning
-- Actions: [List 5 sustainability and automation actions]
-- Milestones: [List 3 final milestones]
-- Financial Target: Revenue ₹[Amount]
-- Profit Margin: [Percentage]%
+... (Repeat for Years 2 through 10) ...
 
-# Financial Resilience
-[Write 2-3 sentences on how to handle bad years, market risks, and crop failure.]
+# 2. Labor & Aging Analysis
+[How labor requirements shift as the farmer ages (current age: {profile.get('age', 35)}). Include specific automation triggers for years 4, 7, and 10.]
 
-# Final Verdict
-[Highly Feasible / Feasible / Challenging] - [Reason]
+# 3. Sustainability & Succession
+[A plan for multi-generational wealth transfer and soil/resource health.]
+
+# 4. Financial Resilience
+[How to handle 1 "bad year" (drought/pest) during Phase 1 (Years 1-3) vs Phase 3 (Years 7-10).]
+
+# 5. Final Verdict
+[Feasibility score and long-term ROI.]
+
+DISCLAIMER: This roadmap is an AI-generated simulation based on provided data and regional averages. Actual results may vary due to market fluctuations, climate conditions, and individual management. This should not be considered financial or legal advice. Consult with local agricultural experts before major investments.
 """
         
         # 4. Call LLM
@@ -176,111 +173,69 @@ Please write a detailed report using the exact structure below. Do NOT output JS
 
     def parse_markdown_roadmap(self, text, business_name):
         """
-        Parses the Markdown output from the LLM into the dictionary structure expected by the frontend.
+        Parses the multi-section Markdown output into a dictionary for the frontend.
         """
         import re
         
-        # Initialize default structure
         roadmap = {
-            "title": f"10-Year Roadmap for {business_name}",
-            "overview": "Detailed business roadmap.",
-            "phases": [],
-            "automation_recommendations": ["Smart irrigation", "Market linkage apps"], # Defaults
-            "financial_resilience_strategy": "Diversify crops and maintain emergency savings.",
-            "final_verdict": "Feasible"
+            "title": f"10-Year Sustainability & Profit Planner for {business_name}",
+            "overview": "",
+            "years": [],
+            "labor_analysis": "",
+            "sustainability_plan": "",
+            "resilience_strategy": "",
+            "verdict": "",
+            "disclaimer": ""
         }
 
-        # Extract Title
-        title_match = re.search(r'# Title:\s*(.*)', text, re.IGNORECASE)
-        if title_match:
-            roadmap['title'] = title_match.group(1).strip()
+        # Helper for section extraction
+        def get_section(name, next_section=None):
+            pattern = rf'# {name}\n(.*?)(?=# {next_section}|\Z)' if next_section else rf'# {name}\n(.*)'
+            match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+            return match.group(1).strip() if match else ""
 
-        # Extract Overview
-        overview_match = re.search(r'# Overview\s*\n(.*?)\n#', text, re.DOTALL | re.IGNORECASE)
-        if overview_match:
-            roadmap['overview'] = overview_match.group(1).strip()
-
-        # Extract Strategy
-        strat_match = re.search(r'# Financial Resilience\s*\n(.*?)\n#', text, re.DOTALL | re.IGNORECASE)
-        if strat_match:
-            roadmap['financial_resilience_strategy'] = strat_match.group(1).strip()
-
-        # Extract Verdict
-        verdict_match = re.search(r'# Final Verdict\s*\n(.*?)$', text, re.DOTALL | re.IGNORECASE)
-        if verdict_match:
-            roadmap['final_verdict'] = verdict_match.group(1).strip()
-
-        # Extract Phases
-        # We manually look for Phase 1, 2, 3 blocks
-        phase_patterns = [
-            (r'# Phase 1:(.*?)(?=# Phase 2)', "Year 0-2"),
-            (r'# Phase 2:(.*?)(?=# Phase 3)', "Year 3-5"),
-            (r'# Phase 3:(.*?)(?=# Financial Resilience)', "Year 6-10")
-        ]
+        roadmap['overview'] = get_section("Overview", "1. 10-Year Growth & Profit Planner")
+        roadmap['labor_analysis'] = get_section("2. Labor & Aging Analysis", "3. Sustainability & Succession")
+        roadmap['sustainability_plan'] = get_section("3. Sustainability & Succession", "4. Financial Resilience")
+        roadmap['resilience_strategy'] = get_section("4. Financial Resilience", "5. Final Verdict")
         
-        full_text_search = text + "\n# End" # Sentinel for last regex, though not strictly needed for Phase 3 if we match Resilience
-        
-        for i, (pattern, default_period) in enumerate(phase_patterns):
-            phase_match = re.search(pattern, full_text_search, re.DOTALL | re.IGNORECASE)
-            if phase_match:
-                block = phase_match.group(1).strip()
-                
-                # Extract details from the block
-                # Helper to find value after key
-                def get_val(key):
-                    # Matches: "- Key: Value", "## Key: Value", "* Key: Value", "Key: Value"
-                    m = re.search(rf'(?:-|\*|#+)?\s*{key}:\s*(.*)', block, re.IGNORECASE)
-                    return m.group(1).strip() if m else "TBD"
-                
-                def get_list(key):
-                    # Finds content under a key until the next likely key or end of string
-                    # Use a known set of keys to lookahead
-                    known_keys = "Timeframe|Focus|Actions|Milestones|Financial Target"
-                    pattern = rf'(?:-|\*|#+)?\s*{key}:\s*(.*?)(?=(?:-|\*|#+)\s*(?:{known_keys}):|\Z)'
-                    
-                    m = re.search(pattern, block, re.DOTALL | re.IGNORECASE)
-                    if not m: return []
-                    raw_list = m.group(1).strip()
-                    
-                    items = []
-                    # formatted like [item1, item2]?
-                    if '[' in raw_list and ']' in raw_list:
-                         content = raw_list.replace('[','').replace(']','')
-                         items = [x.strip() for x in content.split(',')]
-                    else:
-                         # formatted as bullets or numbered list?
-                         lines = raw_list.split('\n')
-                         for line in lines:
-                             # Remove "1.", "2.", "-", "*" prefixes
-                             clean = re.sub(r'^(\d+\.|-|\*)\s*', '', line.strip()).strip()
-                             if clean: items.append(clean)
-                    return items
+        # Extract verdict and disclaimer separately
+        verdict_block = get_section("5. Final Verdict")
+        if "DISCLAIMER:" in verdict_block:
+            parts = verdict_block.split("DISCLAIMER:")
+            roadmap['verdict'] = parts[0].strip()
+            roadmap['disclaimer'] = parts[1].strip()
+        else:
+            roadmap['verdict'] = verdict_block
 
-                phase_data = {
-                    "phase": f"Phase {i+1}",
-                    "timeframe": get_val("Timeframe"),
-                    "focus": get_val("Focus"),
-                    "profit_margin": get_val("Profit Margin"),
-                    "quarters": [
-                        {
-                            "period": default_period,
-                            "actions": get_list("Actions"),
-                            "milestones": get_list("Milestones"),
-                            "financial_target": get_val("Financial Target")
-                        }
-                    ]
-                }
-                
-                roadmap['phases'].append(phase_data)
-        
-        # Fallback if phases extraction failed completely
-        if not roadmap['phases']:
-            print("[ROADMAP WARNING] Regex phase extraction failed. Using fallback phase.")
-            roadmap['phases'].append({
-                "phase": "Phase 1: Foundation",
-                "timeframe": "Year 1",
-                "focus": "Setup",
-                "quarters": [{"period": "Year 1", "actions": ["Secure funding", "Prepare land"], "milestones": ["Ops started"], "financial_target": "N/A"}]
-            })
+        # Parse Years 1-10
+        year_blocks = re.findall(r'## (Year \d+): (.*?)\n(.*?)(?=## Year \d+:|\Z|# 2.)', text, re.DOTALL | re.IGNORECASE)
+        for year_label, goal, content in year_blocks:
+            year_data = {
+                "year": year_label.strip(),
+                "goal": goal.strip(),
+                "focus": "",
+                "actions": [],
+                "profit": ""
+            }
+            
+            # Extract details using smaller regexes
+            focus_match = re.search(r'\*\*Strategic Focus\*\*:\s*(.*)', content, re.IGNORECASE)
+            year_data['focus'] = focus_match.group(1).strip() if focus_match else ""
+            
+            profit_match = re.search(r'\*\*Expected Profit\*\*:\s*(.*)', content, re.IGNORECASE)
+            year_data['profit'] = profit_match.group(1).strip() if profit_match else ""
+            
+            actions_match = re.search(r'\*\*Key Actions\*\*:\s*(.*?)(?=\*\*Expected Profit\*\*|\Z)', content, re.DOTALL | re.IGNORECASE)
+            if actions_match:
+                raw_actions = actions_match.group(1).strip()
+                lines = raw_actions.split('\n')
+                year_data['actions'] = [re.sub(r'^[-*]\s*', '', l).strip() for l in lines if l.strip()]
+
+            roadmap['years'].append(year_data)
+
+        # Fallback if parsing failed
+        if not roadmap['years']:
+            print("[ROADMAP WARNING] Regex year extraction failed. Possible format mismatch.")
 
         return roadmap

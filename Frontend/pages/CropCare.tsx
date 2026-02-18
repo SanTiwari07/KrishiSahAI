@@ -2,12 +2,7 @@ import React from 'react';
 import { Language } from '../types';
 import { translations } from '../src/i18n/translations';
 import { useNavigate } from 'react-router-dom';
-<<<<<<< HEAD
 import { Sprout, Bug, ArrowRight } from 'lucide-react';
-=======
-import { api } from '../src/services/api';
-import { Sprout, Upload, Bug, MessageCircle } from 'lucide-react';
->>>>>>> 4290ab36ead05baf34b51964aa899bc1042c0f33
 
 const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
     const t = translations[lang];

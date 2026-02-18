@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Language } from '../types';
 import { translations } from '../src/i18n/translations';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../services/api';
+import { api } from '../src/services/api';
 import { Bug, Upload, MessageCircle, ArrowLeft } from 'lucide-react';
 
 const PestDetector: React.FC<{ lang: Language }> = ({ lang }) => {

@@ -62,13 +62,26 @@ class VoiceService:
     def transcribe(self, file_path):
         """Transcribe audio file to text"""
         self._log(f"Transcribing file: {file_path}")
+        
+        if not os.path.exists(file_path):
+            self._log(f"Error: File not found: {file_path}")
+            return {"error": "Audio file lost during processing"}
+
+        file_size = os.path.getsize(file_path)
+        self._log(f"File size: {file_size} bytes")
+        
+        if file_size == 0:
+            self._log("Error: Empty audio file received")
+            return {"error": "Empty audio recording. Please speak into the microphone."}
+
         if not WHISPER_AVAILABLE:
             self._log("Whisper not available in transcribe()")
             return {"error": "STT service unavailable (missing dependency)"}
         
         try:
             self._load_model()
-            result = self.model.transcribe(str(file_path))
+            # whisper supports many formats, but let's be explicit
+            result = self.model.transcribe(str(file_path), fp16=False) # fp16=False for CPU stability
             text = result["text"].strip()
             self._log(f"Transcription success: {text[:50]}...")
             return {"text": text}
