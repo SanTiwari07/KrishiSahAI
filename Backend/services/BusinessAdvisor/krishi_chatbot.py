@@ -304,6 +304,7 @@ class KrishiSahAIAdvisor:
             print(f"[ADVISOR] Stickiness Overridden by UI Toggle: {api_lang}")
             self._initialize_chain(api_lang)
             self.last_api_language = api_lang
+            self.chat_history = []  # Clear history on UI toggle change to respect the new language selection strictly
         
         # C. Otherwise (No chat command, toggle hasn't changed), keep current Active Language
         # This keeps chat overrides "sticky"
@@ -362,6 +363,7 @@ class KrishiSahAIAdvisor:
         elif api_lang != self.last_api_language:
             self._initialize_chain(api_lang)
             self.last_api_language = api_lang
+            self.chat_history = [] # Clear history on UI toggle change to respect the new language selection strictly
 
         if not self.chain:
             yield "Error: AI not initialized. Check server logs."

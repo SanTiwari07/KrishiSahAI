@@ -17,7 +17,7 @@ import { Leaf } from 'lucide-react';
 import { Language, UserProfile } from './types';
 import { auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from './firebase';
 import { onSnapshot, doc, setDoc, getDoc } from 'firebase/firestore';
-import { RefreshCw, LogOut, Settings, Menu, X, Sun, Moon, User, Cloud } from 'lucide-react';
+import { RefreshCw, LogOut, Settings, Menu, X, Sun, Moon, User, Cloud, ArrowRight } from 'lucide-react';
 import { api } from './src/services/api';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
@@ -362,15 +362,43 @@ const SignupFlow: React.FC<{ onSignup: (p: any, pass: string) => void; onSwitch:
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [formData, setFormData] = useState<any>({
-    name: '', phone: '', email: '',
+    name: '', age: '', gender: 'male', occupation: 'farmer',
+    experience_years: '2', // Default reasonable value
+    phone: '', email: '',
+    state: '', district: '', village: '',
     landSize: '', landUnit: 'acre', landType: 'Irrigated',
-    state: '', district: '', village: ''
+    soilType: 'alluvial', waterAvailability: 'borewell',
+    mainCrops: []
   });
+  const [customCrop, setCustomCrop] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => setStep(prev => prev - 1);
+
+  const toggleCrop = (crop: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      mainCrops: prev.mainCrops.includes(crop)
+        ? prev.mainCrops.filter((c: string) => c !== crop)
+        : [...prev.mainCrops, crop]
+    }));
+  };
+
+  const handleAddCustomCrop = (e: React.KeyboardEvent | React.MouseEvent) => {
+    if (e.type === 'keydown' && (e as React.KeyboardEvent).key !== 'Enter') return;
+    if (e.type === 'keydown') e.preventDefault(); // Prevent form submission on Enter
+
+    const trimmed = customCrop.trim();
+    if (trimmed && !formData.mainCrops.includes(trimmed)) {
+      setFormData((prev: any) => ({
+        ...prev,
+        mainCrops: [...prev.mainCrops, trimmed]
+      }));
+      setCustomCrop('');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -389,13 +417,12 @@ const SignupFlow: React.FC<{ onSignup: (p: any, pass: string) => void; onSwitch:
       }
       const profile = {
         ...formData,
-        age: '0',
-        gender: 'Not specified',
-        occupation: 'Farmer',
-        soilType: 'Not specified',
-        waterAvailability: 'Not specified',
-        mainCrops: [],
-        location: `${formData.village}, ${formData.district}`
+        location: `${formData.village}, ${formData.district}, ${formData.state}`,
+        // Map to snake_case for backend compatibility
+        land_size: parseFloat(formData.landSize),
+        soil_type: formData.soilType,
+        water_availability: formData.waterAvailability,
+        crops_grown: formData.mainCrops
       };
       await onSignup(profile, password);
     } catch (err: any) {
@@ -407,7 +434,7 @@ const SignupFlow: React.FC<{ onSignup: (p: any, pass: string) => void; onSwitch:
 
   const inputClasses = "w-full p-4 bg-white border-2 border-gray-200 text-gray-900 rounded-xl focus:outline-none focus:border-deep-green focus:ring-4 focus:ring-green-500/10 transition-all";
   const labelClasses = "block text-sm font-bold text-deep-green mb-2 ml-1";
-  const sectionTitleClasses = "text-xl font-bold text-deep-green mb-6";
+  const sectionTitleClasses = "text-xl font-bold text-deep-green mb-6 text-center";
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col md:flex-row">
@@ -425,14 +452,14 @@ const SignupFlow: React.FC<{ onSignup: (p: any, pass: string) => void; onSwitch:
       <div className="w-full md:w-1/2 h-full overflow-y-auto bg-[#F1F8E9]">
         <div className="min-h-full flex items-center justify-center p-6 md:p-12">
           <div className="w-full max-w-[480px] bg-white rounded-2xl shadow-lg p-8 md:p-10 border border-green-100 my-8">
-            <div className="mb-10">
-              <h1 className="text-[32px] font-bold text-deep-green mb-2">{t.signup}</h1>
-              <p className="text-gray-600 font-medium">{t.signupTitle}</p>
+            <div className="mb-6 text-center">
+              <h1 className="text-[28px] font-bold text-deep-green mb-1">{t.signupFlow[step === 1 ? 'personalInfo' : step === 2 ? 'locationDetails' : 'farmInfo']}</h1>
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">{t.signupFlow.step} {step} {t.signupFlow.of} 3</p>
             </div>
 
             <div className="flex gap-2 mb-8">
               {[1, 2, 3].map(s => (
-                <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-300 ${step >= s ? 'bg-deep-green' : 'bg-gray-200'}`} />
+                <div key={s} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${step >= s ? 'bg-deep-green' : 'bg-gray-200'}`} />
               ))}
             </div>
 
@@ -445,74 +472,153 @@ const SignupFlow: React.FC<{ onSignup: (p: any, pass: string) => void; onSwitch:
 
               {step === 1 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-                  <h3 className={sectionTitleClasses}>{t.sectionPersonal}</h3>
                   <div>
-                    <label className={labelClasses}>{t.fullName} *</label>
-                    <input required placeholder={t.enterName} className={inputClasses} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                    <label className={labelClasses}>{t.signupFlow.fullName} *</label>
+                    <input required placeholder={t.signupFlow.placeholders.fullName} className={inputClasses} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelClasses}>{t.signupFlow.age} *</label>
+                      <input required type="number" placeholder={t.signupFlow.placeholders.age} className={inputClasses} value={formData.age} onChange={e => setFormData({ ...formData, age: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className={labelClasses}>{t.signupFlow.gender} *</label>
+                      <select className={inputClasses} value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })}>
+                        <option value="male">{t.signupFlow.options.gender.male}</option>
+                        <option value="female">{t.signupFlow.options.gender.female}</option>
+                        <option value="other">{t.signupFlow.options.gender.other}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelClasses}>{t.signupFlow.occupation} *</label>
+                      <select className={inputClasses} value={formData.occupation} onChange={e => setFormData({ ...formData, occupation: e.target.value })}>
+                        <option value="farmer">{t.signupFlow.options.occupation.farmer}</option>
+                        <option value="student">{t.signupFlow.options.occupation.student}</option>
+                        <option value="business">{t.signupFlow.options.occupation.business}</option>
+                        <option value="other">{t.signupFlow.options.occupation.other}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelClasses}>{t.experienceYears} *</label>
+                      <input required type="number" placeholder="5" className={inputClasses} value={formData.experience_years} onChange={e => setFormData({ ...formData, experience_years: e.target.value })} />
+                    </div>
                   </div>
                   <div>
-                    <label className={labelClasses}>{t.phoneNumber} *</label>
-                    <input required placeholder={t.enterphone} className={inputClasses} value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+                    <label className={labelClasses}>{t.signupFlow.phone} *</label>
+                    <input required placeholder={t.signupFlow.placeholders.phone} className={inputClasses} value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                   </div>
                   <div>
-                    <label className={labelClasses}>{t.email} *</label>
-                    <input required type="email" placeholder="name@example.com" className={inputClasses} value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                    <label className={labelClasses}>{t.signupFlow.email} *</label>
+                    <input required type="email" placeholder={t.signupFlow.placeholders.email} className={inputClasses} value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
                   </div>
-                  <div>
-                    <label className={labelClasses}>{t.password} *</label>
-                    <input required type="password" placeholder="••••••••" className={inputClasses} value={password} onChange={e => setPassword(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className={labelClasses}>{t.confirmPassword} *</label>
-                    <input required type="password" placeholder="••••••••" className={inputClasses} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelClasses}>{t.signupFlow.password} *</label>
+                      <input required type="password" placeholder="••••••••" className={inputClasses} value={password} onChange={e => setPassword(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className={labelClasses}>{t.signupFlow.confirmPassword} *</label>
+                      <input required type="password" placeholder="••••••••" className={inputClasses} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                    </div>
                   </div>
                 </div>
               )}
 
               {step === 2 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-                  <h3 className={sectionTitleClasses}>{t.sectionLand}</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClasses}>{t.landArea} *</label>
-                      <input required type="number" step="0.1" placeholder="0.0" className={inputClasses} value={formData.landSize} onChange={e => setFormData({ ...formData, landSize: e.target.value })} />
-                    </div>
-                    <div>
-                      <label className={labelClasses}>&nbsp;</label>
-                      <select className={inputClasses} value={formData.landUnit} onChange={e => setFormData({ ...formData, landUnit: e.target.value })}>
-                        <option value="acre">{t.unitAcre}</option>
-                        <option value="hectare">{t.unitHectare}</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label className={labelClasses}>{t.signupFlow.state} *</label>
+                    <select required className={inputClasses} value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })}>
+                      <option value="">Select state</option>
+                      {t.signupFlow.options.states.map((s: string) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
-                    <label className={labelClasses}>{t.landType} *</label>
-                    <select className={inputClasses} value={formData.landType} onChange={e => setFormData({ ...formData, landType: e.target.value })}>
-                      <option value="Irrigated">{t.irrigated}</option>
-                      <option value="Rainfed">{t.rainfed}</option>
-                      <option value="Mixed">{t.mixed}</option>
-                    </select>
+                    <label className={labelClasses}>{t.signupFlow.district} *</label>
+                    <input required placeholder={t.signupFlow.placeholders.district} className={inputClasses} value={formData.district} onChange={e => setFormData({ ...formData, district: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className={labelClasses}>{t.signupFlow.village} *</label>
+                    <input required placeholder={t.signupFlow.placeholders.village} className={inputClasses} value={formData.village} onChange={e => setFormData({ ...formData, village: e.target.value })} />
                   </div>
                 </div>
               )}
 
               {step === 3 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-                  <h3 className={sectionTitleClasses}>{t.sectionLocation}</h3>
                   <div>
-                    <label className={labelClasses}>{t.state} *</label>
-                    <select className={inputClasses} value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })}>
-                      <option value="">{t.selectState}</option>
-                      <option>Maharashtra</option><option>Karnataka</option><option>Punjab</option><option>Uttar Pradesh</option>
+                    <label className={labelClasses}>{t.signupFlow.landSize} *</label>
+                    <input required type="number" step="0.1" placeholder={t.signupFlow.placeholders.landSize} className={inputClasses} value={formData.landSize} onChange={e => setFormData({ ...formData, landSize: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className={labelClasses}>{t.signupFlow.soilType} *</label>
+                    <select className={inputClasses} value={formData.soilType} onChange={e => setFormData({ ...formData, soilType: e.target.value })}>
+                      <option value="alluvial">{t.signupFlow.options.soilType.alluvial}</option>
+                      <option value="black">{t.signupFlow.options.soilType.black}</option>
+                      <option value="red">{t.signupFlow.options.soilType.red}</option>
+                      <option value="laterite">{t.signupFlow.options.soilType.laterite}</option>
+                      <option value="desert">{t.signupFlow.options.soilType.desert}</option>
+                      <option value="mountain">{t.signupFlow.options.soilType.mountain}</option>
                     </select>
                   </div>
                   <div>
-                    <label className={labelClasses}>{t.district} *</label>
-                    <input required placeholder={t.enterDistrict} className={inputClasses} value={formData.district} onChange={e => setFormData({ ...formData, district: e.target.value })} />
+                    <label className={labelClasses}>{t.signupFlow.waterAvailability} *</label>
+                    <select className={inputClasses} value={formData.waterAvailability} onChange={e => setFormData({ ...formData, waterAvailability: e.target.value })}>
+                      <option value="borewell">{t.signupFlow.options.waterAvailability.borewell}</option>
+                      <option value="canal">{t.signupFlow.options.waterAvailability.canal}</option>
+                      <option value="rainfed">{t.signupFlow.options.waterAvailability.rainfed}</option>
+                      <option value="well">{t.signupFlow.options.waterAvailability.well}</option>
+                      <option value="river">{t.signupFlow.options.waterAvailability.river}</option>
+                    </select>
                   </div>
                   <div>
-                    <label className={labelClasses}>{t.village} *</label>
-                    <input required placeholder={t.enterVillage} className={inputClasses} value={formData.village} onChange={e => setFormData({ ...formData, village: e.target.value })} />
+                    <label className={labelClasses}>{t.signupFlow.mainCrops}</label>
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {t.signupFlow.options.crops.map((crop: string) => (
+                        <button
+                          key={crop}
+                          type="button"
+                          onClick={() => toggleCrop(crop)}
+                          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border-2 ${formData.mainCrops.includes(crop) ? 'bg-deep-green text-white border-deep-green shadow-md' : 'bg-gray-50 text-gray-600 border-gray-100 hover:border-gray-300'}`}
+                        >
+                          {crop}
+                        </button>
+                      ))}
+
+                      {/* Show custom crops as tags too */}
+                      {formData.mainCrops.filter((c: string) => !t.signupFlow.options.crops.includes(c)).map((crop: string) => (
+                        <button
+                          key={crop}
+                          type="button"
+                          onClick={() => toggleCrop(crop)}
+                          className="px-4 py-2 rounded-xl text-sm font-bold transition-all border-2 bg-deep-green text-white border-deep-green shadow-md"
+                        >
+                          {crop} ×
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="mt-4 flex gap-2">
+                      <input
+                        type="text"
+                        className={inputClasses}
+                        placeholder={t.typeCrop || "Type custom crop..."}
+                        value={customCrop}
+                        onChange={(e) => setCustomCrop(e.target.value)}
+                        onKeyDown={handleAddCustomCrop}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddCustomCrop}
+                        className="px-6 bg-deep-green text-white rounded-xl font-bold hover:bg-green-800 transition-all flex items-center justify-center whitespace-nowrap"
+                      >
+                        {t.submit || "Add"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -520,21 +626,28 @@ const SignupFlow: React.FC<{ onSignup: (p: any, pass: string) => void; onSwitch:
               <div className="flex flex-col gap-4 pt-4">
                 <div className="flex gap-4">
                   {step > 1 && (
-                    <button type="button" onClick={handleBack} className="flex-1 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all">
-                      {t.back}
+                    <button type="button" onClick={handleBack} className="flex-1 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm active:scale-[0.98]">
+                      {t.signupFlow.back}
                     </button>
                   )}
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-[2] py-4 bg-deep-green text-white rounded-xl font-bold hover:bg-green-800 transition-all shadow-md active:scale-[0.98] disabled:opacity-50"
+                    className="flex-[2] py-4 bg-deep-green text-white rounded-xl font-bold hover:bg-green-800 transition-all shadow-md active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {loading ? t.loading : (step === 3 ? t.submit : t.next)}
+                    {loading ? (
+                      <><RefreshCw className="animate-spin" size={20} /> {t.loading}</>
+                    ) : (
+                      <>
+                        {step === 3 ? t.signupFlow.signUp : t.signupFlow.next}
+                        <ArrowRight size={20} />
+                      </>
+                    )}
                   </button>
                 </div>
 
                 <div className="text-center mt-4">
-                  <p className="text-gray-600 text-sm font-medium">
+                  <p className="text-gray-500 text-sm font-medium">
                     {t.alreadyHaveAccount} <button type="button" onClick={onSwitch} className="text-deep-green font-bold hover:underline">{t.login}</button>
                   </p>
                 </div>
@@ -546,6 +659,7 @@ const SignupFlow: React.FC<{ onSignup: (p: any, pass: string) => void; onSwitch:
     </div>
   );
 };
+
 
 const AppContent: React.FC = () => {
   const { language: lang, t } = useLanguage();

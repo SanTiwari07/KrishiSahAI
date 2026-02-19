@@ -114,12 +114,15 @@ export const api = {
         }
     },
 
-    generateRoadmap: async (businessName: string) => {
+    generateRoadmap: async (businessName: string, language: string = 'en') => {
         const headers = await getHeaders();
         const res = await fetch(`${BASE_URL}/generate-roadmap`, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ business_name: businessName })
+            body: JSON.stringify({
+                business_name: businessName,
+                language: language.toLowerCase()
+            })
         });
         if (res.status === 401) throw new Error("Unauthorized");
         if (!res.ok) {

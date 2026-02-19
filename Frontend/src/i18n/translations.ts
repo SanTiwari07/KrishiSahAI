@@ -84,6 +84,7 @@ export const translations = {
         enterVillage: "Enter village/town name",
         enterLandSize: "Enter land size in acres",
         typeCrop: "Type crop...",
+        addOtherCrop: "Add Other Crop",
 
         // Home / Dashboard
         weatherPill: "28°C | Low Rain",
@@ -274,7 +275,83 @@ export const translations = {
         latestNews: "Latest News",
         viewAll: "View All",
         readMore: "Read More",
-        comingSoon: "Coming Soon"
+        comingSoon: "Coming Soon",
+
+        // Signup Flow
+        signupFlow: {
+            step: "Step",
+            of: "of",
+            personalInfo: "Personal Information",
+            locationDetails: "Location Details",
+            farmInfo: "Farm Information",
+            fullName: "Full Name",
+            age: "Age",
+            gender: "Gender",
+            occupation: "Occupation",
+            phone: "Phone Number",
+            email: "Email",
+            password: "Password",
+            confirmPassword: "Confirm Password",
+            state: "State",
+            district: "District",
+            village: "Village/Town",
+            landSize: "Land Size (Acres)",
+            soilType: "Soil Type",
+            waterAvailability: "Water Availability",
+            mainCrops: "Main Crops Grown",
+            next: "Next",
+            back: "Back",
+            signUp: "Sign Up",
+            placeholders: {
+                fullName: "Enter your full name",
+                age: "Enter your age",
+                phone: "+91 XXXXX XXXXX",
+                email: "farmer@example.com",
+                district: "Enter district name",
+                village: "Enter village/town name",
+                landSize: "Enter land size in acres"
+            },
+            options: {
+                gender: {
+                    male: "Male",
+                    female: "Female",
+                    other: "Other"
+                },
+                occupation: {
+                    farmer: "Farmer",
+                    student: "Student",
+                    business: "Business",
+                    other: "Other"
+                },
+                soilType: {
+                    alluvial: "Alluvial Soil",
+                    black: "Black Soil",
+                    red: "Red Soil",
+                    laterite: "Laterite Soil",
+                    desert: "Desert Soil",
+                    mountain: "Mountain Soil"
+                },
+                waterAvailability: {
+                    borewell: "Borewell",
+                    canal: "Canal",
+                    rainfed: "Rainfed",
+                    well: "Well",
+                    river: "River"
+                },
+                states: [
+                    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana",
+                    "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
+                    "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
+                    "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands",
+                    "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh",
+                    "Lakshadweep", "Puducherry"
+                ],
+                crops: [
+                    "Rice", "Wheat", "Maize", "Sugarcane", "Cotton", "Groundnut", "Soybean", "Mustard", "Pulses",
+                    "Vegetables", "Fruits", "Spices", "Tea", "Coffee", "Jute"
+                ]
+            }
+        }
     },
     HI: {
         // Global
@@ -360,6 +437,7 @@ export const translations = {
         enterVillage: "गांव/शहर का नाम दर्ज करें",
         enterLandSize: "एकड़ में भूमि का आकार दर्ज करें",
         typeCrop: "फसल टाइप करें...",
+        addOtherCrop: "अन्य फसल जोड़ें",
 
         // Home / Dashboard
         weatherPill: "28°C | कम बारिश",
@@ -550,7 +628,83 @@ export const translations = {
         latestNews: "ताजा खबरें",
         viewAll: "सभी देखें",
         readMore: "अधिक पढ़ें",
-        comingSoon: "जल्द आ रहा है"
+        comingSoon: "जल्द आ रहा है",
+
+        // Signup Flow
+        signupFlow: {
+            step: "चरण",
+            of: "का",
+            personalInfo: "व्यक्तिगत जानकारी",
+            locationDetails: "स्थान विवरण",
+            farmInfo: "खेत की जानकारी",
+            fullName: "पूरा नाम",
+            age: "आयु",
+            gender: "लिंग",
+            occupation: "व्यवसाय",
+            phone: "फोन नंबर",
+            email: "ईमेल",
+            password: "पासवर्ड",
+            confirmPassword: "पासवर्ड की पुष्टि करें",
+            state: "राज्य",
+            district: "जिला",
+            village: "गांव/शहर",
+            landSize: "भूमि का आकार (एकड़)",
+            soilType: "मिट्टी का प्रकार",
+            waterAvailability: "पानी की उपलब्धता",
+            mainCrops: "मुख्य फसलें",
+            next: "अगला",
+            back: "पीछे",
+            signUp: "साइन अप करें",
+            placeholders: {
+                fullName: "अपना पूरा नाम दर्ज करें",
+                age: "अपनी आयु दर्ज करें",
+                phone: "+91 XXXXX XXXXX",
+                email: "farmer@example.com",
+                district: "जिले का नाम दर्ज करें",
+                village: "गांव/शहर का नाम दर्ज करें",
+                landSize: "एकड़ में भूमि का आकार दर्ज करें"
+            },
+            options: {
+                gender: {
+                    male: "पुरुष",
+                    female: "महिला",
+                    other: "अन्य"
+                },
+                occupation: {
+                    farmer: "किसान",
+                    student: "छात्र",
+                    business: "व्यवसाय",
+                    other: "अन्य"
+                },
+                soilType: {
+                    alluvial: "जलोढ़ मिट्टी",
+                    black: "काली मिट्टी",
+                    red: "लाल मिट्टी",
+                    laterite: "लैटराइट मिट्टी",
+                    desert: "रेगिस्तानी मिट्टी",
+                    mountain: "पहाड़ी मिट्टी"
+                },
+                waterAvailability: {
+                    borewell: "बोरवेल",
+                    canal: "नहर",
+                    rainfed: "वर्षा आधारित",
+                    well: "कुआं",
+                    river: "नदी"
+                },
+                states: [
+                    "आंध्र प्रदेश", "अरुणाचल प्रदेश", "असम", "बिहार", "छत्तीसगढ़", "गोवा", "गुजरात", "हरियाणा",
+                    "हिमाचल प्रदेश", "झारखंड", "कर्नाटक", "केरल", "मध्य प्रदेश", "महाराष्ट्र", "मणिपुर",
+                    "मेघालय", "मिजोरम", "नागालैंड", "ओडिशा", "पंजाब", "राजस्थान", "सिक्किम", "तमिलनाडु",
+                    "तेलंगाना", "त्रिपुरा", "उत्तर प्रदेश", "उत्तराखंड", "पश्चिम बंगाल", "अंडमान और निकोबार द्वीप समूह",
+                    "चंडीगढ़", "दादरा और नगर हवेली और दमन और दीव", "दिल्ली", "जम्मू और कश्मीर", "लद्दाख",
+                    "लक्षद्वीप", "पुदुचेरी"
+                ],
+                crops: [
+                    "चावल", "गेहूं", "मक्का", "गन्ना", "कपास", "मूंगफली", "सोयाबीन", "सरसों", "दालें",
+                    "सब्जियां", "फल", "मसाले", "चाय", "कॉफी", "जूट"
+                ]
+            }
+        }
     },
     MR: {
         // Global
@@ -636,6 +790,7 @@ export const translations = {
         enterVillage: "गाव/शहराचे नाव प्रविष्ट करा",
         enterLandSize: "एकर मध्ये जमिनीचा आकार प्रविष्ट करा",
         typeCrop: "पीक टाइप करा...",
+        addOtherCrop: "इतर पीक जोडा",
 
         // Home / Dashboard
         weatherPill: "28°C | कमी पाऊस",
@@ -826,6 +981,82 @@ export const translations = {
         latestNews: "ताजी बातमी",
         viewAll: "सर्व पहा",
         readMore: "अधिक वाचा",
-        comingSoon: "लवकरच येत आहे"
+        comingSoon: "लवकरच येत आहे",
+
+        // Signup Flow
+        signupFlow: {
+            step: "पाऊल",
+            of: "पैकी",
+            personalInfo: "वैयक्तिक माहिती",
+            locationDetails: "स्थान तपशील",
+            farmInfo: "शेतीची माहिती",
+            fullName: "पूर्ण नाव",
+            age: "वय",
+            gender: "लिंग",
+            occupation: "व्यवसाय",
+            phone: "फोन नंबर",
+            email: "ईमेल",
+            password: "पासवर्ड",
+            confirmPassword: "पासवर्डची पुष्टी करा",
+            state: "राज्य",
+            district: "जिल्हा",
+            village: "गाव/शहर",
+            landSize: "जमिनीचा आकार (एकर)",
+            soilType: "मातीचा प्रकार",
+            waterAvailability: "पाण्याची उपलब्धता",
+            mainCrops: "मुख्य पिके",
+            next: "पुढील",
+            back: "मागे",
+            signUp: "साइन अप करा",
+            placeholders: {
+                fullName: "तुमचे पूर्ण नाव प्रविष्ट करा",
+                age: "तुमचे वय प्रविष्ट करा",
+                phone: "+91 XXXXX XXXXX",
+                email: "farmer@example.com",
+                district: "जिल्ह्याचे नाव प्रविष्ट करा",
+                village: "गाव/शहराचे नाव प्रविष्ट करा",
+                landSize: "एकरमध्ये जमिनीचा आकार प्रविष्ट करा"
+            },
+            options: {
+                gender: {
+                    male: "पुरुष",
+                    female: "स्त्री",
+                    other: "इतर"
+                },
+                occupation: {
+                    farmer: "शेतकरी",
+                    student: "विद्यार्थी",
+                    business: "व्यवसाय",
+                    other: "इतर"
+                },
+                soilType: {
+                    alluvial: "गाळाची माती",
+                    black: "काळी माती",
+                    red: "लाल माती",
+                    laterite: "लॅटराईट माती",
+                    desert: "वाळवंटी माती",
+                    mountain: "पर्वतीय माती"
+                },
+                waterAvailability: {
+                    borewell: "बोरवेल",
+                    canal: "कालवा",
+                    rainfed: "कोरडवाहू",
+                    well: "विहीर",
+                    river: "नदी"
+                },
+                states: [
+                    "आंध्र प्रदेश", "अरुणाचल प्रदेश", "आसाम", "बिहार", "छत्तीसगड", "गोवा", "गुजरात", "हरियाणा",
+                    "हिमाचल प्रदेश", "झारखंड", "कर्नाटक", "केरळ", "मध्य प्रदेश", "महाराष्ट्र", "मणिपूर",
+                    "मेघालय", "मिझोरम", "नागालँड", "ओडिशा", "पंजाब", "राजस्थान", "सिक्कीम", "तमिळनाडू",
+                    "तेलंगणा", "त्रिपुरा", "उत्तर प्रदेश", "उत्तराखंड", "पश्चिम बंगाल", "अंदमान आणि निकोबार बेटे",
+                    "चंदीगड", "दादरा आणि नगर हवेली आणि दमण आणि दीव", "दिल्ली", "जम्मू आणि काश्मीर", "लडाख",
+                    "लक्षद्वीप", "पुदुचेरी"
+                ],
+                crops: [
+                    "भात", "गहू", "मका", "ऊस", "कापूस", "भुईमूग", "सोयाबीन", "मोहरी", "कडधान्ये",
+                    "भाज्या", "फळे", "मसाले", "चहा", "कॉफी", "जूट"
+                ]
+            }
+        }
     }
 };

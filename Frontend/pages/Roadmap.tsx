@@ -53,7 +53,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
             }
 
             try {
-                const response = await api.generateRoadmap(decodedName);
+                const response = await api.generateRoadmap(decodedName, lang);
                 if (response.success && response.roadmap) {
                     setRoadmap(response.roadmap);
                 } else {

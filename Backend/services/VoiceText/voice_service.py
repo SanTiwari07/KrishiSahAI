@@ -35,7 +35,7 @@ class VoiceService:
 
     def _log(self, message):
         try:
-            with open("stt_debug.log", "a") as f:
+            with open("stt_debug.log", "a", encoding='utf-8') as f:
                 f.write(f"{message}\n")
         except:
             print(message)

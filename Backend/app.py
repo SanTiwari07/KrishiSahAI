@@ -64,7 +64,7 @@ def log_request():
     try:
         msg = f"Incoming: {request.method} {request.url}\n"
         print(msg.strip())
-        with open("app_debug.log", "a") as f:
+        with open("app_debug.log", "a", encoding='utf-8') as f:
             f.write(msg)
     except:
         pass
@@ -435,21 +435,21 @@ def chat_advisor_stream():
             
         advisor = advisor_sessions[session_id]
         print(f"[ADVISOR] Stream Chat -> Input: \"{message[:50]}...\"")
-        with open("debug.log", "a") as f:
+        with open("debug.log", "a", encoding='utf-8') as f:
             f.write(f"Stream initiated for session {session_id}\n")
         
         def generate():
             try:
                 for i, chunk in enumerate(advisor.stream_chat(message, language=data.get('language'))):
                     if i == 0:
-                        with open("debug.log", "a") as f:
+                        with open("debug.log", "a", encoding='utf-8') as f:
                             f.write(f"First chunk yielded for session {session_id}\n")
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-                with open("debug.log", "a") as f:
+                with open("debug.log", "a", encoding='utf-8') as f:
                     f.write(f"Stream completed for session {session_id}\n")
             except Exception as e:
                 print(f"[ADVISOR] Generator Error: {e}")
-                with open("debug.log", "a") as f:
+                with open("debug.log", "a", encoding='utf-8') as f:
                     f.write(f"Generator Error: {e}\n")
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
         
@@ -619,13 +619,14 @@ def generate_roadmap():
              user_id = data.get('user_id', 'test_user')
 
         business_name = data.get('business_name') or data.get('selected_business_name')
+        language = data.get('language', 'en')
         
         if not business_name:
             return jsonify({'error': 'Business name is required'}), 400
             
-        print(f"[ROADMAP] Generating for User: {user_id}, Business: {business_name}")
+        print(f"[ROADMAP] Generating for User: {user_id}, Business: {business_name}, Language: {language}")
         
-        roadmap = roadmap_generator.generate_roadmap(user_id, business_name)
+        roadmap = roadmap_generator.generate_roadmap(user_id, business_name, language)
         
         return jsonify({'success': True, 'roadmap': roadmap})
 
@@ -731,16 +732,16 @@ def uploaded_audio(filename):
 @require_auth
 def speech_to_text():
     try:
-        with open("app_debug.log", "a") as f:
+        with open("app_debug.log", "a", encoding='utf-8') as f:
             f.write(f"\n[STT] Request received at {datetime.now()}\n")
 
         if 'audio' not in request.files:
-            with open("app_debug.log", "a") as f: f.write("[STT] No audio file provided\n")
+            with open("app_debug.log", "a", encoding='utf-8') as f: f.write("[STT] No audio file provided\n")
             return jsonify({'error': 'No audio file provided'}), 400
             
         file = request.files['audio']
         if file.filename == '':
-            with open("app_debug.log", "a") as f: f.write("[STT] No file selected\n")
+            with open("app_debug.log", "a", encoding='utf-8') as f: f.write("[STT] No file selected\n")
             return jsonify({'error': 'No file selected'}), 400
             
         # Save temporarily
@@ -750,16 +751,16 @@ def speech_to_text():
         audio_folder_str = str(AUDIO_FOLDER)
         filepath = os.path.join(audio_folder_str, filename)
         
-        with open("app_debug.log", "a") as f:
+        with open("app_debug.log", "a", encoding='utf-8') as f:
             f.write(f"[STT] Saving file to: {filepath}\n")
             
         file.save(filepath)
         
-        with open("app_debug.log", "a") as f: f.write("[STT] File saved, calling transcribe...\n")
+        with open("app_debug.log", "a", encoding='utf-8') as f: f.write("[STT] File saved, calling transcribe...\n")
         
         result = voice_service.transcribe(filepath)
         
-        with open("app_debug.log", "a") as f: f.write(f"[STT] Transcription result: {result}\n")
+        with open("app_debug.log", "a", encoding='utf-8') as f: f.write(f"[STT] Transcription result: {result}\n")
         
         # Cleanup
         try:
@@ -776,7 +777,7 @@ def speech_to_text():
         error_msg = f"[STT] Route Error: {str(e)}"
         print(error_msg)
         try:
-            with open("app_debug.log", "a") as f:
+            with open("app_debug.log", "a", encoding='utf-8') as f:
                 import traceback
                 f.write(f"{error_msg}\n")
                 f.write(traceback.format_exc())

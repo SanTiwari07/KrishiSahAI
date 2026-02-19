@@ -17,7 +17,8 @@ export interface UserProfile {
   soilType: string;
   waterAvailability: string;
   mainCrops: string[];
-  location: string; // Derived or summary field
+  location: string;
+  experience_years?: string; // New field for parity with backend
 }
 
 export interface NavItem {

@@ -14,6 +14,8 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, Image
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 import firebase_admin
 from firebase_admin import credentials, firestore
 import re
@@ -28,6 +30,30 @@ def get_firestore_client():
     """Get Firestore client"""
     return firestore.client()
 
+# Register a font that supports the Rupee symbol (₹)
+# Using DejaVuSans from matplotlib if available, or fallback to an absolute path if necessary
+try:
+    # Try to find DejaVuSans in site-packages
+    import matplotlib
+    mpl_data_path = matplotlib.get_data_path()
+    font_path = os.path.join(mpl_data_path, 'fonts', 'ttf', 'DejaVuSans.ttf')
+    
+    if os.path.exists(font_path):
+        pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
+        pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', os.path.join(mpl_data_path, 'fonts', 'ttf', 'DejaVuSans-Bold.ttf')))
+        FONT_NAME = 'DejaVuSans'
+        FONT_NAME_BOLD = 'DejaVuSans-Bold'
+        print(f"[PDF_SERVICE] Successfully registered DejaVuSans font from {font_path}")
+    else:
+        # Fallback to reportlab fonts or standard fonts
+        FONT_NAME = 'Helvetica'
+        FONT_NAME_BOLD = 'Helvetica-Bold'
+        print(f"[PDF_SERVICE] Warning: DejaVuSans.ttf not found at {font_path}, falling back to Helvetica")
+except Exception as e:
+    print(f"[PDF_SERVICE] Error registering font: {e}")
+    FONT_NAME = 'Helvetica'
+    FONT_NAME_BOLD = 'Helvetica-Bold'
+
 # --- Shared Utilities ---
 
 def create_pdf_header(canvas_obj, doc):
@@ -40,14 +66,14 @@ def create_pdf_header(canvas_obj, doc):
     
     # Title
     canvas_obj.setFillColor(colors.white)
-    canvas_obj.setFont('Helvetica-Bold', 24)
+    canvas_obj.setFont(FONT_NAME_BOLD, 24)
     canvas_obj.drawString(0.75*inch, letter[1] - 0.7*inch, 'KrishiSahAI')
     
-    canvas_obj.setFont('Helvetica', 14)
+    canvas_obj.setFont(FONT_NAME, 14)
     canvas_obj.drawString(0.75*inch, letter[1] - 0.95*inch, 'AI Advisory Report')
     
     # Date
-    canvas_obj.setFont('Helvetica', 10)
+    canvas_obj.setFont(FONT_NAME, 10)
     date_str = datetime.now().strftime('%d %B %Y')
     canvas_obj.drawRightString(letter[0] - 0.75*inch, letter[1] - 0.85*inch, date_str)
     
@@ -126,7 +152,7 @@ def get_common_styles():
             textColor=colors.HexColor('#2D5F4F'),
             spaceAfter=12,
             alignment=TA_LEFT,
-            fontName='Helvetica-Bold'
+            fontName=FONT_NAME_BOLD
         ),
         'h1': ParagraphStyle(
             'CustomH1',
@@ -135,7 +161,7 @@ def get_common_styles():
             textColor=colors.HexColor('#2D5F4F'),
             spaceAfter=10,
             spaceBefore=14,
-            fontName='Helvetica-Bold'
+            fontName=FONT_NAME_BOLD
         ),
         'h2': ParagraphStyle(
             'CustomH2',
@@ -144,7 +170,7 @@ def get_common_styles():
             textColor=colors.HexColor('#2D5F4F'),
             spaceAfter=8,
             spaceBefore=12,
-            fontName='Helvetica-Bold'
+            fontName=FONT_NAME_BOLD
         ),
         'h3': ParagraphStyle(
             'CustomH3',
@@ -153,7 +179,7 @@ def get_common_styles():
             textColor=colors.HexColor('#2D5F4F'),
             spaceAfter=6,
             spaceBefore=10,
-            fontName='Helvetica-Bold'
+            fontName=FONT_NAME_BOLD
         ),
         'normal': ParagraphStyle(
             'CustomNormal',
@@ -161,7 +187,8 @@ def get_common_styles():
             fontSize=10,
             textColor=colors.HexColor('#1E1E1E'),
             spaceAfter=6,
-            leading=14
+            leading=14,
+            fontName=FONT_NAME
         ),
         'bullet': ParagraphStyle(
             'CustomBullet',
@@ -171,7 +198,8 @@ def get_common_styles():
             leftIndent=20,
             bulletIndent=10,
             spaceAfter=4,
-            leading=14
+            leading=14,
+            fontName=FONT_NAME
         ),
         'table_header': ParagraphStyle(
             'TableHeader',
@@ -179,7 +207,7 @@ def get_common_styles():
             fontSize=10,
             textColor=colors.white,
             alignment=TA_CENTER,
-            fontName='Helvetica-Bold'
+            fontName=FONT_NAME_BOLD
         ),
          'table_cell': ParagraphStyle(
             'TableCell',
@@ -187,7 +215,8 @@ def get_common_styles():
             fontSize=10,
             textColor=colors.black,
             alignment=TA_LEFT,
-            leading=12
+            leading=12,
+            fontName=FONT_NAME
         ),
         'disclaimer': ParagraphStyle(
             'Disclaimer',
@@ -195,7 +224,8 @@ def get_common_styles():
             fontSize=8,
             textColor=colors.HexColor('#666666'),
             alignment=TA_CENTER,
-            spaceBefore=20
+            spaceBefore=20,
+            fontName=FONT_NAME
         )
     }
 
@@ -352,8 +382,8 @@ def generate_roadmap_pdf(roadmap_data: Dict[str, Any], business_name: str) -> io
         for year in years:
             # Year Header
             year_num = year.get('year', 'Year X')
-            goal = year.get('goal', '').replace('₹', 'Rs. ')
-            profit = year.get('profit', 'N/A').replace('₹', 'Rs. ')
+            goal = year.get('goal', '')
+            profit = year.get('profit', 'N/A')
             
             # Box-like style for each year
             story.append(Paragraph(f"<b>{year_num}: {goal}</b>", styles['h2']))
@@ -361,7 +391,7 @@ def generate_roadmap_pdf(roadmap_data: Dict[str, Any], business_name: str) -> io
             # Content table for alignment
             # Focus
             if year.get('focus'):
-                focus_text = year.get('focus').replace('₹', 'Rs. ')
+                focus_text = year.get('focus')
                 story.append(Paragraph(f"<b>Strategic Focus:</b> {focus_text}", styles['normal']))
                 story.append(Spacer(1, 0.05*inch))
             
@@ -370,7 +400,7 @@ def generate_roadmap_pdf(roadmap_data: Dict[str, Any], business_name: str) -> io
             if actions:
                 story.append(Paragraph("<b>Key Actions:</b>", styles['normal']))
                 for action in actions:
-                    action_text = action.replace('₹', 'Rs. ')
+                    action_text = action
                     story.append(Paragraph(f"• {action_text}", styles['bullet']))
             
             # Profit
@@ -393,7 +423,6 @@ def generate_roadmap_pdf(roadmap_data: Dict[str, Any], business_name: str) -> io
         if content:
             story.append(Paragraph(title, styles['h1']))
             # Process markdown content
-            content = content.replace('₹', 'Rs. ')
             for c_type, text in format_markdown_to_pdf_content(content):
                 if c_type == 'bullet':
                      story.append(Paragraph(f"• {text}", styles['bullet']))

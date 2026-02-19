@@ -71,7 +71,7 @@ class SustainabilityRoadmapGenerator:
                 return b
         return {"title": business_title_or_id, "id": "unknown"}
 
-    def generate_roadmap(self, user_id, business_name):
+    def generate_roadmap(self, user_id, business_name, language='en'):
         # 1. Fetch Data
         profile = self.get_farmer_profile(user_id)
         if not profile:
@@ -91,62 +91,112 @@ class SustainabilityRoadmapGenerator:
             }
 
         business_meta = self.get_business_metadata(business_name)
+        lang_upper = str(language).upper()
+        if lang_upper not in ['EN', 'HI', 'MR']:
+            lang_upper = 'EN'
 
         # 2. Construct Context
         context = {
             "farmer_name": profile.get("name", "Farmer"),
-            "location": f"{profile.get('village', '')}, {profile.get('district', '')}, {profile.get('state', '')}",
-            "land_size": f"{profile.get('landSize', profile.get('land_size', 0))} acres",
+            "location": f"{profile.get('village', 'Unknown Village')}, {profile.get('district', 'Unknown District')}, {profile.get('state', 'Unknown State')}",
+            "land_size": f"{profile.get('landSize', profile.get('land_size', 0))} {profile.get('land_unit', 'acres')}",
             "capital": f"₹{profile.get('capital', 'Not specified')}",
             "business_name": business_meta['title'],
+            "age": profile.get('age', 35),
+            "experience": profile.get('experience_years', profile.get('experience', 'Not specified')),
+            "soil_type": profile.get('soil_type', 'Not specified'),
+            "water_availability": profile.get('water_availability', 'Not specified'),
+            "crops_grown": ", ".join(profile.get('crops_grown', [])) if profile.get('crops_grown') else "None specified",
+            "market_access": profile.get('market_access', 'Moderate'),
+            "risk_preference": profile.get('risk_level', profile.get('risk_preference', 'Medium')),
+            "language_name": {"EN": "English", "HI": "Hindi", "MR": "Marathi"}[lang_upper]
         }
 
+        # Language-specific labels/headers for the prompt
+        LANG_CONFIG = {
+            "EN": {
+                "milestone": "Strategic Milestone Name",
+                "focus": "Strategic Focus",
+                "actions": "Key Actions",
+                "profit": "Expected Profit",
+                "year_term": "Year",
+                "headers": ["Overview", "1. 10-Year Growth & Profit Planner", "2. Labor & Aging Analysis", "3. Sustainability & Succession", "4. Financial Resilience", "5. Final Verdict"]
+            },
+            "HI": {
+                "milestone": "रणनीतिक उपलब्धि का नाम",
+                "focus": "रणनीतिक फोकस",
+                "actions": "मुख्य कार्य",
+                "profit": "अपेक्षित लाभ",
+                "year_term": "वर्ष",
+                "headers": ["अवलोकन", "1. 10-वर्षीय विकास और लाभ योजनाकार", "2. श्रम और उम्र बढ़ने का विश्लेषण", "3. स्थिरता और उत्तराधिकार", "4. वित्तीय लचीलापन", "5. अंतिम निर्णय"]
+            },
+            "MR": {
+                "milestone": "धोरणात्मक मैलाचा दगड",
+                "focus": "धोरणात्मक लक्ष",
+                "actions": "मुख्य कृती",
+                "profit": "अपेक्षित नफा",
+                "year_term": "वर्ष",
+                "headers": ["आढावा", "1. 10-वर्षांचे विकास आणि नफा नियोजक", "2. श्रम आणि वृद्धत्व विश्लेषण", "3. शाश्वतता आणि उत्तराधिकार", "4. आर्थिक लवचिकता", "5. अंतिम निकाल"]
+            }
+        }
+        
+        cfg = LANG_CONFIG[lang_upper]
+
         # 3. New Specific Roadmap Prompt
-        prompt = f"""You are an expert agricultural consultant. Create a comprehensive 10-Year Business Roadmap for '{context['business_name']}'.
+        prompt = f"""You are an expert Agricultural Decision Intelligence Consultant. 
+Create a HIGHLY DETAILED and professional 10-Year Business Roadmap for '{context['business_name']}'.
+STRICTLY generate the ENTIRE response in {context['language_name']} language. EVERY SINGLE WORD must be in {context['language_name']}.
 
-Farmer Details:
+Farmer Profile:
 - Name: {context['farmer_name']}
+- Age: {context['age']} (Crucial for labor/aging analysis)
 - Location: {context['location']}
-- Land Size: {context['land_size']}
-- Starting Capital/Budget: {context['capital']}
-- Experience: {profile.get('experience_years', profile.get('experience', 'Not specified'))} years
-- Market Access: {profile.get('market_access', 'Moderate')}
-- Risk Preference: {profile.get('risk_level', profile.get('risk_preference', 'Medium'))}
+- Land: {context['land_size']} (Soil: {context['soil_type']}, Water: {context['water_availability']})
+- Current Crops: {context['crops_grown']}
+- Starting Capital: {context['capital']}
+- Experience: {context['experience']} years
+- Market Access: {context['market_access']}
+- Risk Tolerance: {context['risk_preference']}
 
-Please write a detailed report using the exact structure below. STRICTLY NO EMOJIS. Use Markdown headers and bold text.
+Guidelines:
+1. Provide granular, actionable advice tailored to the specific context (soil, water, experience).
+2. For each year, explain WHY these actions are chosen and HOW they lead to the profit goals.
+3. STRICTLY NO EMOJIS. Use professional Markdown formatting.
+4. Ensure the 10-year timeline shows clear progression (Scale-up, Diversification, Automation).
+5. Output the response in {context['language_name']}.
 
-# Title: 10-Year Sustainability & Profit Planner for {context['business_name']}
+Structure (Use these exact Headers in {context['language_name']}):
 
-# Overview
-[Write a 2-3 sentence summary focusing on long-term sustainability and the farmer's specific context.]
+# {cfg['headers'][0]}
+[A comprehensive 3-5 sentence summary in {context['language_name']}. Analyze how {context['business_name']} integrated with current farm resources and the farmer's experience can lead to long-term success.]
 
-# 1. 10-Year Growth & Profit Planner
-[Provide a Year-wise breakdown from Year 1 to Year 10. Format each year as a clear block like this:]
+# {cfg['headers'][1]}
+[Provide a meticulous Year-wise breakdown ({cfg['year_term']} 1 to {cfg['year_term']} 10). Each year must be a clear block:]
 
-## Year 1: [Main Goal]
-- **Strategic Focus**: [Primary objective]
-- **Key Actions**: [2-3 specific actionable steps]
-- **Expected Profit**: ₹[Amount]
+## {cfg['year_term']} 1: [{cfg['milestone']}]
+- **{cfg['focus']}**: [Detailed objective for the year]
+- **{cfg['actions']}**: [3-5 highly specific, numbered steps in {context['language_name']}.]
+- **{cfg['profit']}**: ₹[Amount]
 
-... (Repeat for Years 2 through 10) ...
+... (Repeat for {cfg['year_term']} 2 through 10, showing scale-up and reinvestment) ...
 
-# 2. Labor & Aging Analysis
-[How labor requirements shift as the farmer ages (current age: {profile.get('age', 35)}). Include specific automation triggers for years 4, 7, and 10.]
+# {cfg['headers'][2]}
+[Explain how labor needs will be managed as the farmer ages from {context['age']} to {context['age']+10} in {context['language_name']}. Specify hardware/automation triggers for Year 4, 7, and 10 to reduce physical strain.]
 
-# 3. Sustainability & Succession
-[A plan for multi-generational wealth transfer and soil/resource health.]
+# {cfg['headers'][3]}
+[Document soil health management, resource recycling (e.g., waste-to-value), and a legacy plan for multi-generational wealth in {context['language_name']}.]
 
-# 4. Financial Resilience
-[How to handle 1 "bad year" (drought/pest) during Phase 1 (Years 1-3) vs Phase 3 (Years 7-10).]
+# {cfg['headers'][4]}
+[Compare risk mitigation strategies for a 'Bad Year' in the early stage (Years 1-3) vs. the mature stage (Years 7-10) in {context['language_name']}. Focus on cash reserves and insurance.]
 
-# 5. Final Verdict
-[Feasibility score and long-term ROI.]
+# {cfg['headers'][5]}
+[Detailed feasibility score (0-100) and analysis of long-term Return on Investment (ROI) in {context['language_name']}.]
 
 DISCLAIMER: This roadmap is an AI-generated simulation based on provided data and regional averages. Actual results may vary due to market fluctuations, climate conditions, and individual management. This should not be considered financial or legal advice. Consult with local agricultural experts before major investments.
 """
         
         # 4. Call LLM
-        print(f"[ROADMAP] Generating roadmap for {business_name} using markdown prompt...")
+        print(f"[ROADMAP] Generating roadmap for {business_name} in {lang_upper} using markdown prompt...")
         try:
             response = self.llm.invoke(prompt)
             content = response.content.strip()
@@ -158,7 +208,7 @@ DISCLAIMER: This roadmap is an AI-generated simulation based on provided data an
             print("=" * 40)
             
             # 5. Parse Markdown to Dictionary
-            roadmap_json = self.parse_markdown_roadmap(content, context['business_name'])
+            roadmap_json = self.parse_markdown_roadmap(content, context['business_name'], lang_upper)
             return roadmap_json
 
         except Exception as e:
@@ -171,7 +221,7 @@ DISCLAIMER: This roadmap is an AI-generated simulation based on provided data an
                 "final_verdict": "Retry Later"
             }
 
-    def parse_markdown_roadmap(self, text, business_name):
+    def parse_markdown_roadmap(self, text, business_name, language='EN'):
         """
         Parses the multi-section Markdown output into a dictionary for the frontend.
         """
@@ -188,45 +238,64 @@ DISCLAIMER: This roadmap is an AI-generated simulation based on provided data an
             "disclaimer": ""
         }
 
-        # Helper for section extraction
-        def get_section(name, next_section=None):
-            pattern = rf'# {name}\n(.*?)(?=# {next_section}|\Z)' if next_section else rf'# {name}\n(.*)'
+        # Multi-language header mapping for the parser
+        # We look for ANY of these patterns to demarcate sections
+        HEADERS = {
+            "overview": r'# (?:Overview|अवलोकन|आढावा)',
+            "planner": r'# (?:1\. 10-Year Growth & Profit Planner|1\. 10-वर्षीय विकास और लाभ योजनाकार|1\. 10-वर्षांचे विकास आणि नफा नियोजक)',
+            "labor": r'# (?:2\. Labor & Aging Analysis|2\. श्रम और उम्र बढ़ने का विश्लेषण|2\. श्रम आणि वृद्धत्व विश्लेषण)',
+            "sustainability": r'# (?:3\. Sustainability & Succession|3\. स्थिरता और उत्तराधिकार|3\. शाश्वतता आणि उत्तराधिकार)',
+            "resilience": r'# (?:4\. Financial Resilience|4\. वित्तीय लचीलापन|4\. आर्थिक लवचिकता)',
+            "verdict": r'# (?:5\. Final Verdict|5\. अंतिम निर्णय|5\. अंतिम निकाल)'
+        }
+
+        def extract_between(start_regex, end_regex=None):
+            if end_regex:
+                pattern = rf'{start_regex}\n(.*?)(?={end_regex}|\Z)'
+            else:
+                pattern = rf'{start_regex}\n(.*)'
             match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
             return match.group(1).strip() if match else ""
 
-        roadmap['overview'] = get_section("Overview", "1. 10-Year Growth & Profit Planner")
-        roadmap['labor_analysis'] = get_section("2. Labor & Aging Analysis", "3. Sustainability & Succession")
-        roadmap['sustainability_plan'] = get_section("3. Sustainability & Succession", "4. Financial Resilience")
-        roadmap['resilience_strategy'] = get_section("4. Financial Resilience", "5. Final Verdict")
+        roadmap['overview'] = extract_between(HEADERS['overview'], HEADERS['planner'])
+        roadmap['labor_analysis'] = extract_between(HEADERS['labor'], HEADERS['sustainability'])
+        roadmap['sustainability_plan'] = extract_between(HEADERS['sustainability'], HEADERS['resilience'])
+        roadmap['resilience_strategy'] = extract_between(HEADERS['resilience'], HEADERS['verdict'])
         
-        # Extract verdict and disclaimer separately
-        verdict_block = get_section("5. Final Verdict")
-        if "DISCLAIMER:" in verdict_block:
-            parts = verdict_block.split("DISCLAIMER:")
+        # Extract verdict and disclaimer
+        verdict_block = extract_between(HEADERS['verdict'])
+        if "DISCLAIMER:" in verdict_block or "अस्वीकरण:" in verdict_block:
+            parts = re.split(r'(?:DISCLAIMER:|अस्वीकरण:)', verdict_block, flags=re.IGNORECASE)
             roadmap['verdict'] = parts[0].strip()
             roadmap['disclaimer'] = parts[1].strip()
         else:
             roadmap['verdict'] = verdict_block
 
-        # Parse Years 1-10
-        year_blocks = re.findall(r'## (Year \d+): (.*?)\n(.*?)(?=## Year \d+:|\Z|# 2.)', text, re.DOTALL | re.IGNORECASE)
-        for year_label, goal, content in year_blocks:
+        # Parse Years 1-10 (Flexible for "Year", "वर्ष", etc.)
+        year_pattern = r'## (?:Year|वर्ष) (\d+): (.*?)\n(.*?)(?=## (?:Year|वर्ष) \d+:|\Z|# [2345])'
+        year_blocks = re.findall(year_pattern, text, re.DOTALL | re.IGNORECASE)
+        
+        # Labels for inner fields can also be translated
+        focus_labels = r'(?:\*\*Strategic Focus\*\*|\*\*रणनीतिक फोकस\*\*|\*\*धोरणात्मक लक्ष\*\*)'
+        profit_labels = r'(?:\*\*Expected Profit\*\*|\*\*अपेक्षित लाभ\*\*|\*\*अपेक्षित नफा\*\*)'
+        actions_labels = r'(?:\*\*Key Actions\*\*|\*\*मुख्य कार्य\*\*|\*\*मुख्य कृती\*\*)'
+
+        for year_num, goal, content in year_blocks:
             year_data = {
-                "year": year_label.strip(),
+                "year": f"{'Year' if language=='EN' else 'वर्ष'} {year_num}",
                 "goal": goal.strip(),
                 "focus": "",
                 "actions": [],
                 "profit": ""
             }
             
-            # Extract details using smaller regexes
-            focus_match = re.search(r'\*\*Strategic Focus\*\*:\s*(.*)', content, re.IGNORECASE)
+            focus_match = re.search(rf'{focus_labels}:\s*(.*)', content, re.IGNORECASE)
             year_data['focus'] = focus_match.group(1).strip() if focus_match else ""
             
-            profit_match = re.search(r'\*\*Expected Profit\*\*:\s*(.*)', content, re.IGNORECASE)
+            profit_match = re.search(rf'{profit_labels}:\s*(.*)', content, re.IGNORECASE)
             year_data['profit'] = profit_match.group(1).strip() if profit_match else ""
             
-            actions_match = re.search(r'\*\*Key Actions\*\*:\s*(.*?)(?=\*\*Expected Profit\*\*|\Z)', content, re.DOTALL | re.IGNORECASE)
+            actions_match = re.search(rf'{actions_labels}:\s*(.*?)(?={profit_labels}|\Z)', content, re.DOTALL | re.IGNORECASE)
             if actions_match:
                 raw_actions = actions_match.group(1).strip()
                 lines = raw_actions.split('\n')
@@ -234,7 +303,6 @@ DISCLAIMER: This roadmap is an AI-generated simulation based on provided data an
 
             roadmap['years'].append(year_data)
 
-        # Fallback if parsing failed
         if not roadmap['years']:
             print("[ROADMAP WARNING] Regex year extraction failed. Possible format mismatch.")
 
