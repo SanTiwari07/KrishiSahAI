@@ -50,21 +50,8 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
     // Initial Greeting when entering results view
     useEffect(() => {
         if (view === 'results' && messages.length === 0 && resultData) {
-            const user = auth.currentUser;
-            const userName = user?.displayName || (lang === 'HI' ? 'किसान' : lang === 'MR' ? 'शेतकरी' : 'Farmer');
-
-            const initialText = lang === 'HI'
-                ? `नमस्ते **${userName}**! \n\nमैंने आपके **${resultData?.crop}** कचरे का विश्लेषण किया है।\n\nउसे उपयोग करने के शीर्ष 3 लाभदायक तरीके ऊपर दिए गए हैं। इन विकल्पों के बारे में मुझसे कुछ भी पूछें!`
-                : lang === 'MR'
-                    ? `नमस्कार **${userName}**! \n\nमी तुमच्या **${resultData?.crop}** कचऱ्याचे विश्लेषण केले आहे.\n\nत्याचा वापर करण्याचे शीर्ष 3 फायदेशीर मार्ग वर दिले आहेत. या पर्यायांबद्दल मला काहीही विचारा!`
-                    : `Hello **${userName}**! \n\nI have analyzed your **${resultData?.crop}** waste.\n\nAbove are the top 3 profitable ways to use it. Ask me anything about these options!`;
-
-            setMessages([
-                {
-                    role: 'model',
-                    text: initialText
-                } as ChatMessage
-            ]);
+            // Initial Greeting removed as per user request
+            setMessages([]);
         }
     }, [view, resultData, lang]);
 
@@ -74,6 +61,17 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages, view]);
+
+    const formatMessage = (text: string) => {
+        if (!text) return '';
+        // Replace '•' (and any following whitespace/newlines) with newline + markdown list item
+        let formatted = text.replace(/•(?:[\r\n]|\s)*/g, '\n\n* ');
+
+        // Ensure spacing around headers (if any)
+        formatted = formatted.replace(/([.!?])\s*([A-Za-z\s]+:)/g, '$1\n\n$2');
+
+        return formatted;
+    };
 
     const handleAnalyze = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -262,9 +260,6 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
                                         {t.analyze} <ArrowRight className="w-6 h-6" />
                                     </button>
                                 </form>
-                                <button onClick={() => setView('intro')} className="mt-6 text-sm font-bold text-deep-green border-b border-deep-green hover:text-deep-blue hover:border-deep-blue transition-colors">
-                                    Back to Photo Upload
-                                </button>
                             </div>
                         </div>
                     )}
@@ -295,7 +290,7 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
     // --- RENDER VIEW: CHAT ---
     if (view === 'chat') {
         return (
-            <div className="max-w-4xl mx-auto py-8 px-4 h-[calc(100vh-100px)] flex flex-col">
+            <div className="max-w-7xl mx-auto py-2 px-4 h-[calc(100vh-100px)] flex flex-col">
                 <button
                     onClick={() => setView('results')}
                     className="mb-4 text-[#555555] hover:text-[#1B5E20] flex items-center gap-2 font-bold text-lg transition-colors w-fit"
@@ -328,7 +323,20 @@ const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
                                         ? 'bg-[#1B5E20] text-white rounded-tr-none'
                                         : 'bg-white text-[#1E1E1E] rounded-tl-none border border-[#E6E6E6]'
                                         }`}>
-                                        <ReactMarkdown>{msg.text}</ReactMarkdown>
+                                        <ReactMarkdown
+                                            components={{
+                                                p: ({ node, ...props }) => <p className="mb-2 last:mb-0 leading-relaxed" {...props} />,
+                                                ul: ({ node, ...props }) => <ul className="list-disc list-outside mb-2 ml-5 space-y-1" {...props} />,
+                                                ol: ({ node, ...props }) => <ol className="list-decimal list-outside mb-2 ml-5 space-y-1" {...props} />,
+                                                li: ({ node, ...props }) => <li className="mb-1 pl-1" {...props} />,
+                                                strong: ({ node, ...props }) => <span className="font-bold text-[#1B5E20]" {...props} />,
+                                                h1: ({ node, ...props }) => <h1 className="text-xl font-bold mb-2 text-[#1B5E20] mt-4 first:mt-0" {...props} />,
+                                                h2: ({ node, ...props }) => <h2 className="text-lg font-bold mb-2 text-[#1B5E20] mt-3 first:mt-0" {...props} />,
+                                                h3: ({ node, ...props }) => <h3 className="text-md font-bold mb-2 text-[#1B5E20] mt-2 first:mt-0" {...props} />,
+                                            }}
+                                        >
+                                            {formatMessage(msg.text)}
+                                        </ReactMarkdown>
                                     </div>
                                 </div>
                             </div>

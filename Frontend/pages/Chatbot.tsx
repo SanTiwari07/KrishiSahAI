@@ -11,7 +11,7 @@ import {
     Menu,
     Bot,
     User,
-    FileDown,
+
     Mic,
     Volume2,
     Square
@@ -57,15 +57,26 @@ const Chatbot: React.FC = () => {
     const [chatToDelete, setChatToDelete] = useState<{ id: string; title: string } | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    // PDF Generation State
-    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
 
     // Backend Session State
     const [backendSessionId, setBackendSessionId] = useState<string | null>(null);
     const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
 
+    // Scroll Management
+    const chatContainerRef = useRef<HTMLDivElement>(null);
+    const isAtBottomRef = useRef(true); // Default to true so it scrolls on first load
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    const handleScroll = () => {
+        if (chatContainerRef.current) {
+            const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+            const isBottom = scrollHeight - scrollTop - clientHeight < 100; // 100px threshold
+            isAtBottomRef.current = isBottom;
+        }
     };
 
     // Voice State
@@ -95,13 +106,14 @@ const Chatbot: React.FC = () => {
         setIsLoadingTTS(messageId);
         try {
             const token = await user?.getIdToken();
+            const langCode = lang.toLowerCase(); // 'en', 'hi', or 'mr'
             const response = await fetch('http://localhost:5000/api/voice/tts', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ text, language: lang === 'HI' ? 'hi' : 'en' })
+                body: JSON.stringify({ text, language: langCode })
             });
 
             const data = await response.json();
@@ -174,7 +186,12 @@ const Chatbot: React.FC = () => {
         }
     };
 
-    useEffect(scrollToBottom, [messages]);
+    // Auto-scroll effect: Only scroll if we were already at bottom
+    useEffect(() => {
+        if (isAtBottomRef.current) {
+            scrollToBottom();
+        }
+    }, [messages]);
 
     // 1. Initialize Auth and Load Chats
     useEffect(() => {
@@ -219,6 +236,8 @@ const Chatbot: React.FC = () => {
 
                 const msgs = await chatService.getChatMessages(user.uid, activeChatId);
                 setMessages(msgs);
+                // When loading a new chat, force scroll to bottom
+                isAtBottomRef.current = true;
             } catch (err) {
                 console.error("Failed to load chat:", err);
             } finally {
@@ -273,6 +292,7 @@ const Chatbot: React.FC = () => {
         setBackendSessionId(null);
         setInput('');
         setIsSidebarOpen(false); // Close sidebar on mobile
+        isAtBottomRef.current = true;
     };
 
     const handleDeleteChat = (chatId: string, chatTitle: string) => {
@@ -311,51 +331,17 @@ const Chatbot: React.FC = () => {
         }
     };
 
-    const handleDownloadPDF = async () => {
-        if (!activeChatId || !user) return;
 
-        setIsGeneratingPDF(true);
-        try {
-            const response = await fetch('http://localhost:5000/api/generate-pdf', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await user.getIdToken()}`
-                },
-                body: JSON.stringify({
-                    userId: user.uid,
-                    chatId: activeChatId
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('PDF generation failed');
-            }
-
-            // Download the PDF
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `KrishiSahAI_Advisory_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('PDF generation failed:', error);
-            // Optionally show error toast here
-            alert('Failed to generate PDF. Please try again.');
-        } finally {
-            setIsGeneratingPDF(false);
-        }
-    };
 
     const handleSend = async (manualMessage?: string) => {
         const text = manualMessage || input;
         if (!text.trim() || !user) return;
 
         setInput('');
+
+        // Force scroll to bottom when user sends a message
+        isAtBottomRef.current = true;
+        scrollToBottom(); // also call immediately for perceived responsiveness
 
         // Optimistic UI update
         const tempUserMsg: Message = { role: 'user', content: text, createdAt: new Date() };
@@ -447,7 +433,7 @@ const Chatbot: React.FC = () => {
                                     await chatService.updateChatBackendSession(user.uid, currentChatId, currentBackendId);
                                 }
 
-                                
+
                                 if (currentBackendId) {
                                     console.log("[Chatbot] Session reinitialized, retrying stream...");
                                     // Retry the stream
@@ -499,7 +485,7 @@ const Chatbot: React.FC = () => {
                         const titleData = await titleRes.json();
                         if (titleData.success) {
                             await chatService.updateChatTitle(user.uid, currentChatId, titleData.title);
-                            setChats(prev => prev.map(c => 
+                            setChats(prev => prev.map(c =>
                                 c.id === currentChatId ? { ...c, title: titleData.title } : c
                             ));
                         }
@@ -552,27 +538,7 @@ const Chatbot: React.FC = () => {
                             {t.back} to {location.state?.isRoadmapPlanner ? 'Strategy Planner' : (location.state?.fromAdvisory ? 'Recommendations' : 'Assessment')}
                         </button>
 
-                        {/* PDF Download Button */}
-                        {messages.length > 0 && activeChatId && (
-                            <button
-                                onClick={handleDownloadPDF}
-                                disabled={isGeneratingPDF || isLoading}
-                                className="flex items-center gap-2 px-4 py-2 bg-[#1B5E20] text-white rounded-xl font-bold hover:bg-[#002105] transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Download PDF"
-                            >
-                                {isGeneratingPDF ? (
-                                    <>
-                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                        Generating...
-                                    </>
-                                ) : (
-                                    <>
-                                        <FileDown className="w-4 h-4" />
-                                        Download PDF
-                                    </>
-                                )}
-                            </button>
-                        )}
+
                     </div>
                 )}
 
@@ -595,7 +561,11 @@ const Chatbot: React.FC = () => {
                 )}
 
                 {/* Messages Area */}
-                <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
+                <div
+                    ref={chatContainerRef}
+                    onScroll={handleScroll}
+                    className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6"
+                >
                     {messages.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
                             <div className="w-24 h-24 bg-[#FAFCFC] rounded-[32px] flex items-center justify-center mb-6">
@@ -624,11 +594,10 @@ const Chatbot: React.FC = () => {
                                             {/* TTS Button */}
                                             <button
                                                 onClick={() => handleTextToSpeech(msg.content, idx)}
-                                                className={`p-1.5 rounded-full transition-all ${
-                                                    playingMessageId === idx 
-                                                    ? 'text-red-500 hover:bg-red-50' 
+                                                className={`p-1.5 rounded-full transition-all ${playingMessageId === idx
+                                                    ? 'text-red-500 hover:bg-red-50'
                                                     : 'text-stone-400 hover:text-[#1B5E20] hover:bg-stone-100'
-                                                }`}
+                                                    }`}
                                                 title={playingMessageId === idx ? "Stop playback" : "Listen to response"}
                                                 disabled={isLoadingTTS === idx}
                                             >
@@ -641,19 +610,7 @@ const Chatbot: React.FC = () => {
                                                 )}
                                             </button>
 
-                                            {/* PDF Button */}
-                                            <button
-                                                onClick={handleDownloadPDF}
-                                                disabled={isGeneratingPDF}
-                                                className="p-1.5 text-stone-400 hover:text-[#1B5E20] hover:bg-stone-100 rounded-full transition-all disabled:opacity-50"
-                                                title="Download PDF"
-                                            >
-                                                {isGeneratingPDF ? (
-                                                    <div className="w-4 h-4 border-2 border-stone-300 border-t-[#1B5E20] rounded-full animate-spin"></div>
-                                                ) : (
-                                                    <FileDown className="w-4 h-4" />
-                                                )}
-                                            </button>
+
                                         </div>
                                     )}
 
@@ -683,7 +640,7 @@ const Chatbot: React.FC = () => {
                             </div>
                         ))
                     )}
-                    
+
                     {/* Roadmap Planner Status Message */}
                     {location.state?.isRoadmapPlanner && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && !messages[messages.length - 1].content && (
                         <div className="flex flex-col items-center justify-center p-12 text-center animate-pulse">

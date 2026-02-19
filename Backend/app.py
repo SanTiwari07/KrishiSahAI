@@ -1,4 +1,5 @@
 
+
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from flask_talisman import Talisman
@@ -7,10 +8,15 @@ import os
 import sys
 from pathlib import Path
 
+# Load environment variables
+load_dotenv()
+
 # Ensure the Backend directory is in the Python path before local imports
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from services.notification_service.notification_service import get_demo_notifications
+from services.NotificationService.notification_service import get_demo_notifications
+from services.NotificationService.notification_engine import notification_engine
+from flask_apscheduler import APScheduler
 from werkzeug.utils import secure_filename
 import pandas as pd
 import json
@@ -19,11 +25,35 @@ from datetime import datetime
 from middleware.auth import init_firebase, require_auth
 import firebase_admin
 
-# Load environment variables
-load_dotenv()
-init_firebase()
+
+
 
 app = Flask(__name__)
+
+# --- Scheduler Setup ---
+scheduler = APScheduler()
+app.config['SCHEDULER_API_ENABLED'] = True
+scheduler.init_app(app)
+scheduler.start()
+
+# Scheduled Job: Runs every 30 minutes to generate notifications for active users
+@scheduler.task('interval', id='generate_notifications_job', minutes=30)
+def scheduled_notification_generation():
+    with app.app_context():
+        print("[SCHEDULER] Starting scheduled notification generation...")
+        try:
+           db = firebase_admin.firestore.client()
+           users = db.collection('users').limit(20).stream() # Limit for verified performance
+           for user in users:
+               # asyncio.run(notification_engine.generate_notifications_for_user(user.id))
+               # Note: In synchronous Flask context without async loop, we might need a wrapper or run sync
+               # For now, we'll keep it simple or use a helper if needed. 
+               # Since `generate_notifications_for_user` is async, we need a runner.
+               import asyncio
+               asyncio.run(notification_engine.generate_notifications_for_user(user.id))
+        except Exception as e:
+            print(f"[SCHEDULER] Error: {e}")
+
 
 @app.route('/ping')
 def ping():
@@ -67,7 +97,7 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # --- Disease Detector Setup ---
-DISEASE_DETECTOR_DIR = Path(__file__).resolve().parent / 'services' / 'Disease Detector'
+DISEASE_DETECTOR_DIR = Path(__file__).resolve().parent / 'services' / 'DiseaseDetector'
 if str(DISEASE_DETECTOR_DIR) not in sys.path:
     sys.path.append(str(DISEASE_DETECTOR_DIR))
 
@@ -93,7 +123,7 @@ def load_disease_data():
 load_disease_data()
 
 # --- Pest Detector Setup ---
-PEST_DETECTOR_DIR = Path(__file__).resolve().parent / 'services' / 'Pest Detector'
+PEST_DETECTOR_DIR = Path(__file__).resolve().parent / 'services' / 'PestDetector'
 if str(PEST_DETECTOR_DIR) not in sys.path:
     sys.path.append(str(PEST_DETECTOR_DIR))
 
@@ -108,7 +138,7 @@ except Exception as e:
     pest_predict = None
 
 # --- Business Advisor Setup ---
-BUSINESS_ADVISOR_DIR = Path(__file__).resolve().parent / 'services' / 'Business Advisor'
+BUSINESS_ADVISOR_DIR = Path(__file__).resolve().parent / 'services' / 'BusinessAdvisor'
 if str(BUSINESS_ADVISOR_DIR) not in sys.path:
     sys.path.append(str(BUSINESS_ADVISOR_DIR))
 
@@ -380,7 +410,7 @@ def chat_advisor_api():
             
         advisor = advisor_sessions[session_id]
         print(f"[ADVISOR] Chat -> Input: \"{message[:50]}...\"")
-        response = advisor.chat(message)
+        response = advisor.chat(message, language=data.get('language'))
         print(f"[ADVISOR] Success -> Output: \"{response[:50]}...\" ({len(response)} chars)")
         
         return jsonify({'success': True, 'response': response})
@@ -410,7 +440,7 @@ def chat_advisor_stream():
         
         def generate():
             try:
-                for i, chunk in enumerate(advisor.stream_chat(message)):
+                for i, chunk in enumerate(advisor.stream_chat(message, language=data.get('language'))):
                     if i == 0:
                         with open("debug.log", "a") as f:
                             f.write(f"First chunk yielded for session {session_id}\n")
@@ -475,7 +505,7 @@ def integrated_advice():
         context_message = f"I have detected {disease} disease in my {crop} crop with {severity} severity."
         print(f"[ADVISOR] Integrated Advice -> Disease: {disease} on {crop}")
         
-        response = advisor.chat(context_message)
+        response = advisor.chat(context_message, language=data.get('language'))
         print(f"[ADVISOR] Integrated Advice Success")
         
         return jsonify({
@@ -574,7 +604,7 @@ def chat_waste_stream():
 
 # --- 5-10 Year Roadmap Routes ---
 # Lazy load to avoid circular dependencies if any
-from services.five_to_ten_year_plan.roadmap_service import SustainabilityRoadmapGenerator
+from services.FiveToTenYear.roadmap_service import SustainabilityRoadmapGenerator
 roadmap_generator = SustainabilityRoadmapGenerator()
 
 @app.route('/api/generate-roadmap', methods=['POST'])
@@ -779,7 +809,7 @@ def text_to_speech():
 
 
 # --- PDF Generation Route ---
-from services.pdf_service import generate_chat_pdf
+from services.pdfGeneration.pdf_service import generate_chat_pdf, generate_roadmap_pdf
 from flask import send_file
 
 @app.route('/api/generate-pdf', methods=['POST'])
@@ -791,47 +821,53 @@ def generate_pdf():
         user_id = data.get('userId')
         chat_id = data.get('chatId')
         
-        if not user_id or not chat_id:
-            return jsonify({'success': False, 'error': 'Missing userId or chatId'}), 400
-        
         # Verify user_id matches token
         if request.user.get('uid') != user_id and os.getenv("FLASK_ENV") != "development":
             return jsonify({'success': False, 'error': 'Unauthorized access'}), 403
+
+            
+        pdf_buffer = generate_chat_pdf(user_id, chat_id)
         
-        print(f"[PDF] Generating PDF for user {user_id}, chat {chat_id}")
-        
-        # Generate PDF
-        try:
-            print(f"[PDF_ROUTE] Calling generate_chat_pdf...")
-            pdf_buffer = generate_chat_pdf(user_id, chat_id)
-            print(f"[PDF_ROUTE] PDF generated successfully. Size: {pdf_buffer.getbuffer().nbytes} bytes")
-        except Exception as e:
-            print(f"[PDF] Generation logic failed: {e}")
-            import traceback
-            traceback.print_exc()
-            return jsonify({'success': False, 'error': f"PDF Logic Error: {str(e)}"}), 500
-        
-        # Create filename with current date
-        filename = f'KrishiSahAI_Advisory_{datetime.now().strftime("%d-%m-%Y")}.pdf'
-        
-        print(f"[PDF] Success - Generated {filename}")
-        
-        # Send file
-        pdf_buffer.seek(0)
         return send_file(
             pdf_buffer,
-            mimetype='application/pdf',
             as_attachment=True,
-            download_name=filename
+            download_name=f"KrishiSahAI_Advisory_{chat_id[:8]}.pdf",
+            mimetype='application/pdf'
         )
-    except ValueError as ve:
-        print(f"[PDF] Validation Error: {ve}")
-        return jsonify({'success': False, 'error': str(ve)}), 404
     except Exception as e:
-        print(f"[PDF] Generation Error: {e}")
+        print(f"[PDF] Error: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/generate-roadmap-pdf', methods=['POST'])
+@require_auth
+def generate_roadmap_pdf_route():
+    """Generate PDF for Roadmap"""
+    try:
+        data = request.json
+        roadmap = data.get('roadmap')
+        business_name = data.get('businessName', 'My Business')
+        
+        if not roadmap:
+            return jsonify({'success': False, 'error': 'Missing roadmap data'}), 400
+            
+        print(f"[PDF] Generating Roadmap PDF for {business_name}")
+        pdf_buffer = generate_roadmap_pdf(roadmap, business_name)
+        
+        return send_file(
+            pdf_buffer,
+            as_attachment=True,
+            download_name=f"KrishiSahAI_Roadmap_{business_name.replace(' ', '_')}.pdf",
+            mimetype='application/pdf'
+        )
+    except Exception as e:
+        print(f"[PDF] Roadmap Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 
 @app.route('/api/weather/current', methods=['GET', 'OPTIONS'])
 @require_auth
@@ -846,29 +882,51 @@ def get_current_weather():
         return jsonify({'error': str(e)}), 500
 
 # --- Notification Routes (Demo) ---
+# --- Notification Routes (NEW) ---
 @app.route('/api/notifications', methods=['GET'])
 @require_auth
 def get_notifications():
     try:
-        if os.getenv("ENABLE_NOTIFICATIONS", "false").lower() != "true":
-            return {"success": True, "notifications": []}
+        user_id = request.user.get('uid')
+        notifications = notification_engine.get_notifications(user_id)
+        
+        # Fallback to demo if empty (for Hackathon demo purposes if engine hasn't run yet)
+        if not notifications:
+             print(f"[NOTIF] No live notifications for {user_id}, returning demo data.")
+             notifications = get_demo_notifications(user_id)
+             
+        return jsonify({'success': True, 'notifications': notifications})
+    except Exception as e:
+        print(f"[NOTIF] Error: {e}")
+        return jsonify({'error': str(e)}), 500
 
-        user_id = request.user.get("id")
-        notifications = get_demo_notifications(user_id)
-
-        return {
-            "success": True,
-            "notifications": notifications
-        }
-    except Exception:
-        return {"success": True, "notifications": []}
+@app.route('/api/notifications/trigger', methods=['POST'])
+@require_auth
+def trigger_notifications():
+    try:
+        user_id = request.user.get('uid')
+        print(f"[DEBUG] /api/notifications/trigger reached for {user_id}")
+        with open("d:/Projects/KrishiSahAI TechFiesta/app_debug.log", "a") as f:
+            f.write(f"[DEBUG] Trigger path called for {user_id}\n")
+        print(f"[NOTIF] Manual trigger initiated for {user_id}")
+        
+        import asyncio
+        notifications = asyncio.run(notification_engine.generate_notifications_for_user(user_id))
+        
+        print(f"[NOTIF] Trigger success: {len(notifications)} notifications generated for {user_id}")
+        return jsonify({'success': True, 'notifications': notifications, 'count': len(notifications)})
+    except Exception as e:
+        print(f"[NOTIF] Trigger Error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
     print("Starting server with ALL components...")
+    port = int(os.environ.get('PORT', 5000))
+    # app.run(debug=True, host='0.0.0.0', port=port) # threaded=True by default
+    # Turn off debug mode in production or if using APScheduler with reloader issues
+    app.run(debug=True, host='0.0.0.0', port=port, use_reloader=True)
     print("\n=== Registered Routes ===")
     for rule in app.url_map.iter_rules():
         print(f"{rule.endpoint}: {rule.rule} {list(rule.methods)}")
     print("=========================\n")
-    app.run(host='0.0.0.0', port=5000)
-

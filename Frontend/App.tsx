@@ -17,7 +17,7 @@ import { Leaf } from 'lucide-react';
 import { Language, UserProfile } from './types';
 import { auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from './firebase';
 import { onSnapshot, doc, setDoc, getDoc } from 'firebase/firestore';
-import { RefreshCw, LogOut, Settings, Menu, X, Sun, Moon, User } from 'lucide-react';
+import { RefreshCw, LogOut, Settings, Menu, X, Sun, Moon, User, Cloud } from 'lucide-react';
 import { api } from './src/services/api';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
@@ -109,8 +109,8 @@ const Header: React.FC<{
 
             {user && (
               <>
-                {/* Weather Info */}
-                <div className={`hidden sm:flex items-center gap-1 bg-[#FAFAF7] border border-[#E6E6E6] rounded-full px-1 py-0.5 transition-all group ${weatherLoading ? 'opacity-80' : ''}`}>
+                {/* Weather Info (Desktop) */}
+                <div className={`hidden sm:flex items-center gap-1 bg-[#FAFAF7] border border-[#E6E6E6] rounded-full hover:rounded-lg px-1 py-0.5 transition-all group ${weatherLoading ? 'opacity-80' : ''}`}>
                   <button
                     onClick={toggleWeather}
                     className="flex items-center gap-3 px-4 py-2 bg-transparent text-xs font-bold text-[#1B5E20] hover:bg-green-50 transition-all border-r border-gray-200"
@@ -129,6 +129,15 @@ const Header: React.FC<{
                     <RefreshCw size={14} />
                   </button>
                 </div>
+
+                {/* Weather Button (Mobile) */}
+                <button
+                  onClick={toggleWeather}
+                  className="sm:hidden relative flex items-center justify-center w-10 h-10 bg-[#FAFAF7] border border-[#E6E6E6] rounded-full hover:bg-[#E8F5E9] transition-all"
+                  title="Weather"
+                >
+                  <Cloud size={18} className="text-[#043744]" />
+                </button>
 
                 {/* Notifications */}
                 <NotificationBell />
@@ -201,6 +210,22 @@ const Header: React.FC<{
                   {item.label}
                 </Link>
               ))}
+              {/* Mobile Language Switcher */}
+              <div className="flex bg-[#1B5E20] border border-white/20 p-0 gap-0 rounded-lg overflow-hidden mb-4">
+                {[{ code: 'EN', label: 'EN' }, { code: 'HI', label: 'HI' }, { code: 'MR', label: 'MR' }].map((l) => (
+                  <button
+                    key={l.code}
+                    onClick={() => {
+                      setLanguage(l.code as Language);
+                      // Don't close menu automatically so user can see it works
+                    }}
+                    className={`flex-1 px-2 py-3 text-xs font-bold transition-all border-r border-white/20 last:border-r-0 ${language === l.code ? 'bg-white text-[#1B5E20]' : 'text-white hover:bg-white/10'}`}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+
               {/* Mobile Profile & Logout */}
               <div className="pt-4 mt-2 border-t border-white/10">
                 <Link

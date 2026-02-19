@@ -2,8 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../src/services/api';
 import { ArrowLeft, Download, CheckCircle, AlertTriangle, TrendingUp, Users, Calendar, Shield, Loader2, Share2 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { auth } from '../firebase';
 import { Language } from '../types';
 import { translations } from '../src/i18n/translations';
 import ReactMarkdown from 'react-markdown';
@@ -72,42 +71,39 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
     }, [decodedName, location.state]);
 
     const handleDownloadPDF = async () => {
-        if (!contentRef.current || !roadmap) return;
+        if (!roadmap) return;
 
         setLoading(true); // Show loader during PDF generation
         try {
-            const element = contentRef.current;
-            const canvas = await html2canvas(element, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff'
+            // Updated to use server-side generation for better quality and full content
+            const token = await auth.currentUser?.getIdToken();
+            const response = await fetch('http://localhost:5000/api/generate-roadmap-pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    roadmap: roadmap,
+                    businessName: decodedName
+                })
             });
-            const imgData = canvas.toDataURL('image/png');
 
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            
-            const imgWidth = canvas.width;
-            const imgHeight = canvas.height;
-            const ratio = pdfWidth / imgWidth;
-            const scaledHeight = imgHeight * ratio;
-
-            let heightLeft = scaledHeight;
-            let position = 0;
-
-            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight);
-            heightLeft -= pdfHeight;
-
-            while (heightLeft > 0) {
-                position = heightLeft - scaledHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, scaledHeight);
-                heightLeft -= pdfHeight;
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || 'Failed to generate PDF');
             }
 
-            pdf.save(`KrishiSahAI_Planner_${decodedName.replace(/\s+/g, '_')}.pdf`);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `KrishiSahAI_Planner_${decodedName.replace(/\s+/g, '_')}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
         } catch (err) {
             console.error("PDF Export error:", err);
             alert("Failed to export PDF. Please try again.");
@@ -150,19 +146,17 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                 {/* Header Actions */}
                 <div className="flex items-center justify-between mb-8 no-print">
                     <button
-                        onClick={() => navigate('/advisory')}
+                        onClick={() => {
+                            if (location.state?.previousState) {
+                                navigate('/advisory', { state: location.state.previousState });
+                            } else {
+                                navigate('/advisory');
+                            }
+                        }}
                         className="flex items-center gap-2 px-6 py-3 bg-deep-green text-white font-bold hover:bg-deep-green/90 transition-all shadow-md uppercase tracking-wider"
                     >
                         <ArrowLeft className="w-5 h-5" /> {t.backToAdvisory}
                     </button>
-                    <div className="flex gap-4">
-                        <button 
-                            onClick={handleDownloadPDF}
-                            className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-deep-green text-deep-green font-bold hover:bg-deep-green hover:text-white transition-all shadow-sm uppercase tracking-wider"
-                        >
-                            <Download className="w-5 h-5" /> {t.exportPlan}
-                        </button>
-                    </div>
                 </div>
 
                 {/* Printable Content */}
@@ -234,9 +228,17 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
 
                 {/* 10-Year Plan Section */}
                 <div className="mt-12 mb-12">
-                    <div className="flex items-center gap-3 mb-8">
-                        <Calendar className="w-8 h-8 text-[#1B5E20]" />
-                        <h2 className="text-3xl font-extrabold text-[#1E1E1E] uppercase tracking-tight">1. {t.strategicTimeline}</h2>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div className="flex items-center gap-3">
+                            <Calendar className="w-8 h-8 text-[#1B5E20]" />
+                            <h2 className="text-3xl font-extrabold text-[#1E1E1E] uppercase tracking-tight">1. {t.strategicTimeline}</h2>
+                        </div>
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-deep-green text-deep-green font-bold hover:bg-deep-green hover:text-white transition-all shadow-sm uppercase tracking-wider"
+                        >
+                            <Download className="w-5 h-5" /> {t.exportPlan}
+                        </button>
                     </div>
 
                     <div className="space-y-8">
@@ -249,7 +251,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                                             <h3 className="text-2xl font-extrabold text-deep-green mb-4 uppercase tracking-tighter">
                                                 {year.year}: {year.goal}
                                             </h3>
-                                            
+
                                             <div className="space-y-4">
                                                 <div>
                                                     <h4 className="text-xs font-bold text-[#1B5E20] uppercase tracking-widest mb-1">Strategic Focus</h4>
@@ -285,7 +287,7 @@ const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
                                 <p className="text-amber-800 font-bold mb-2">Legacy Roadmap Format Detected</p>
                                 <p className="text-amber-700 text-sm">This roadmap was generated using an older version of the planner. Please re-generate your roadmap for the full 10-year Year-wise experience.</p>
                                 <div className="mt-4">
-                                    <button 
+                                    <button
                                         onClick={() => navigate('/advisory')}
                                         className="px-4 py-2 bg-amber-600 text-white rounded-lg font-bold text-sm hover:bg-amber-700 transition-colors"
                                     >
@@ -338,13 +340,13 @@ ${profileSummary}
 
 Format: Please use Markdown with headers and bold text for a professional "Planner" look. STRICTLY NO EMOJIS. Ensure the Disclaimer is clearly visible at the end.`;
 
-                        navigate('/chat', { 
-                            state: { 
+                        navigate('/chat', {
+                            state: {
                                 initialMessage: comprehensivePrompt,
                                 isRoadmapPlanner: true,
                                 businessName: decodedName,
                                 previousState: { roadmap }
-                            } 
+                            }
                         });
                     }}
                     className="flex items-center gap-3 px-10 py-5 bg-[#1B5E20] text-white font-black rounded-full shadow-2xl hover:bg-[#000D0F] hover:scale-105 active:scale-95 transition-all uppercase tracking-[0.2em] border-4 border-white/20 text-sm"
@@ -364,7 +366,7 @@ Format: Please use Markdown with headers and bold text for a professional "Plann
                     </p>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

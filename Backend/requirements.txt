@@ -27,3 +27,7 @@ openai-whisper>=20231117
 gTTS>=2.5.1
 torch>=2.0.0
 ultralytics>=8.0.0
+# Try tensorflow-cpu or tf-nightly if standard tensorflow fails on Python 3.13
+tensorflow>=2.16.1
+APScheduler>=3.10.0
+Flask-APScheduler>=1.12.0

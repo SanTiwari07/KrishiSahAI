@@ -24,12 +24,10 @@ const PhaseZero: React.FC = () => {
   const displayImages = [...images, ...images];
 
   return (
-    <section id="validation" className="w-full bg-white py-20 overflow-hidden border-t-2 border-deep-green">
+    <section id="validation" className="w-full bg-white py-10 overflow-hidden">
       <div className="max-w-7xl mx-auto px-8 mb-12 text-center">
-        <div className="inline-flex items-center gap-2 px-6 py-2 bg-deep-green/10 text-deep-green text-sm font-bold mb-4 uppercase tracking-wider border border-deep-green/20 rounded-full">
-          <span className="w-2 h-2 bg-deep-green animate-pulse rounded-full"></span> {t.validationBadge}
-        </div>
-        <h2 className="text-4xl md:text-5xl font-extrabold text-deep-green leading-tight tracking-tight">
+        {/* Validation Badge removed as per user request */}
+        <h2 className="text-5xl md:text-6xl font-extrabold text-deep-green leading-tight tracking-tight">
           {t.validationTitle}
         </h2>
       </div>
