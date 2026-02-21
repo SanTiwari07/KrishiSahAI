@@ -14,6 +14,7 @@ import EditProfile from './pages/EditProfile';
 import FarmHealth from './pages/FarmHealth';
 import ArticleDetail from './pages/ArticleDetail';
 import Planner from './pages/Planner';
+import Chatbot from './pages/Chatbot';
 import { Leaf } from 'lucide-react';
 import { Language, UserProfile, Farm } from './types';
 
@@ -101,7 +102,7 @@ const Header: React.FC<{
     { label: t.navHome, path: '/' },
     { label: t.navAdvisory, path: '/advisory' },
     { label: t.navNews, path: '/news' },
-    { label: t.navKnowledge, path: '/hub' },
+    { label: t.navHub, path: '/hub' },
   ];
 
   const getWeatherDisplay = () => {
@@ -111,7 +112,7 @@ const Header: React.FC<{
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#1B5E20] border-b-4 border-[#2E7D32] shadow-md">
+    <header className="fixed top-0 z-[60] w-full bg-[#1B5E20] border-b-4 border-[#2E7D32] shadow-md">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-[64px]">
           {/* Brand */}
@@ -1033,7 +1034,7 @@ const AppContent: React.FC = () => {
         authView === 'login' ? <LoginFlow onLogin={handleLogin} onSwitch={() => setAuthView('signup')} /> : <SignupFlow onSignup={handleSignup} onSwitch={() => setAuthView('login')} />
       ) : (
 
-        <div className="min-h-screen">
+        <div className="min-h-screen pt-[68px]">
           {/* Updated Header with refresh and loading props */}
           <Header
             toggleNotifications={() => { }}
@@ -1069,7 +1070,22 @@ const AppContent: React.FC = () => {
             <Route path="/roadmap/:businessName" element={<Roadmap />} />
             <Route path="/planner" element={<Planner />} />
             <Route path="/profile/edit" element={<EditProfile />} />
+            <Route path="/chat" element={<Chatbot />} />
           </Routes>
+
+          {/* Floating Chatbot Button */}
+          <Link
+            to="/chat"
+            className="fixed bottom-6 right-6 w-16 h-16 bg-white hover:bg-gray-50 text-[#1B5E20] rounded-full flex items-center justify-center shadow-2xl transition-all hover:scale-110 z-50 group border-2 border-[#1B5E20]"
+            title="Chat with AI"
+          >
+            <img src={logo} alt="Chatbot" className="w-10 h-10 object-contain drop-shadow" />
+
+            {/* Tooltip */}
+            <span className="absolute right-full mr-4 bg-white text-[#1B5E20] px-3 py-1.5 rounded-lg text-sm font-bold shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap border border-green-100">
+              Ask KrishiSahAI
+            </span>
+          </Link>
 
         </div>
       )}

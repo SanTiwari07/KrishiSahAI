@@ -5,11 +5,12 @@ from firebase_admin import firestore
 from langchain_ollama import ChatOllama
 import re
 
-db = None
-try:
-    db = firestore.client()
-except Exception as e:
-    print(f"[WARNING] Firestore client initialization failed in planner_service: {e}")
+def get_db():
+    try:
+        return firestore.client()
+    except Exception as e:
+        print(f"[WARNING] Firestore client initialization failed: {e}")
+        return None
 
 class CropPlannerGenerator:
     def __init__(self):
@@ -21,6 +22,7 @@ class CropPlannerGenerator:
 
     def get_farmer_profile(self, user_id):
         try:
+            db = get_db()
             if db is None:
                  print("[WARNING] Firestore not initialized, returning None for profile")
                  return None
@@ -123,12 +125,25 @@ Structure (Use these exact Headers in {context['language_name']}):
 # {cfg['headers'][1]}
 [Provide a meticulous Phase-wise breakdown. Each phase must be a clear block:]
 
-## Phase 1: [{cfg['milestone']}]
+## Phase 1: [{cfg['milestone']}] - Sowing & Pre-Planting
 - **{cfg['focus']}**: [Detailed objective for this phase]
 - **{cfg['actions']}**: [3-5 highly specific, numbered steps in {context['language_name']}. Mention locally available inputs where applicable.]
 - **{cfg['profit']}**: [Expected yield weight and estimated value in ₹ (Indian Rupees)]
 
-... (Repeat for all phases until harvest) ...
+## Phase 2: [{cfg['milestone']}] - Vegetative Growth
+- **{cfg['focus']}**: [Detailed objective for this phase]
+- **{cfg['actions']}**: [3-5 highly specific, numbered steps in {context['language_name']}. Mention locally available inputs where applicable.]
+- **{cfg['profit']}**: [Expected yield weight and estimated value in ₹ (Indian Rupees)]
+
+## Phase 3: [{cfg['milestone']}] - Flowering & Fruiting
+- **{cfg['focus']}**: [Detailed objective for this phase]
+- **{cfg['actions']}**: [3-5 highly specific, numbered steps in {context['language_name']}. Mention locally available inputs where applicable.]
+- **{cfg['profit']}**: [Expected yield weight and estimated value in ₹ (Indian Rupees)]
+
+## Phase 4: [{cfg['milestone']}] - Harvesting & Post-Harvest
+- **{cfg['focus']}**: [Detailed objective for this phase]
+- **{cfg['actions']}**: [3-5 highly specific, numbered steps in {context['language_name']}. Mention locally available inputs where applicable.]
+- **{cfg['profit']}**: [Expected yield weight and estimated value in ₹ (Indian Rupees)]
 
 # {cfg['headers'][2]}
 [Explain how resources (water, fertilizer) and labor should be allocated in {context['language_name']}.]
@@ -206,10 +221,10 @@ DISCLAIMER: This roadmap is an AI-generated simulation based on provided data an
         year_pattern = r'## (?:Year|वर्ष|Phase) (\d+): (.*?)\n(.*?)(?=## (?:Year|वर्ष|Phase) \d+:|\Z|# [2345])'
         year_blocks = re.findall(year_pattern, text, re.DOTALL | re.IGNORECASE)
         
-        # Labels for inner fields can also be translated
-        focus_labels = r'(?:\*\*Strategic Focus\*\*|\*\*रणनीतिक फोकस\*\*|\*\*धोरणात्मक लक्ष\*\*|\*\*Critical Focus\*\*|\*\*महत्वपूर्ण फोकस\*\*|\*\*गंभीर लक्ष\*\*)'
-        profit_labels = r'(?:\*\*Expected Profit\*\*|\*\*अपेक्षित लाभ\*\*|\*\*अपेक्षित नफा\*\*|\*\*Projected Value/Yield\*\*|\*\*अनुमानित मूल्य/उपज\*\*|\*\*अपेक्षित मूल्य/उत्पन्न\*\*)'
-        actions_labels = r'(?:\*\*Key Actions\*\*|\*\*मुख्य कार्य\*\*|\*\*मुख्य कृती\*\*|\*\*Required Actions\*\*|\*\*आवश्यक कार्य\*\*|\*\*आवश्यक कृती\*\*)'
+        # Labels for inner fields can also be translated (robust to asterisks and colons)
+        focus_labels_re = r'(?:Strategic Focus|रणनीतिक फोकस|धोरणात्मक लक्ष|Critical Focus|महत्वपूर्ण फोकस|गंभीर लक्ष)'
+        profit_labels_re = r'(?:Expected Profit|अपेक्षित लाभ|अपेक्षित नफा|Projected Value/Yield|अनुमानित मूल्य/उपज|अपेक्षित मूल्य/उत्पन्न)'
+        actions_labels_re = r'(?:Key Actions|मुख्य कार्य|मुख्य कृती|Required Actions|आवश्यक कार्य|आवश्यक कृती)'
 
         for year_num, goal, content in year_blocks:
             year_data = {
@@ -220,17 +235,18 @@ DISCLAIMER: This roadmap is an AI-generated simulation based on provided data an
                 "profit": ""
             }
             
-            focus_match = re.search(rf'{focus_labels}:\s*(.*)', content, re.IGNORECASE)
+            focus_match = re.search(rf'{focus_labels_re}[*\s:]+(.*)', content, re.IGNORECASE)
             year_data['focus'] = focus_match.group(1).strip() if focus_match else ""
             
-            profit_match = re.search(rf'{profit_labels}:\s*(.*)', content, re.IGNORECASE)
+            profit_match = re.search(rf'{profit_labels_re}[*\s:]+(.*)', content, re.IGNORECASE)
             year_data['profit'] = profit_match.group(1).strip() if profit_match else ""
             
-            actions_match = re.search(rf'{actions_labels}:\s*(.*?)(?={profit_labels}|\Z)', content, re.DOTALL | re.IGNORECASE)
+            actions_match = re.search(rf'{actions_labels_re}[*\s:]+(.*?)(?=\s*[-*]*\s*{profit_labels_re}|\Z)', content, re.DOTALL | re.IGNORECASE)
             if actions_match:
                 raw_actions = actions_match.group(1).strip()
                 lines = raw_actions.split('\n')
-                year_data['actions'] = [re.sub(r'^[-*]\s*', '', l).strip() for l in lines if l.strip()]
+                # Remove starting hyphen, asterisk, numbers or dots
+                year_data['actions'] = [re.sub(r'^[-*\d.]+\s*', '', l).strip() for l in lines if l.strip() and not l.strip().startswith('**')]
 
             roadmap['years'].append(year_data)
 

@@ -35,8 +35,10 @@ import firebase_admin
 
 
 
-
 app = Flask(__name__)
+
+# Initialize Firebase before any routes or scheduler tasks invoke it
+init_firebase()
 
 # --- Scheduler Setup ---
 scheduler = APScheduler()
@@ -776,7 +778,31 @@ def generate_crop_roadmap():
             
         print(f"[CROP-ROADMAP] Generating for User: {user_id}, Crop: {crop_name}, Language: {language}")
         
+        import firebase_admin
+        from firebase_admin import firestore
+        
+        db = None
+        doc_ref = None
+        try:
+            db = firestore.client()
+            plan_id = f"{crop_name}_{language}"
+            doc_ref = db.collection('users').document(user_id).collection('crop_plans').document(plan_id)
+            
+            doc = doc_ref.get()
+            if doc.exists:
+                print(f"[CROP-ROADMAP] Returning existing plan for {crop_name} in {language}")
+                return jsonify({'success': True, 'roadmap': doc.to_dict().get('roadmap')})
+        except Exception as e:
+            print(f"[CROP-ROADMAP WARNING] Firestore not available: {e}")
+            
         roadmap = crop_planner_generator.generate_crop_roadmap(user_id, crop_name, language)
+        
+        if db and doc_ref and roadmap and not roadmap.get('overview', '').startswith('Error'):
+            try:
+                doc_ref.set({'roadmap': roadmap, 'created_at': firestore.SERVER_TIMESTAMP})
+                print(f"[CROP-ROADMAP] Saved new plan for {crop_name} in {language}")
+            except Exception as e:
+                print(f"[CROP-ROADMAP WARNING] Failed to save plan: {e}")
         
         return jsonify({'success': True, 'roadmap': roadmap})
 
