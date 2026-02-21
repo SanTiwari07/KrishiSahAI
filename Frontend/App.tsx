@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
-import Chatbot from './pages/Chatbot';
 import BusinessAdvisory from './pages/BusinessAdvisory';
 import CropCare from './pages/CropCare';
 import DiseaseDetector from './pages/DiseaseDetector';
@@ -101,7 +100,6 @@ const Header: React.FC<{
   const navItems = [
     { label: t.navHome, path: '/' },
     { label: t.navAdvisory, path: '/advisory' },
-    { label: t.navAskAI, path: '/chat' },
     { label: t.navNews, path: '/news' },
     { label: t.navKnowledge, path: '/hub' },
   ];
@@ -911,6 +909,7 @@ const SignupFlow: React.FC<{ onSignup: (p: UserProfile, password?: string) => vo
 const AppContent: React.FC = () => {
   const { setLanguage, hasSelectedLanguage, t, language } = useLanguage();
   const { setFarms, setActiveFarm } = useFarm();
+  const location = useLocation();
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [authView, setAuthView] = useState<'login' | 'signup'>('login');
@@ -1057,7 +1056,6 @@ const AppContent: React.FC = () => {
 
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/chat" element={<Chatbot />} />
             <Route path="/advisory" element={<BusinessAdvisory />} />
             <Route path="/news" element={<NewsPage />} />
             <Route path="/health" element={<FarmHealth />} />
@@ -1072,6 +1070,7 @@ const AppContent: React.FC = () => {
             <Route path="/planner" element={<Planner />} />
             <Route path="/profile/edit" element={<EditProfile />} />
           </Routes>
+
         </div>
       )}
     </>
