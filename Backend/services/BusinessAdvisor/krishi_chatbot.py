@@ -150,19 +150,22 @@ All farmer information is provided dynamically from a verified database.
 This database context is the single source of truth.
 You MUST rely on it and MUST NOT ask again for any data already present.
 
-CORE RULES:
+CRITICAL LANGUAGE RULES — READ CAREFULLY:
 
-1. **LANGUAGE ADHERENCE**: 
-   - Default language is ENGLISH.
-   - If user asks in Marathi, switch ENTIRELY to Marathi for all future replies.
-   - If user asks in Hindi, switch ENTIRELY to Hindi for all future replies.
-   - NO LANGUAGE MIXING. Use one script only.
+1. **YOU MUST ALWAYS RESPOND IN ENGLISH.**
+   - The user's interface language is set to ENGLISH. This is your ONLY instruction for language.
+   - Do NOT auto-detect the language of the user's input.
+   - Do NOT switch to Hindi, Marathi, or any other language — EVER.
+   - Even if the user writes in Hindi, Marathi, or any other language, your response MUST be in ENGLISH only.
+   - NO language mixing. No Devanagari script. Pure English only.
 
 2. Always tailor your recommendations strictly to the provided location, soil type, and water availability.
 
 3. Avoid generic or textbook explanations. Provide practical, region-specific, and actionable guidance.
 
-4. Maintain a professional, respectful, farmer-friendly tone.""" ,
+4. Maintain a professional, respectful, farmer-friendly tone.
+
+5. Use simple, easy-to-understand English suitable for farmers.""" ,
 
 
     "hindi": """आप 'कृषि-सहायक' हैं।
@@ -236,11 +239,12 @@ class KrishiSahAIAdvisor:
                 " and set OLLAMA_FORCE_CPU=0 if you want to try GPU mode."
             )
     def _check_language_request(self, message: str) -> Optional[str]:
-        """Detect if the user is explicitly asking for a specific language"""
+        """DEPRECATED: Language is now always controlled by the UI toggle.
+        This method is kept for logging/debugging only and is NOT used to override the active language."""
         msg = message.lower()
-        if any(x in msg for x in ["in marathi", "मराठी", "marathi madhe", "marathi madhe sanga", "मराठी मध्ये सांगा"]):
+        if any(x in msg for x in ["in marathi", "मराठी", "marathi madhe"]):
             return "marathi"
-        if any(x in msg for x in ["in hindi", "हिंदी", "hindi mein", "hindi mein batao", "हिंदी मध्ये सांगा", "हिंदी में बताओ"]):
+        if any(x in msg for x in ["in hindi", "हिंदी", "hindi mein"]):
             return "hindi"
         if any(x in msg for x in ["in english", "इंग्रजी", "अंग्रेजी"]):
             return "english"
@@ -288,53 +292,43 @@ class KrishiSahAIAdvisor:
         """Send message and get response (Synchronous)"""
         print(f"[ADVISOR] Chat request: '{user_message[:30]}...' (Req Lang: {language})")
         
-        # 1. Determine the source of truth for language
-        detected_lang = self._check_language_request(user_message)
+        # STRICT RULE: UI Toggle is the SOLE source of truth for language.
+        # We NEVER auto-detect language from user input.
         api_lang = language.lower() if language else self.profile.language.lower()
         
-        # Priority Logic:
-        # A. Explicit chat command (e.g. "in marathi") ALWAYS wins and resets history
-        if detected_lang:
-            print(f"[ADVISOR] Stickiness Overridden by Chat: {detected_lang}")
-            self._initialize_chain(detected_lang)
-            self.chat_history = []  # Clear history on hard language change
+        # Log if user typed in a different language (for debugging only — we DO NOT switch)
+        detected_lang = self._check_language_request(user_message)
+        if detected_lang and detected_lang != api_lang:
+            print(f"[ADVISOR] User typed in '{detected_lang}' but UI toggle is '{api_lang}' — enforcing toggle language.")
         
-        # B. UI Toggle change (API language changed) wins if no chat command
-        elif api_lang != self.last_api_language:
-            print(f"[ADVISOR] Stickiness Overridden by UI Toggle: {api_lang}")
+        # Re-initialize chain ONLY if UI toggle language changed
+        if api_lang != self.last_api_language:
+            print(f"[ADVISOR] UI Toggle changed: {self.last_api_language} → {api_lang}")
             self._initialize_chain(api_lang)
             self.last_api_language = api_lang
-            self.chat_history = []  # Clear history on UI toggle change to respect the new language selection strictly
+            self.chat_history = []  # Clear history for clean language context
         
-        # C. Otherwise (No chat command, toggle hasn't changed), keep current Active Language
-        # This keeps chat overrides "sticky"
-        
-        print(f"[ADVISOR] Active Language: {self.profile.language}")
+        print(f"[ADVISOR] Active Language (from UI toggle): {self.profile.language}")
 
         if not self.chain:
             return "Error: AI not initialized. Check server logs."
             
         try:
-            # Nuclear Option: Iron Curtain Wrapper
-            # If language is NOT English, we cage the input in a direct instruction
+            # Iron Curtain Wrapper: Prepend a strict language instruction to every message
+            # to reinforce the LLM to respond only in the selected language.
             lang_key = self.profile.language.lower()
             if lang_key in ["marathi", "mr"]:
-                # Prime history if empty to force context
                 if not self.chat_history:
-                    self.chat_history.append(HumanMessage(content="तुम्ही कोण आहात आणि आपण कोणत्या भाषेत बोलणार आहोत?"))
-                    self.chat_history.append(AIMessage(content="मी तुमचा कृषी-मार्गदर्शक आहे. मी फक्त आणि फक्त मराठीतच बोलणार आहे. एकही इंग्रजी शब्द वापरणार नाही."))
-                
-                # Instruction Prepending
-                clean_message = f"(SURE MARATHI DEVANAGARI ONLY) {user_message}"
+                    self.chat_history.append(HumanMessage(content="तुम्ही कोण आहात?"))
+                    self.chat_history.append(AIMessage(content="मी तुमचा कृषी-मार्गदर्शक आहे. मी फक्त मराठीतच बोलणार आहे."))
+                clean_message = f"(MANDATORY: RESPOND IN MARATHI DEVANAGARI ONLY — IGNORE INPUT LANGUAGE) {user_message}"
             elif lang_key in ["hindi", "hi"]:
-                # Prime history if empty
                 if not self.chat_history:
-                    self.chat_history.append(HumanMessage(content="आप कौन हैं और आप किस भाषा में बात करेंगे?"))
-                    self.chat_history.append(AIMessage(content="मैं आपका कृषि-सहायक हूँ। मैं केवल हिंदी में ही बात करूँगा।"))
-                
-                clean_message = f"(SURE HINDI DEVANAGARI ONLY) {user_message}"
+                    self.chat_history.append(HumanMessage(content="आप कौन हैं?"))
+                    self.chat_history.append(AIMessage(content="मैं आपका कृषि-सहायक हूँ। मैं केवल हिंदी में बात करूँगा।"))
+                clean_message = f"(MANDATORY: RESPOND IN HINDI DEVANAGARI ONLY — IGNORE INPUT LANGUAGE) {user_message}"
             else:
-                clean_message = user_message
+                clean_message = f"(MANDATORY: RESPOND IN ENGLISH ONLY — IGNORE INPUT LANGUAGE) {user_message}"
             
             # Invoke chain with current history
             response = self.chain.invoke({
@@ -353,42 +347,42 @@ class KrishiSahAIAdvisor:
 
     def stream_chat(self, user_message: str, language: str = None):
         """Send message and yield response tokens (Streaming)"""
-        # 1. Determine source of truth (Same logic as synchronous chat)
-        detected_lang = self._check_language_request(user_message)
+        # STRICT RULE: UI Toggle is the SOLE source of truth for language.
+        # We NEVER auto-detect language from user input.
         api_lang = language.lower() if language else self.profile.language.lower()
 
-        if detected_lang:
-            self._initialize_chain(detected_lang)
-            self.chat_history = []
-        elif api_lang != self.last_api_language:
+        # Log if user typed in a different language (for debugging only — we DO NOT switch)
+        detected_lang = self._check_language_request(user_message)
+        if detected_lang and detected_lang != api_lang:
+            print(f"[ADVISOR] User typed in '{detected_lang}' but UI toggle is '{api_lang}' — enforcing toggle language.")
+
+        # Re-initialize chain ONLY if UI toggle language changed
+        if api_lang != self.last_api_language:
+            print(f"[ADVISOR] UI Toggle changed: {self.last_api_language} → {api_lang}")
             self._initialize_chain(api_lang)
             self.last_api_language = api_lang
-            self.chat_history = [] # Clear history on UI toggle change to respect the new language selection strictly
+            self.chat_history = []  # Clear history for clean language context
 
         if not self.chain:
             yield "Error: AI not initialized. Check server logs."
             return
 
         try:
-            # Nuclear Option: Iron Curtain Wrapper
-            # If language is NOT English, we cage the input in a direct instruction
+            # Iron Curtain Wrapper: Prepend a strict language instruction to every message
+            # to reinforce the LLM to respond only in the selected language.
             lang_key = self.profile.language.lower()
             if lang_key in ["marathi", "mr"]:
-                # Prime history if empty to force context
                 if not self.chat_history:
-                    self.chat_history.append(HumanMessage(content="तुम्ही कोण आहात आणि आपण कोणत्या भाषेत बोलणार आहोत?"))
-                    self.chat_history.append(AIMessage(content="हो, मी फक्त आणि फक्त मराठीतच बोलणार आहे. एकही इंग्रजी शब्द वापरणार नाही."))
-                
-                clean_message = f"(SURE MARATHI DEVANAGARI ONLY) {user_message}"
+                    self.chat_history.append(HumanMessage(content="तुम्ही कोण आहात?"))
+                    self.chat_history.append(AIMessage(content="मी तुमचा कृषी-मार्गदर्शक आहे. मी फक्त मराठीतच बोलणार आहे."))
+                clean_message = f"(MANDATORY: RESPOND IN MARATHI DEVANAGARI ONLY — IGNORE INPUT LANGUAGE) {user_message}"
             elif lang_key in ["hindi", "hi"]:
-                # Prime history if empty
                 if not self.chat_history:
-                    self.chat_history.append(HumanMessage(content="आप कौन हैं और आप किस भाषा में बात करेंगे?"))
-                    self.chat_history.append(AIMessage(content="मैं आपका कृषि-सहायक हूँ। मैं केवल हिंदी में ही बात करूँगा।"))
-                
-                clean_message = f"(SURE HINDI DEVANAGARI ONLY) {user_message}"
+                    self.chat_history.append(HumanMessage(content="आप कौन हैं?"))
+                    self.chat_history.append(AIMessage(content="मैं आपका कृषि-सहायक हूँ। मैं केवल हिंदी में बात करूँगा।"))
+                clean_message = f"(MANDATORY: RESPOND IN HINDI DEVANAGARI ONLY — IGNORE INPUT LANGUAGE) {user_message}"
             else:
-                clean_message = user_message
+                clean_message = f"(MANDATORY: RESPOND IN ENGLISH ONLY — IGNORE INPUT LANGUAGE) {user_message}"
             
             full_response = ""
 

@@ -32,6 +32,24 @@ import { ChatSidebar } from '../components/ChatSidebar';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
 
 
+const AGRICULTURE_FACTS = [
+    { crop: "Sugarcane", fact: "The English word 'candy' actually comes from the ancient Indian word 'khanda,' which was the name for the world's first crystallized sugar invented by Indian farmers around 500 BC." },
+    { crop: "Mango", fact: "The sap that oozes from a freshly plucked mango stem contains urushiol—the exact same highly acidic and allergenic oil that makes poison ivy so itchy." },
+    { crop: "Rice", fact: "Indian agricultural scientists helped develop a special 'Sub1' gene variant of rice that acts like scuba gear, allowing the plant to survive completely submerged underwater for over two weeks without drowning." },
+    { crop: "Cotton", fact: "Farmers in the Indus Valley were spinning and weaving cotton into fabric over 5,000 years ago, making it one of the oldest continuous textile traditions on Earth." },
+    { crop: "Mango, Cashew, Pistachio", fact: "Botanically speaking, mangoes, cashews, and pistachios are all close cousins that belong to the exact same plant family (Anacardiaceae)." },
+    { crop: "Soybeans", fact: "The smooth, non-toxic colors found in many modern children's crayons are actually manufactured using oil pressed directly from soybeans." },
+    { crop: "Mango", fact: "A single mango tree can produce hundreds of thousands of flowers during its blooming season, but only about 1% of those flowers will actually pollinate and turn into fruit." },
+    { crop: "General Soil Science", fact: "Over 2,500 years ago, ancient Indian Sanskrit texts already possessed advanced soil science, classifying farmland into 12 specific categories like 'ushara' (barren) and 'sharkara' (pebble-filled)." },
+    { crop: "Black Pepper", fact: "Grown largely on the Malabar Coast, black pepper was once so highly prized in the ancient world that it was used to pay rent and was literally worth its weight in solid gold." },
+    { crop: "Fruit Trees", fact: "Many Indian fruit crops naturally practice 'alternate bearing'—producing a massive yield one year, and then taking a 'rest' by producing almost nothing the following year." },
+    { crop: "Mango", fact: "Some individual mango trees planted in the Konkan coastal belt have been actively bearing fruit for over 300 years." },
+    { crop: "General Agriculture", fact: "Indian agricultural scientists use stable nuclear isotopes, like Nitrogen-15, to track exactly how crops absorb fertilizers at a microscopic level to optimize organic farming." },
+    { crop: "Saffron", fact: "It takes the hand-plucked stigmas of approximately 75,000 individual saffron blossoms to produce just a single pound of the spice." },
+    { crop: "General Agriculture", fact: "Archaeologists found evidence at Kalibangan in Rajasthan showing that Indian farmers were using complex perpendicular furrowing for multi-crop rotation as early as 2800 BCE." },
+    { crop: "Jute", fact: "Jute is known as the 'golden fiber' not just because of its high industrial value, but because the raw, freshly extracted fibers physically shine like gold." }
+];
+
 const Chatbot: React.FC = () => {
     const { t, language: lang } = useLanguage();
     const location = useLocation();
@@ -58,6 +76,19 @@ const Chatbot: React.FC = () => {
     const [isDeleting, setIsDeleting] = useState(false);
 
 
+
+    // Agriculture Fact Loading State
+    const [currentFact, setCurrentFact] = useState<{ crop: string; fact: string } | null>(null);
+    const lastFactIndexRef = useRef<number>(-1);
+
+    const pickRandomFact = () => {
+        let idx;
+        do {
+            idx = Math.floor(Math.random() * AGRICULTURE_FACTS.length);
+        } while (idx === lastFactIndexRef.current && AGRICULTURE_FACTS.length > 1);
+        lastFactIndexRef.current = idx;
+        setCurrentFact(AGRICULTURE_FACTS[idx]);
+    };
 
     // Backend Session State
     const [backendSessionId, setBackendSessionId] = useState<string | null>(null);
@@ -388,6 +419,7 @@ const Chatbot: React.FC = () => {
             }
 
             console.log("[Chatbot] Streaming with session ID:", currentBackendId);
+            pickRandomFact();
             setMessages(prev => [...prev, { role: 'assistant', content: '', createdAt: new Date() }]);
 
             let responseText = '';
@@ -583,53 +615,74 @@ const Chatbot: React.FC = () => {
                                     </div>
                                 )}
 
-                                <div className={`relative max-w-[85%] md:max-w-[70%] p-5 rounded-[24px] shadow-sm ${msg.role === 'user'
-                                    ? 'bg-[#1B5E20] text-white rounded-tr-sm'
-                                    : 'bg-[#FAFCFC] text-[#002105] border border-[#E0E6E6] rounded-tl-sm pr-20'
+                                <div className={`relative max-w-[85%] md:max-w-[70%] rounded-[24px] shadow-sm ${msg.role === 'user'
+                                    ? 'bg-[#1B5E20] text-white rounded-tr-sm p-5'
+                                    : msg.content === '' && msg.role === 'assistant'
+                                        ? '' // No bubble wrapper for fact card
+                                        : 'bg-[#FAFCFC] text-[#002105] border border-[#E0E6E6] rounded-tl-sm pr-20 p-5'
                                     }`}>
 
-                                    {/* Message Actions (TTS & PDF) - Only for Assistant */}
-                                    {msg.role !== 'user' && (
-                                        <div className="absolute top-3 right-3 flex items-center gap-1">
-                                            {/* TTS Button */}
-                                            <button
-                                                onClick={() => handleTextToSpeech(msg.content, idx)}
-                                                className={`p-1.5 rounded-full transition-all ${playingMessageId === idx
-                                                    ? 'text-red-500 hover:bg-red-50'
-                                                    : 'text-stone-400 hover:text-[#1B5E20] hover:bg-stone-100'
-                                                    }`}
-                                                title={playingMessageId === idx ? "Stop playback" : "Listen to response"}
-                                                disabled={isLoadingTTS === idx}
-                                            >
-                                                {isLoadingTTS === idx ? (
-                                                    <div className="w-4 h-4 border-2 border-stone-300 border-t-[#1B5E20] rounded-full animate-spin"></div>
-                                                ) : playingMessageId === idx ? (
-                                                    <Square className="w-4 h-4 fill-current" />
-                                                ) : (
-                                                    <Volume2 className="w-4 h-4" />
-                                                )}
-                                            </button>
-
-
+                                    {/* Loading Fact Card — shown when assistant content is empty (streaming hasn't started) */}
+                                    {msg.role === 'assistant' && msg.content === '' && currentFact ? (
+                                        <div className="bg-gradient-to-br from-[#1B5E20] to-[#2E7D32] text-white rounded-[24px] rounded-tl-sm p-6 shadow-lg w-[320px] md:w-[400px]">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <span className="text-xs font-black uppercase tracking-[0.2em] text-green-200">Do You Know?</span>
+                                            </div>
+                                            <p className="text-sm leading-relaxed text-white/95 mb-4 font-medium">
+                                                {currentFact.fact}
+                                            </p>
+                                            <div className="border-t border-white/20 pt-3 flex items-center gap-2">
+                                                <div className="flex gap-1">
+                                                    <span className="w-1.5 h-1.5 bg-green-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                                    <span className="w-1.5 h-1.5 bg-green-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                                    <span className="w-1.5 h-1.5 bg-green-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                                                </div>
+                                                <span className="text-xs text-green-200 font-bold tracking-widest">Thinking.........</span>
+                                            </div>
                                         </div>
-                                    )}
+                                    ) : (
+                                        <>
+                                            {/* Message Actions (TTS) - Only for Assistant with content */}
+                                            {msg.role !== 'user' && msg.content && (
+                                                <div className="absolute top-3 right-3 flex items-center gap-1">
+                                                    <button
+                                                        onClick={() => handleTextToSpeech(msg.content, idx)}
+                                                        className={`p-1.5 rounded-full transition-all ${playingMessageId === idx
+                                                            ? 'text-red-500 hover:bg-red-50'
+                                                            : 'text-stone-400 hover:text-[#1B5E20] hover:bg-stone-100'
+                                                            }`}
+                                                        title={playingMessageId === idx ? "Stop playback" : "Listen to response"}
+                                                        disabled={isLoadingTTS === idx}
+                                                    >
+                                                        {isLoadingTTS === idx ? (
+                                                            <div className="w-4 h-4 border-2 border-stone-300 border-t-[#1B5E20] rounded-full animate-spin"></div>
+                                                        ) : playingMessageId === idx ? (
+                                                            <Square className="w-4 h-4 fill-current" />
+                                                        ) : (
+                                                            <Volume2 className="w-4 h-4" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            )}
 
-                                    <div className={`text-[15px] leading-relaxed markdown-body whitespace-pre-wrap ${msg.role === 'user' ? 'text-white' : ''}`}>
-                                        <ReactMarkdown
-                                            remarkPlugins={[remarkGfm, remarkBreaks]}
-                                            components={{
-                                                strong: ({ node, ...props }) => <span className={`font-bold ${msg.role === 'user' ? 'text-white' : 'text-[#1B5E20]'}`} {...props} />,
-                                                ul: ({ node, ...props }) => <ul className="list-disc pl-5 my-2 space-y-1" {...props} />,
-                                                ol: ({ node, ...props }) => <ol className="list-decimal pl-5 my-2 space-y-1" {...props} />,
-                                                li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-                                                p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
-                                                h1: ({ node, ...props }) => <h1 className="text-xl font-bold mt-4 mb-2" {...props} />,
-                                                h2: ({ node, ...props }) => <h2 className="text-lg font-bold mt-3 mb-2" {...props} />,
-                                            }}
-                                        >
-                                            {msg.content || ""}
-                                        </ReactMarkdown>
-                                    </div>
+                                            <div className={`text-[15px] leading-relaxed markdown-body whitespace-pre-wrap ${msg.role === 'user' ? 'text-white' : ''}`}>
+                                                <ReactMarkdown
+                                                    remarkPlugins={[remarkGfm, remarkBreaks]}
+                                                    components={{
+                                                        strong: ({ node, ...props }) => <span className={`font-bold ${msg.role === 'user' ? 'text-white' : 'text-[#1B5E20]'}`} {...props} />,
+                                                        ul: ({ node, ...props }) => <ul className="list-disc pl-5 my-2 space-y-1" {...props} />,
+                                                        ol: ({ node, ...props }) => <ol className="list-decimal pl-5 my-2 space-y-1" {...props} />,
+                                                        li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+                                                        p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                                                        h1: ({ node, ...props }) => <h1 className="text-xl font-bold mt-4 mb-2" {...props} />,
+                                                        h2: ({ node, ...props }) => <h2 className="text-lg font-bold mt-3 mb-2" {...props} />,
+                                                    }}
+                                                >
+                                                    {msg.content || ""}
+                                                </ReactMarkdown>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
 
                                 {msg.role === 'user' && (
