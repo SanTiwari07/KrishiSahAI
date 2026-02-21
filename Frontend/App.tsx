@@ -14,29 +14,69 @@ import NewsPage from './pages/NewsPage';
 import EditProfile from './pages/EditProfile';
 import ArticleDetail from './pages/ArticleDetail';
 import { Leaf } from 'lucide-react';
-import { Language, UserProfile } from './types';
+import { Language, UserProfile, Farm } from './types';
+
 import { auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from './firebase';
 import { onSnapshot, doc, setDoc, getDoc } from 'firebase/firestore';
-import { RefreshCw, LogOut, Settings, Menu, X, Sun, Moon, User, Cloud, ArrowRight } from 'lucide-react';
+import { MapPin, Settings, LogOut, Menu, X, Plus, User, Info, Smartphone, CheckCircle, ArrowRight, ChevronRight, Wind, Droplets, Thermometer, Sun, CloudRain, RefreshCw, Cloud } from 'lucide-react';
 import { api } from './src/services/api';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
+import { FarmProvider, useFarm } from './src/context/FarmContext';
 import logo from './src/assets/logo.png';
 import WeatherModal from './components/WeatherModal';
 import NotificationBell from './components/NotificationBell';
 
 const getBestLocation = (u: UserProfile | null) => {
-  if (!u) return "";
-  if (u.district && u.state) return `${u.district}, ${u.state}`;
-  return u.district || u.state || "India";
+  if (!u || !u.location) return "";
+  const { district, state } = u.location;
+  if (district && state) return `${district}, ${state}`;
+  return district || state || "India";
 };
 
 const getDisplayLocation = (u: UserProfile | null) => {
-  if (!u) return "";
-  return u.district || u.state || "India";
+  if (!u || !u.location) return "";
+  const { district, state } = u.location;
+  return district || state || "India";
+};
+
+
+const LanguageSelection: React.FC<{ onSelect: (lang: Language) => void }> = ({ onSelect }) => {
+  const languages: { code: Language; label: string; sub: string }[] = [
+    { code: 'EN', label: 'English', sub: 'Continue in English' },
+    { code: 'HI', label: 'हिंदी', sub: 'हिंदी में जारी रखें' },
+    { code: 'MR', label: 'मराठी', sub: 'मराठीत सुरू ठेवा' },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-[#F1F8E9] flex items-center justify-center p-6 overflow-y-auto">
+      <div className="w-full max-w-4xl">
+        <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <img src={logo} alt="KrishiSahAI Logo" className="h-24 mx-auto mb-6" />
+          <h1 className="text-4xl md:text-5xl font-black text-[#1B5E20] mb-4">Select Your Language</h1>
+          <p className="text-xl text-gray-600 font-medium">अपनी भाषा चुनें | आपली भाषा निवडा</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {languages.map((l, i) => (
+            <button
+              key={l.code}
+              onClick={() => onSelect(l.code)}
+              className="group bg-white border-b-8 border-r-8 border-[#1B5E20] hover:translate-y-[-4px] hover:translate-x-[-2px] hover:border-[#2E7D32] transition-all p-8 md:p-10 rounded-2xl text-left shadow-xl animate-in fade-in slide-in-from-bottom-6 duration-700"
+              style={{ animationDelay: `${i * 100}ms` }}
+            >
+              <h2 className="text-3xl font-black text-[#1B5E20] mb-2 group-hover:text-green-700 transition-colors">{l.label}</h2>
+              <p className="text-gray-500 font-bold uppercase tracking-wider text-sm">{l.sub}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const Header: React.FC<{
+
   toggleNotifications: () => void;
   toggleWeather: () => void;
   user: UserProfile | null;
@@ -47,6 +87,7 @@ const Header: React.FC<{
 }> = ({ toggleNotifications, toggleWeather, user, logout, weatherData, weatherLoading, refreshWeather }) => {
   const location = useLocation();
   const { language, setLanguage, t } = useLanguage();
+  const { activeFarm, setActiveFarm, farms } = useFarm();
   const { theme, toggleTheme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -144,18 +185,6 @@ const Header: React.FC<{
               </>
             )}
 
-            {/* Language Switcher */}
-            <div className="hidden sm:flex bg-[#1B5E20] border border-white/20 p-0 gap-0 rounded-lg overflow-hidden min-w-[120px]">
-              {[{ code: 'EN', label: 'EN' }, { code: 'HI', label: 'HI' }, { code: 'MR', label: 'MR' }].map((l) => (
-                <button
-                  key={l.code}
-                  onClick={() => setLanguage(l.code as Language)}
-                  className={`flex-1 px-2 py-1.5 text-[11px] font-bold transition-all border-r border-white/20 last:border-r-0 ${language === l.code ? 'bg-white text-[#1B5E20]' : 'text-white hover:bg-white/10'}`}
-                >
-                  {l.label}
-                </button>
-              ))}
-            </div>
 
             {user ? (
               <div className="relative group">
@@ -165,11 +194,32 @@ const Header: React.FC<{
                   </div>
                   <div className="hidden md:block text-left">
                     <p className="text-xs font-bold text-white leading-tight uppercase">{user.name}</p>
-                    <p className="text-[10px] text-white/60 uppercase tracking-wider">{user.occupation}</p>
                   </div>
                 </button>
 
-                <div className="absolute right-0 top-full mt-2 w-56 bg-white border-2 border-[#1B5E20] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 rounded-xl overflow-hidden">
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white border-2 border-[#1B5E20] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 rounded-xl overflow-hidden">
+                  {/* Farm Switcher */}
+                  <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Switch Farm</p>
+                    <div className="space-y-1">
+                      {farms.map((f, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActiveFarm(f)}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-all ${activeFarm?.nickname === f.nickname ? 'bg-[#1B5E20] text-white' : 'text-gray-700 hover:bg-green-50'}`}
+                        >
+                          {f.nickname || `Farm ${i + 1}`}
+                        </button>
+                      ))}
+                      <Link
+                        to="/profile/edit"
+                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-sm font-bold text-[#1B5E20] hover:bg-green-50 mt-1 dashed-border border-2 border-dashed border-green-100"
+                      >
+                        <Plus size={14} /> {t.addNewFarm}
+                      </Link>
+                    </div>
+                  </div>
+
                   <Link to="/profile/edit" className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
                     <Settings size={16} /> Edit Profile
                   </Link>
@@ -210,21 +260,6 @@ const Header: React.FC<{
                   {item.label}
                 </Link>
               ))}
-              {/* Mobile Language Switcher */}
-              <div className="flex bg-[#1B5E20] border border-white/20 p-0 gap-0 rounded-lg overflow-hidden mb-4">
-                {[{ code: 'EN', label: 'EN' }, { code: 'HI', label: 'HI' }, { code: 'MR', label: 'MR' }].map((l) => (
-                  <button
-                    key={l.code}
-                    onClick={() => {
-                      setLanguage(l.code as Language);
-                      // Don't close menu automatically so user can see it works
-                    }}
-                    className={`flex-1 px-2 py-3 text-xs font-bold transition-all border-r border-white/20 last:border-r-0 ${language === l.code ? 'bg-white text-[#1B5E20]' : 'text-white hover:bg-white/10'}`}
-                  >
-                    {l.label}
-                  </button>
-                ))}
-              </div>
 
               {/* Mobile Profile & Logout */}
               <div className="pt-4 mt-2 border-t border-white/10">
@@ -249,14 +284,15 @@ const Header: React.FC<{
           </div>
         )
       }
-    </header >
+    </header>
   );
 };
 
-const LoginFlow: React.FC<{ onLogin: (e: string, p: string) => void; onSwitch: () => void }> = ({ onLogin, onSwitch }) => {
+const LoginFlow: React.FC<{ onLogin: (p: string) => void; onSwitch: () => void }> = ({ onLogin, onSwitch }) => {
   const { t } = useLanguage();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [showOtp, setShowOtp] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -265,9 +301,16 @@ const LoginFlow: React.FC<{ onLogin: (e: string, p: string) => void; onSwitch: (
     setLoading(true);
     setError('');
     try {
-      await onLogin(email, password);
+      if (!showOtp) {
+        // Here we would trigger Firebase Phone Auth
+        // For now, simulating transition to OTP step
+        setShowOtp(true);
+      } else {
+        await onLogin(otp);
+      }
     } catch (err: any) {
-      setError("Invalid email or password");
+      setError("Invalid phone number or OTP");
+    } finally {
       setLoading(false);
     }
   };
@@ -278,9 +321,9 @@ const LoginFlow: React.FC<{ onLogin: (e: string, p: string) => void; onSwitch: (
       <div className="w-full md:w-1/2 h-full overflow-y-auto bg-[#F1F8E9]">
         <div className="min-h-full flex items-center justify-center p-6 md:p-12">
           <div className="w-full max-w-[480px] bg-white rounded-2xl shadow-lg p-8 md:p-10 border border-green-100">
-            <div className="mb-8">
-              <h1 className="text-[32px] font-bold text-deep-green mb-2">{t.login}</h1>
-              <p className="text-gray-600 font-medium">{t.loginTitle}</p>
+            <div className="mb-8 font-poppins">
+              <h1 className="text-[32px] font-black text-[#1B5E20] mb-2">{t.login}</h1>
+              <p className="text-gray-600 font-bold">{t.loginTitle}</p>
             </div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
@@ -291,51 +334,48 @@ const LoginFlow: React.FC<{ onLogin: (e: string, p: string) => void; onSwitch: (
               )}
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-deep-green mb-2 ml-1">{t.email} / {t.phoneNumber}</label>
-                  <input
-                    required
-                    type="text"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-4 bg-white border-2 border-gray-200 text-gray-900 rounded-xl focus:outline-none focus:border-deep-green focus:ring-4 focus:ring-green-500/10 transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-deep-green mb-2 ml-1">{t.password}</label>
-                  <input
-                    required
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-4 bg-white border-2 border-gray-200 text-gray-900 rounded-xl focus:outline-none focus:border-deep-green focus:ring-4 focus:ring-green-500/10 transition-all"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between py-2">
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-deep-green focus:ring-deep-green" />
-                    <span className="text-sm font-medium text-gray-600 group-hover:text-deep-green transition-colors">{t.rememberMe}</span>
-                  </label>
-                  <button type="button" className="text-sm font-bold text-deep-green hover:underline">
-                    {t.forgotPassword}
-                  </button>
-                </div>
+                {!showOtp ? (
+                  <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                    <label className="block text-sm font-black text-[#1B5E20] mb-2 ml-1">{t.phoneNumber}</label>
+                    <div className="flex gap-2">
+                      <span className="p-4 bg-gray-100 border-2 border-gray-200 text-gray-500 rounded-xl font-bold flex items-center">+91</span>
+                      <input
+                        required
+                        type="tel"
+                        placeholder="XXXXX XXXXX"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                        className="flex-1 p-4 bg-white border-2 border-gray-200 text-gray-900 rounded-xl focus:outline-none focus:border-[#1B5E20] focus:ring-4 focus:ring-green-500/10 transition-all font-bold"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                    <label className="block text-sm font-black text-[#1B5E20] mb-2 ml-1">{t.enterOtp}</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="XXXXXX"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="w-full p-4 bg-white border-2 border-gray-200 text-gray-900 rounded-xl focus:outline-none focus:border-[#1B5E20] focus:ring-4 focus:ring-green-500/10 transition-all font-bold text-center text-2xl tracking-[1em]"
+                    />
+                    <button type="button" onClick={() => setShowOtp(false)} className="mt-2 text-sm font-bold text-[#1B5E20] hover:underline">Change Phone Number</button>
+                  </div>
+                )}
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-deep-green text-white rounded-xl font-bold text-lg hover:bg-green-800 transition-all shadow-md hover:shadow-lg disabled:opacity-50 active:scale-[0.98]"
+                className="w-full py-4 bg-[#1B5E20] text-white rounded-xl font-black text-lg hover:bg-[#2E7D32] transition-all shadow-lg hover:shadow-xl disabled:opacity-50 active:scale-[0.98] uppercase tracking-wider"
               >
-                {loading ? t.loggingIn : t.login}
+                {loading ? t.loading : (!showOtp ? t.getOtp : t.verifyAndLogin)}
               </button>
 
               <div className="text-center mt-6">
-                <p className="text-gray-600 text-sm">
-                  {t.dontHaveAccount} <button type="button" onClick={onSwitch} className="text-deep-green font-bold hover:underline">{t.signup}</button>
+                <p className="text-gray-600 text-sm font-bold">
+                  {t.dontHaveAccount} <button type="button" onClick={onSwitch} className="text-[#1B5E20] font-black hover:underline">{t.signup}</button>
                 </p>
               </div>
             </form>
@@ -344,122 +384,130 @@ const LoginFlow: React.FC<{ onLogin: (e: string, p: string) => void; onSwitch: (
       </div>
 
       {/* Right Section - Logo (Green Gradient) */}
-      <div className="hidden md:flex w-full md:w-1/2 h-full bg-gradient-to-br from-deep-green to-deep-blue flex-col items-center justify-center p-12 text-center relative overflow-hidden">
+      <div className="hidden md:flex w-full md:w-1/2 h-full bg-gradient-to-br from-[#1B5E20] to-[#004D40] flex-col items-center justify-center p-12 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div className="relative z-10 flex flex-col items-center justify-center">
           <img src={logo} alt="KrishiSahAI Logo" className="h-40 md:h-56 w-auto object-contain mb-8 filter brightness-0 invert drop-shadow-xl" />
-          <h2 className="text-white text-4xl md:text-5xl font-extrabold mb-4">{t.brandName}</h2>
-          <p className="text-white/90 text-lg md:text-xl font-medium tracking-wide">{t.tagline}</p>
+          <h2 className="text-white text-4xl md:text-5xl font-black mb-4">{t.brandName}</h2>
+          <p className="text-white/90 text-lg md:text-xl font-bold tracking-wide italic">{t.tagline}</p>
         </div>
       </div>
     </div>
   );
 };
 
-const SignupFlow: React.FC<{ onSignup: (p: any, pass: string) => void; onSwitch: () => void }> = ({ onSignup, onSwitch }) => {
-  const { t } = useLanguage();
+const SignupFlow: React.FC<{ onSignup: (p: UserProfile) => void; onSwitch: () => void }> = ({ onSignup, onSwitch }) => {
+  const { t, language } = useLanguage();
+  const { setFarms, setActiveFarm } = useFarm();
   const [step, setStep] = useState(1);
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [formData, setFormData] = useState<any>({
-    name: '', age: '', gender: 'male', occupation: 'farmer',
-    experience_years: '2', // Default reasonable value
-    phone: '', email: '',
-    state: '', district: '', village: '',
-    landSize: '', landUnit: 'acre', landType: 'Irrigated',
-    soilType: 'alluvial', waterAvailability: 'borewell',
-    mainCrops: []
+    name: '', phone: '', email: '',
+    age: '', gender: 'male',
+    state: '', district: '', village: ''
   });
-  const [customCrop, setCustomCrop] = useState('');
+  const [signupFarms, setSignupFarms] = useState<Farm[]>([
+    { nickname: 'Home Farm', landType: 'Irrigated', waterResource: 'Borewell', soilType: 'Black', landSize: '', unit: 'Acre', crop: '' }
+  ]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => setStep(prev => prev - 1);
 
-  const toggleCrop = (crop: string) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      mainCrops: prev.mainCrops.includes(crop)
-        ? prev.mainCrops.filter((c: string) => c !== crop)
-        : [...prev.mainCrops, crop]
-    }));
+  const addFarm = () => {
+    setSignupFarms([...signupFarms, { nickname: `Farm ${signupFarms.length + 1}`, landType: 'Irrigated', waterResource: 'Borewell', soilType: 'Black', landSize: '', unit: 'Acre', crop: '' }]);
   };
 
-  const handleAddCustomCrop = (e: React.KeyboardEvent | React.MouseEvent) => {
-    if (e.type === 'keydown' && (e as React.KeyboardEvent).key !== 'Enter') return;
-    if (e.type === 'keydown') e.preventDefault(); // Prevent form submission on Enter
+  const removeFarm = (index: number) => {
+    setSignupFarms(signupFarms.filter((_, i) => i !== index));
+  };
 
-    const trimmed = customCrop.trim();
-    if (trimmed && !formData.mainCrops.includes(trimmed)) {
-      setFormData((prev: any) => ({
-        ...prev,
-        mainCrops: [...prev.mainCrops, trimmed]
-      }));
-      setCustomCrop('');
-    }
+  const updateFarm = (index: number, field: keyof Farm, value: any) => {
+    const newFarms = [...signupFarms];
+    newFarms[index] = { ...newFarms[index], [field]: value };
+    setSignupFarms(newFarms);
+  };
+
+  const handleSkip = async () => {
+    setLoading(true);
+    await finalizeSignup([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (step < 3) {
+    if (step < 2) {
+      if (!formData.name || !formData.phone || !formData.age || !formData.state) {
+        setError("Please fill all required fields");
+        return;
+      }
       handleNext();
       return;
     }
     setLoading(true);
     setError('');
+
+    // Check if nicknames are provided for all added farms
+    const invalidFarms = signupFarms.some(f => !f.nickname.trim());
+    if (invalidFarms) {
+      setError("Please provide a nickname for all farms");
+      setLoading(false);
+      return;
+    }
+
+    await finalizeSignup(signupFarms);
+  };
+
+  const finalizeSignup = async (finalFarms: Farm[]) => {
     try {
-      if (password !== confirmPassword) {
-        throw new Error("Passwords do not match");
-      }
-      if (!formData.email || !password) {
-        throw new Error("Email and password are required");
-      }
-      const profile = {
-        ...formData,
-        location: `${formData.village}, ${formData.district}, ${formData.state}`,
-        // Map to snake_case for backend compatibility
-        land_size: parseFloat(formData.landSize),
-        soil_type: formData.soilType,
-        water_availability: formData.waterAvailability,
-        crops_grown: formData.mainCrops
+      const profile: UserProfile = {
+        name: formData.name,
+        age: formData.age,
+        gender: formData.gender,
+        phone: formData.phone,
+        email: formData.email,
+        language: language,
+        location: {
+          state: formData.state,
+          district: formData.district,
+          village: formData.village
+        },
+        farms: finalFarms,
+        experience_years: '0'
       };
-      await onSignup(profile, password);
+
+      await onSignup(profile);
     } catch (err: any) {
-      console.error("Signup Error:", err);
       setError(err.message || "Signup failed. Please try again.");
       setLoading(false);
     }
   };
 
-  const inputClasses = "w-full p-4 bg-white border-2 border-gray-200 text-gray-900 rounded-xl focus:outline-none focus:border-deep-green focus:ring-4 focus:ring-green-500/10 transition-all";
-  const labelClasses = "block text-sm font-bold text-deep-green mb-2 ml-1";
-  const sectionTitleClasses = "text-xl font-bold text-deep-green mb-6 text-center";
+  const inputClasses = "w-full p-4 bg-white border-2 border-gray-200 text-gray-900 rounded-xl focus:outline-none focus:border-[#1B5E20] focus:ring-4 focus:ring-green-500/10 transition-all font-bold";
+  const labelClasses = "block text-sm font-black text-[#1B5E20] mb-2 ml-1";
+  const sectionTitleClasses = "text-xl font-black text-[#1B5E20] mb-6";
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col md:flex-row">
-      {/* Left Section - Logo (Green Gradient) - Fixed */}
-      <div className="hidden md:flex w-full md:w-1/2 h-full bg-gradient-to-br from-deep-green to-deep-blue flex-col items-center justify-center p-12 text-center relative overflow-hidden">
+      <div className="hidden md:flex w-full md:w-1/2 h-full bg-gradient-to-br from-[#1B5E20] to-[#004D40] flex-col items-center justify-center p-12 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div className="relative z-10 flex flex-col items-center justify-center">
           <img src={logo} alt="KrishiSahAI Logo" className="h-40 md:h-56 w-auto object-contain mb-8 filter brightness-0 invert drop-shadow-xl" />
-          <h2 className="text-white text-4xl md:text-5xl font-extrabold mb-4">{t.brandName}</h2>
-          <p className="text-white/90 text-lg md:text-xl font-medium tracking-wide">{t.tagline}</p>
+          <h2 className="text-white text-4xl md:text-5xl font-black mb-4">{t.brandName}</h2>
+          <p className="text-white/90 text-lg md:text-xl font-bold tracking-wide italic">{t.tagline}</p>
         </div>
       </div>
 
-      {/* Right Section - Signup Form (Light Section) - Scrollable */}
       <div className="w-full md:w-1/2 h-full overflow-y-auto bg-[#F1F8E9]">
         <div className="min-h-full flex items-center justify-center p-6 md:p-12">
-          <div className="w-full max-w-[480px] bg-white rounded-2xl shadow-lg p-8 md:p-10 border border-green-100 my-8">
-            <div className="mb-6 text-center">
-              <h1 className="text-[28px] font-bold text-deep-green mb-1">{t.signupFlow[step === 1 ? 'personalInfo' : step === 2 ? 'locationDetails' : 'farmInfo']}</h1>
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">{t.signupFlow.step} {step} {t.signupFlow.of} 3</p>
+          <div className="w-full max-w-[540px] bg-white rounded-2xl shadow-lg p-8 md:p-10 border border-green-100 my-8">
+            <div className="mb-6">
+              <h1 className="text-[32px] font-black text-[#1B5E20] mb-1">{t.signup}</h1>
+              <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">{t.signupFlow.step} {step} {t.signupFlow.of} 2</p>
             </div>
 
             <div className="flex gap-2 mb-8">
-              {[1, 2, 3].map(s => (
-                <div key={s} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${step >= s ? 'bg-deep-green' : 'bg-gray-200'}`} />
+              {[1, 2].map(s => (
+                <div key={s} className={`h-2 flex-1 rounded-full transition-all duration-300 ${step >= s ? 'bg-[#1B5E20]' : 'bg-gray-200'}`} />
               ))}
             </div>
 
@@ -471,186 +519,175 @@ const SignupFlow: React.FC<{ onSignup: (p: any, pass: string) => void; onSwitch:
               )}
 
               {step === 1 && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                   <div>
-                    <label className={labelClasses}>{t.signupFlow.fullName} *</label>
-                    <input required placeholder={t.signupFlow.placeholders.fullName} className={inputClasses} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClasses}>{t.signupFlow.age} *</label>
-                      <input required type="number" placeholder={t.signupFlow.placeholders.age} className={inputClasses} value={formData.age} onChange={e => setFormData({ ...formData, age: e.target.value })} />
-                    </div>
-                    <div>
-                      <label className={labelClasses}>{t.signupFlow.gender} *</label>
-                      <select className={inputClasses} value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })}>
-                        <option value="male">{t.signupFlow.options.gender.male}</option>
-                        <option value="female">{t.signupFlow.options.gender.female}</option>
-                        <option value="other">{t.signupFlow.options.gender.other}</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClasses}>{t.signupFlow.occupation} *</label>
-                      <select className={inputClasses} value={formData.occupation} onChange={e => setFormData({ ...formData, occupation: e.target.value })}>
-                        <option value="farmer">{t.signupFlow.options.occupation.farmer}</option>
-                        <option value="student">{t.signupFlow.options.occupation.student}</option>
-                        <option value="business">{t.signupFlow.options.occupation.business}</option>
-                        <option value="other">{t.signupFlow.options.occupation.other}</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className={labelClasses}>{t.experienceYears} *</label>
-                      <input required type="number" placeholder="5" className={inputClasses} value={formData.experience_years} onChange={e => setFormData({ ...formData, experience_years: e.target.value })} />
+                    <h3 className={sectionTitleClasses}>{t.signupFlow.personalInfo}</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className={labelClasses}>{t.signupFlow.fullName} *</label>
+                        <input required placeholder={t.signupFlow.placeholders.fullName} className={inputClasses} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className={labelClasses}>{t.signupFlow.age} *</label>
+                          <input required type="number" placeholder={t.signupFlow.placeholders.age} className={inputClasses} value={formData.age} onChange={e => setFormData({ ...formData, age: e.target.value })} />
+                        </div>
+                        <div>
+                          <label className={labelClasses}>{t.signupFlow.gender} *</label>
+                          <select required className={inputClasses} value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })}>
+                            <option value="male">{t.signupFlow.options.gender.male}</option>
+                            <option value="female">{t.signupFlow.options.gender.female}</option>
+                            <option value="other">{t.signupFlow.options.gender.other}</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className={labelClasses}>{t.signupFlow.phone} *</label>
+                        <input required placeholder={t.signupFlow.placeholders.phone} className={inputClasses} value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })} />
+                      </div>
+                      <div>
+                        <label className={labelClasses}>{t.signupFlow.email} ({t.other})</label>
+                        <input type="email" placeholder={t.signupFlow.placeholders.email} className={inputClasses} value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                      </div>
                     </div>
                   </div>
+
                   <div>
-                    <label className={labelClasses}>{t.signupFlow.phone} *</label>
-                    <input required placeholder={t.signupFlow.placeholders.phone} className={inputClasses} value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className={labelClasses}>{t.signupFlow.email} *</label>
-                    <input required type="email" placeholder={t.signupFlow.placeholders.email} className={inputClasses} value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClasses}>{t.signupFlow.password} *</label>
-                      <input required type="password" placeholder="••••••••" className={inputClasses} value={password} onChange={e => setPassword(e.target.value)} />
-                    </div>
-                    <div>
-                      <label className={labelClasses}>{t.signupFlow.confirmPassword} *</label>
-                      <input required type="password" placeholder="••••••••" className={inputClasses} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                    <h3 className={sectionTitleClasses}>Location Details</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className={labelClasses}>{t.signupFlow.state} *</label>
+                        <select required className={inputClasses} value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })}>
+                          <option value="">{t.selectState}</option>
+                          {t.signupFlow.states.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelClasses}>{t.district} *</label>
+                        <input required placeholder={t.signupFlow.placeholders.district} className={inputClasses} value={formData.district} onChange={e => setFormData({ ...formData, district: e.target.value })} />
+                      </div>
+                      <div>
+                        <label className={labelClasses}>{t.village} *</label>
+                        <input required placeholder={t.signupFlow.placeholders.village} className={inputClasses} value={formData.village} onChange={e => setFormData({ ...formData, village: e.target.value })} />
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
               {step === 2 && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-                  <div>
-                    <label className={labelClasses}>{t.signupFlow.state} *</label>
-                    <select required className={inputClasses} value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })}>
-                      <option value="">Select state</option>
-                      {t.signupFlow.options.states.map((s: string) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
+                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className={sectionTitleClasses}>{t.signupFlow.farmInfo}</h3>
+                    <button type="button" onClick={addFarm} className="px-4 py-2 bg-green-50 text-[#1B5E20] border-2 border-[#1B5E20] rounded-xl font-black text-sm hover:bg-green-100 transition-all">
+                      {t.addAnotherFarm}
+                    </button>
                   </div>
-                  <div>
-                    <label className={labelClasses}>{t.signupFlow.district} *</label>
-                    <input required placeholder={t.signupFlow.placeholders.district} className={inputClasses} value={formData.district} onChange={e => setFormData({ ...formData, district: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className={labelClasses}>{t.signupFlow.village} *</label>
-                    <input required placeholder={t.signupFlow.placeholders.village} className={inputClasses} value={formData.village} onChange={e => setFormData({ ...formData, village: e.target.value })} />
-                  </div>
-                </div>
-              )}
 
-              {step === 3 && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-                  <div>
-                    <label className={labelClasses}>{t.signupFlow.landSize} *</label>
-                    <input required type="number" step="0.1" placeholder={t.signupFlow.placeholders.landSize} className={inputClasses} value={formData.landSize} onChange={e => setFormData({ ...formData, landSize: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className={labelClasses}>{t.signupFlow.soilType} *</label>
-                    <select className={inputClasses} value={formData.soilType} onChange={e => setFormData({ ...formData, soilType: e.target.value })}>
-                      <option value="alluvial">{t.signupFlow.options.soilType.alluvial}</option>
-                      <option value="black">{t.signupFlow.options.soilType.black}</option>
-                      <option value="red">{t.signupFlow.options.soilType.red}</option>
-                      <option value="laterite">{t.signupFlow.options.soilType.laterite}</option>
-                      <option value="desert">{t.signupFlow.options.soilType.desert}</option>
-                      <option value="mountain">{t.signupFlow.options.soilType.mountain}</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClasses}>{t.signupFlow.waterAvailability} *</label>
-                    <select className={inputClasses} value={formData.waterAvailability} onChange={e => setFormData({ ...formData, waterAvailability: e.target.value })}>
-                      <option value="borewell">{t.signupFlow.options.waterAvailability.borewell}</option>
-                      <option value="canal">{t.signupFlow.options.waterAvailability.canal}</option>
-                      <option value="rainfed">{t.signupFlow.options.waterAvailability.rainfed}</option>
-                      <option value="well">{t.signupFlow.options.waterAvailability.well}</option>
-                      <option value="river">{t.signupFlow.options.waterAvailability.river}</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClasses}>{t.signupFlow.mainCrops}</label>
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {t.signupFlow.options.crops.map((crop: string) => (
-                        <button
-                          key={crop}
-                          type="button"
-                          onClick={() => toggleCrop(crop)}
-                          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border-2 ${formData.mainCrops.includes(crop) ? 'bg-deep-green text-white border-deep-green shadow-md' : 'bg-gray-50 text-gray-600 border-gray-100 hover:border-gray-300'}`}
-                        >
-                          {crop}
+                  {signupFarms.map((farm, index) => (
+                    <div key={index} className="p-6 bg-white border-2 border-gray-100 rounded-2xl relative shadow-sm hover:border-green-200 transition-colors">
+                      {signupFarms.length > 1 && (
+                        <button type="button" onClick={() => removeFarm(index)} className="absolute top-4 right-4 text-red-500 hover:text-red-700 font-black p-2">
+                          {t.removeFarm}
                         </button>
-                      ))}
+                      )}
 
-                      {/* Show custom crops as tags too */}
-                      {formData.mainCrops.filter((c: string) => !t.signupFlow.options.crops.includes(c)).map((crop: string) => (
-                        <button
-                          key={crop}
-                          type="button"
-                          onClick={() => toggleCrop(crop)}
-                          className="px-4 py-2 rounded-xl text-sm font-bold transition-all border-2 bg-deep-green text-white border-deep-green shadow-md"
-                        >
-                          {crop} ×
-                        </button>
-                      ))}
-                    </div>
+                      <div className="space-y-4">
+                        <div>
+                          <label className={labelClasses}>{t.farmNickname} *</label>
+                          <input required placeholder="e.g. Home Farm" className={inputClasses} value={farm.nickname} onChange={e => updateFarm(index, 'nickname', e.target.value)} />
+                        </div>
 
-                    <div className="mt-4 flex gap-2">
-                      <input
-                        type="text"
-                        className={inputClasses}
-                        placeholder={t.typeCrop || "Type custom crop..."}
-                        value={customCrop}
-                        onChange={(e) => setCustomCrop(e.target.value)}
-                        onKeyDown={handleAddCustomCrop}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddCustomCrop}
-                        className="px-6 bg-deep-green text-white rounded-xl font-bold hover:bg-green-800 transition-all flex items-center justify-center whitespace-nowrap"
-                      >
-                        {t.submit || "Add"}
-                      </button>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className={labelClasses}>{t.landType}</label>
+                            <select className={inputClasses} value={farm.landType} onChange={e => updateFarm(index, 'landType', e.target.value)}>
+                              <option value="Irrigated">{t.irrigated}</option>
+                              <option value="Rainfed">{t.rainfed}</option>
+                              <option value="Semi-Irrigated">Semi-Irrigated</option>
+                              <option value="Organic Certified">Organic Certified</option>
+                              <option value="Greenhouse">Greenhouse</option>
+                              <option value="Polyhouse">Polyhouse</option>
+                              <option value="Mixed">{t.mixed}</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className={labelClasses}>{t.signupFlow.waterAvailability.borewell}</label> {/* Label for water availability */}
+                            <select className={inputClasses} value={farm.waterResource} onChange={e => updateFarm(index, 'waterResource', e.target.value)}>
+                              <option value="Borewell">{t.signupFlow.waterAvailability.borewell}</option>
+                              <option value="Canal">{t.signupFlow.waterAvailability.canal}</option>
+                              <option value="River">{t.signupFlow.waterAvailability.river}</option>
+                              <option value="Rainfed">{t.signupFlow.waterAvailability.rainfed}</option>
+                              <option value="Tank">Tank</option>
+                              <option value="Drip">Drip</option>
+                              <option value="Sprinkler">Sprinkler</option>
+                              <option value="Other">{t.other}</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className={labelClasses}>{t.signupFlow.landSize}</label>
+                            <input required type="number" placeholder="0.0" className={inputClasses} value={farm.landSize} onChange={e => updateFarm(index, 'landSize', e.target.value)} />
+                          </div>
+                          <div>
+                            <label className={labelClasses}>{t.landSizeUnit}</label>
+                            <select className={inputClasses} value={farm.unit} onChange={e => updateFarm(index, 'unit', e.target.value)}>
+                              <option value="Acre">{t.unitAcre}</option>
+                              <option value="Hectare">{t.unitHectare}</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className={labelClasses}>{t.mainCrops}</label>
+                          <div className="flex gap-2">
+                            <select className={inputClasses} value={farm.crop} onChange={e => updateFarm(index, 'crop', e.target.value)}>
+                              <option value="">{t.signupFlow.placeholders.village}</option>
+                              <option value="No Crop Currently">{t.noCropCurrently}</option>
+                              {t.signupFlow.crops.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                            <button type="button" onClick={() => {
+                              const crop = prompt(t.customCropPlaceholder);
+                              if (crop) updateFarm(index, 'crop', crop);
+                            }} className="p-4 bg-green-50 text-[#1B5E20] border-2 border-[#1B5E20] rounded-xl font-black">
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               )}
 
               <div className="flex flex-col gap-4 pt-4">
                 <div className="flex gap-4">
                   {step > 1 && (
-                    <button type="button" onClick={handleBack} className="flex-1 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm active:scale-[0.98]">
-                      {t.signupFlow.back}
+                    <button type="button" onClick={handleBack} className="flex-1 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-black hover:bg-gray-50 transition-all shadow-sm active:scale-[0.98]">
+                      {t.back}
                     </button>
                   )}
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-[2] py-4 bg-deep-green text-white rounded-xl font-bold hover:bg-green-800 transition-all shadow-md active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-[2] py-4 bg-[#1B5E20] text-white rounded-xl font-black text-lg hover:bg-[#2E7D32] transition-all shadow-lg active:scale-[0.98] disabled:opacity-50"
                   >
-                    {loading ? (
-                      <><RefreshCw className="animate-spin" size={20} /> {t.loading}</>
-                    ) : (
-                      <>
-                        {step === 3 ? t.signupFlow.signUp : t.signupFlow.next}
-                        <ArrowRight size={20} />
-                      </>
-                    )}
+                    {loading ? t.loading : (step === 2 ? t.submit : t.next)}
                   </button>
                 </div>
+                {step === 2 && !loading && (
+                  <button type="button" onClick={handleSkip} className="w-full py-3 bg-gray-50 text-gray-500 rounded-xl font-bold text-sm hover:bg-gray-100 transition-all uppercase tracking-widest text-center border-2 border-gray-100">
+                    {t.skipForNow}
+                  </button>
+                )}
+              </div>
 
-                <div className="text-center mt-4">
-                  <p className="text-gray-500 text-sm font-medium">
-                    {t.alreadyHaveAccount} <button type="button" onClick={onSwitch} className="text-deep-green font-bold hover:underline">{t.login}</button>
-                  </p>
-                </div>
+              <div className="text-center mt-4">
+                <p className="text-gray-500 text-sm font-bold">
+                  {t.alreadyHaveAccount} <button type="button" onClick={onSwitch} className="text-[#1B5E20] font-black hover:underline">{t.login}</button>
+                </p>
               </div>
             </form>
           </div>
@@ -662,7 +699,9 @@ const SignupFlow: React.FC<{ onSignup: (p: any, pass: string) => void; onSwitch:
 
 
 const AppContent: React.FC = () => {
-  const { language: lang, t } = useLanguage();
+  const { setLanguage, hasSelectedLanguage, t } = useLanguage();
+  const { setFarms, setActiveFarm } = useFarm();
+
   const [user, setUser] = useState<UserProfile | null>(null);
   const [authView, setAuthView] = useState<'login' | 'signup'>('login');
   const [loading, setLoading] = useState(true);
@@ -686,11 +725,15 @@ const AppContent: React.FC = () => {
           if (docSnap.exists()) {
             const profile = docSnap.data() as UserProfile;
             setUser(profile);
+            setFarms(profile.farms || []);
+            if (profile.farms && profile.farms.length > 0) setActiveFarm(profile.farms[0]);
             fetchWeather(getBestLocation(profile));
           }
         });
       } else {
         setUser(null);
+        setFarms([]);
+        setActiveFarm(null);
       }
       setLoading(false);
     });
@@ -731,19 +774,35 @@ const AppContent: React.FC = () => {
 
   // ... (Login/Signup logic omitted for brevity, no changes needed inside)
 
-  const handleLogin = async (e: string, p: string) => {
-    try {
-      await signInWithEmailAndPassword(auth, e, p);
-    } catch (err: any) {
-      throw err;
-    }
+  const handleLogin = async (otp: string) => {
+    // Mock login for now
+    const mockProfile: UserProfile = {
+      name: 'Kanishka Salgude',
+      phone: '1234567890',
+      age: '25',
+      gender: 'male',
+      language: 'EN',
+      location: { state: 'Maharashtra', district: 'Pune', village: 'Maval' },
+      farms: [
+        { nickname: 'Home Farm', landType: 'Irrigated', waterResource: 'Borewell', soilType: 'Black', landSize: '5', unit: 'Acre', crop: 'Rice' }
+      ],
+      experience_years: '5'
+    };
+    setUser(mockProfile);
+    setFarms(mockProfile.farms);
+    if (mockProfile.farms.length > 0) setActiveFarm(mockProfile.farms[0]);
   };
 
-  const handleSignup = async (profile: any, pass: string) => {
+  const handleSignup = async (profile: UserProfile) => {
+    setUser(profile);
+    setFarms(profile.farms);
+    if (profile.farms.length > 0) setActiveFarm(profile.farms[0]);
     try {
-      const res = await createUserWithEmailAndPassword(auth, profile.email, pass);
-      await setDoc(doc(db, "users", res.user.uid), profile);
-      // setUser(profile); // onSnapshot will handle this or we can set it
+      // In phone auth, user is already created or we create them now
+      // This is a placeholder for actual registration
+      if (auth.currentUser) {
+        await setDoc(doc(db, "users", auth.currentUser.uid), profile);
+      }
     } catch (err: any) {
       throw err;
     }
@@ -756,48 +815,51 @@ const AppContent: React.FC = () => {
   return (
     <>
       {loading ? (
-        <div className="min-h-screen flex items-center justify-center text-[#1F5F4A]">{t.loading}</div>
+        <div className="min-h-screen flex items-center justify-center text-[#1F5F4A] font-bold text-xl animate-pulse">
+          <RefreshCw className="animate-spin mr-2" /> {t.loading}
+        </div>
+      ) : !hasSelectedLanguage ? (
+        <LanguageSelection onSelect={setLanguage} />
       ) : !user ? (
         authView === 'login' ? <LoginFlow onLogin={handleLogin} onSwitch={() => setAuthView('signup')} /> : <SignupFlow onSignup={handleSignup} onSwitch={() => setAuthView('login')} />
       ) : (
-        <Router>
-          <div className="min-h-screen">
-            {/* Updated Header with refresh and loading props */}
-            <Header
-              toggleNotifications={() => { }}
-              toggleWeather={handleToggleWeather}
-              user={user}
-              logout={handleLogout}
-              weatherData={weatherData}
-              weatherLoading={weatherLoading}
-              refreshWeather={handleRefreshWeather}
-            />
 
-            <WeatherModal
-              isOpen={isWeatherOpen}
-              onClose={() => setIsWeatherOpen(false)}
-              data={weatherData}
-              loading={weatherLoading}
-              location={getBestLocation(user)}
-            />
+        <div className="min-h-screen">
+          {/* Updated Header with refresh and loading props */}
+          <Header
+            toggleNotifications={() => { }}
+            toggleWeather={handleToggleWeather}
+            user={user}
+            logout={handleLogout}
+            weatherData={weatherData}
+            weatherLoading={weatherLoading}
+            refreshWeather={handleRefreshWeather}
+          />
 
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/chat" element={<Chatbot />} />
-              <Route path="/advisory" element={<BusinessAdvisory lang={lang} user={user} />} />
-              <Route path="/news" element={<NewsPage lang={lang} user={user} />} />
-              <Route path="/crop-care" element={<CropCare lang={lang} />} />
-              <Route path="/crop-care/disease" element={<DiseaseDetector lang={lang} />} />
-              <Route path="/crop-care/pest" element={<PestDetector lang={lang} />} />
-              <Route path="/waste-to-value" element={<WasteToValue lang={lang} />} />
-              <Route path="/hub" element={<KnowledgeHub />} />
-              <Route path="/knowledge/:slug" element={<ArticleDetail />} />
-              <Route path="/business/:id" element={<BusinessDetail lang={lang} />} />
-              <Route path="/roadmap/:businessName" element={<Roadmap lang={lang} />} />
-              <Route path="/profile/edit" element={<EditProfile lang={lang} />} />
-            </Routes>
-          </div>
-        </Router>
+          <WeatherModal
+            isOpen={isWeatherOpen}
+            onClose={() => setIsWeatherOpen(false)}
+            data={weatherData}
+            loading={weatherLoading}
+            location={getBestLocation(user)}
+          />
+
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/chat" element={<Chatbot />} />
+            <Route path="/advisory" element={<BusinessAdvisory />} />
+            <Route path="/news" element={<NewsPage />} />
+            <Route path="/crop-care" element={<CropCare />} />
+            <Route path="/crop-care/disease" element={<DiseaseDetector />} />
+            <Route path="/crop-care/pest" element={<PestDetector />} />
+            <Route path="/waste-to-value" element={<WasteToValue />} />
+            <Route path="/hub" element={<KnowledgeHub />} />
+            <Route path="/knowledge/:slug" element={<ArticleDetail />} />
+            <Route path="/business/:id" element={<BusinessDetail />} />
+            <Route path="/roadmap/:businessName" element={<Roadmap />} />
+            <Route path="/profile/edit" element={<EditProfile />} />
+          </Routes>
+        </div>
       )}
     </>
   );
@@ -805,11 +867,15 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <AppContent />
-      </LanguageProvider>
-    </ThemeProvider>
+    <Router>
+      <ThemeProvider>
+        <LanguageProvider>
+          <FarmProvider>
+            <AppContent />
+          </FarmProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </Router>
   );
 };
 

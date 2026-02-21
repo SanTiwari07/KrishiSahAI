@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { api } from '../src/services/api';
 import { auth } from '../firebase';
-import { Language, ChatMessage } from '../types';
-import { translations } from '../src/i18n/translations';
+import { ChatMessage } from '../types';
+import { useLanguage } from '../src/context/LanguageContext';
 import {
     ArrowLeft,
     Recycle,
@@ -32,8 +32,8 @@ import {
 
 type ViewState = 'input' | 'processing' | 'results' | 'chat' | 'intro';
 
-const WasteToValue: React.FC<{ lang: Language }> = ({ lang }) => {
-    const t = translations[lang];
+const WasteToValue: React.FC = () => {
+    const { t, language: lang } = useLanguage();
     const navigate = useNavigate();
     const [view, setView] = useState<ViewState>('input');
 

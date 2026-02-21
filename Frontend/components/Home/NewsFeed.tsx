@@ -1,6 +1,4 @@
-import React from 'react';
-import { translations } from '../../src/i18n/translations';
-import { Language } from '../../types';
+import { useLanguage } from '../../src/context/LanguageContext';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock } from 'lucide-react';
 
@@ -14,8 +12,8 @@ interface NewsItem {
     source: string;
 }
 
-const NewsFeed: React.FC<{ lang: Language }> = ({ lang }) => {
-    const t = translations[lang];
+const NewsFeed: React.FC = () => {
+    const { t } = useLanguage();
 
     const newsItems: NewsItem[] = [
         {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Language } from '../types';
-import { translations } from '../src/i18n/translations';
+import { useLanguage } from '../src/context/LanguageContext';
+import { useFarm } from '../src/context/FarmContext';
 import { api } from '../src/services/api';
 import { auth } from '../firebase';
 import { UserProfile } from '../types';
@@ -242,7 +243,7 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
         }
     }, [location.state]);
 
-    // Set total land from user profile prop
+    // Set total land from active farm or cumulative farms
     useEffect(() => {
         if (user) {
             const size = user.landSize || (user as any).land_size;
@@ -250,7 +251,8 @@ const BusinessAdvisory: React.FC<{ lang: Language; user: UserProfile | null }> =
                 setFormData(prev => ({ ...prev, totalLand: size.toString() }));
             }
         }
-    }, [user]);
+    }, [activeFarm, farms]);
+
 
     const interestOptions = [
         "Dairy Farming", "Poultry", "Greenhouse Farming", "Goat Farming",

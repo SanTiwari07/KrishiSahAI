@@ -1,11 +1,9 @@
-import React from 'react';
-import { Language } from '../types';
-import { translations } from '../src/i18n/translations';
+import { useLanguage } from '../src/context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { Sprout, Bug, ArrowRight } from 'lucide-react';
 
-const CropCare: React.FC<{ lang: Language }> = ({ lang }) => {
-    const t = translations[lang];
+const CropCare: React.FC = () => {
+    const { t } = useLanguage();
     const navigate = useNavigate();
 
     return (

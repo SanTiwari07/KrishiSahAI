@@ -3,8 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../src/services/api';
 import { ArrowLeft, Download, CheckCircle, AlertTriangle, TrendingUp, Users, Calendar, Shield, Loader2, Share2 } from 'lucide-react';
 import { auth } from '../firebase';
-import { Language } from '../types';
-import { translations } from '../src/i18n/translations';
+import { useLanguage } from '../src/context/LanguageContext';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -28,11 +27,11 @@ interface RoadmapData {
     disclaimer?: string;
 }
 
-const Roadmap: React.FC<{ lang: Language }> = ({ lang }) => {
+const Roadmap: React.FC = () => {
     const { businessName } = useParams<{ businessName: string }>();
     const navigate = useNavigate();
     const location = useLocation();
-    const t = translations[lang];
+    const { t, language: lang } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [roadmap, setRoadmap] = useState<RoadmapData | null>(null);
     const [error, setError] = useState('');

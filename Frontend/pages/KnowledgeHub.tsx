@@ -5,7 +5,7 @@ import { useLanguage } from '../src/context/LanguageContext';
 
 const KnowledgeHub: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
 
     useEffect(() => {
         const loadArticles = async () => {
@@ -51,23 +51,15 @@ const KnowledgeHub: React.FC = () => {
         loadArticles();
     }, []);
 
-    const headers = {
-        en: { title: "Knowledge Hub", subtitle: "Learn modern farming techniques and insights" },
-        hi: { title: "ज्ञान केंद्र", subtitle: "आधुनिक खेती की तकनीकें और अंतर्दृष्टि सीखें" },
-        mr: { title: "ज्ञान केंद्र", subtitle: "आधुनिक शेती तंत्र आणि अंतर्दृष्टी शिका" }
-    };
-
-    const currentHeader = headers[language.toLowerCase() as keyof typeof headers] || headers.en;
-
     return (
         <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-12">
                     <h1 className="text-4xl md:text-5xl font-bold text-deep-green mb-4 font-display">
-                        {currentHeader.title}
+                        {t.knowledgeHubTitle}
                     </h1>
                     <p className="text-xl text-deep-green/80 max-w-2xl mx-auto">
-                        {currentHeader.subtitle}
+                        {t.knowledgeHubSubtitle}
                     </p>
                 </div>
 

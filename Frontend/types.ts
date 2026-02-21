@@ -1,25 +1,33 @@
-
 export type Language = 'EN' | 'HI' | 'MR';
+
+export interface Farm {
+  nickname: string;
+  landType: 'Irrigated' | 'Rainfed' | 'Semi-Irrigated' | 'Organic Certified' | 'Greenhouse' | 'Polyhouse' | 'Mixed';
+  soilType: string;
+  waterResource: string;
+  landSize: string;
+  unit: 'Acre' | 'Hectare';
+  crop: string;
+}
 
 export interface UserProfile {
   name: string;
   age: string;
-  gender: string;
-  occupation: string;
   phone: string;
-  email: string;
-  state: string;
-  district: string;
-  village: string;
-  landSize: string;
-  landUnit: 'acre' | 'hectare';
-  landType: 'Irrigated' | 'Rainfed' | 'Mixed';
-  soilType: string;
-  waterAvailability: string;
-  mainCrops: string[];
-  location: string;
-  experience_years?: string; // New field for parity with backend
+  email?: string;
+  language: Language;
+  location: {
+    state: string;
+    district: string;
+    village: string;
+  };
+  farms: Farm[];
+  // Maintain legacy compatibility if needed
+  occupation?: string;
+  gender?: string;
+  experience_years?: string;
 }
+
 
 export interface NavItem {
   id: string;

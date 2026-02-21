@@ -1,11 +1,22 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { translations } from '../i18n/translations';
 import { Language } from '../../types';
+import en from '../locales/en.json';
+import hi from '../locales/hi.json';
+import mr from '../locales/mr.json';
+
+const translations = {
+    EN: en,
+    HI: hi,
+    MR: mr
+};
+
+type TranslationType = typeof en;
 
 interface LanguageContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
-    t: (typeof translations)['EN'];
+    hasSelectedLanguage: boolean;
+    t: TranslationType;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -16,14 +27,27 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return (saved as Language) || 'EN';
     });
 
+    const [hasSelectedLanguage, setHasSelectedLanguage] = useState<boolean>(() => {
+        return !!localStorage.getItem('appLanguage');
+    });
+
     useEffect(() => {
-        localStorage.setItem('appLanguage', language);
-    }, [language]);
+        if (hasSelectedLanguage) {
+            localStorage.setItem('appLanguage', language);
+        }
+    }, [language, hasSelectedLanguage]);
+
+    const handleSetLanguage = (lang: Language) => {
+        setLanguage(lang);
+        setHasSelectedLanguage(true);
+        localStorage.setItem('appLanguage', lang);
+    };
 
     const value = {
         language,
-        setLanguage,
-        t: translations[language] || translations['EN']
+        setLanguage: handleSetLanguage,
+        hasSelectedLanguage,
+        t: (translations[language] || translations['EN']) as TranslationType
     };
 
     return (
@@ -40,3 +64,4 @@ export const useLanguage = () => {
     }
     return context;
 };
+

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Language, UserProfile } from '../types';
-import { translations } from '../src/i18n/translations';
+import { useLanguage } from '../src/context/LanguageContext';
 import { api } from '../src/services/api';
 import { auth } from '../firebase';
 
@@ -13,15 +12,10 @@ interface NewsArticle {
     image?: string;
 }
 
-interface NewsPageProps {
-    lang: Language;
-    user: UserProfile | null;
-}
-
 type NewsMode = 'personalized' | 'general';
 
-const NewsPage: React.FC<NewsPageProps> = ({ lang, user }) => {
-    const t = translations[lang];
+const NewsPage: React.FC = () => {
+    const { t } = useLanguage();
     const [news, setNews] = useState<NewsArticle[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -36,7 +30,7 @@ const NewsPage: React.FC<NewsPageProps> = ({ lang, user }) => {
 
             if (mode === 'personalized') {
                 // Personalized news requires authentication
-                if (!user || !auth.currentUser) {
+                if (!auth.currentUser) {
                     setError('Please login to view personalized news');
                     setLoading(false);
                     return;
@@ -65,7 +59,7 @@ const NewsPage: React.FC<NewsPageProps> = ({ lang, user }) => {
 
     useEffect(() => {
         fetchNews(newsMode);
-    }, [newsMode, user]);
+    }, [newsMode]);
 
     const handleRefresh = () => {
         fetchNews(newsMode);

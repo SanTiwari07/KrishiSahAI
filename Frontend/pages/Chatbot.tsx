@@ -16,9 +16,9 @@ import {
     Volume2,
     Square
 } from 'lucide-react';
-import { translations } from '../src/i18n/translations';
 import { api } from '../src/services/api';
 import { auth, onAuthStateChanged } from '../firebase';
+import { useFarm } from '../src/context/FarmContext';
 
 
 
@@ -52,6 +52,7 @@ const AGRICULTURE_FACTS = [
 
 const Chatbot: React.FC = () => {
     const { t, language: lang } = useLanguage();
+    const { activeFarm } = useFarm();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -298,7 +299,9 @@ const Chatbot: React.FC = () => {
 
             const data = await api.post('/business-advisor/init', {
                 name: profile?.name || "Farmer",
-                land_size: profile?.land_size || 5,
+                land_size: activeFarm?.landSize || (profile as any)?.landSize || (profile as any)?.land_size || 5,
+                soil_type: activeFarm?.soilType || (profile as any)?.soilType || (profile as any)?.soil_type,
+                water_resource: activeFarm?.waterResource || (profile as any)?.waterResource || (profile as any)?.water_resource,
                 language: lang.toLowerCase(),
                 ...profile
             });

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Briefcase, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
-import { Language } from '../types';
-import { translations } from '../src/i18n/translations';
+import { useLanguage } from '../src/context/LanguageContext';
 import { api } from '../src/services/api';
 
 interface BusinessDetail {
@@ -19,11 +18,11 @@ interface BusinessDetail {
     implementation_steps?: string[];
 }
 
-const BusinessDetail: React.FC<{ lang: Language }> = ({ lang }) => {
+const BusinessDetail: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const t = translations[lang];
+    const { t } = useLanguage();
     const [business, setBusiness] = useState<BusinessDetail | null>(null);
     const [loading, setLoading] = useState(true);
 
