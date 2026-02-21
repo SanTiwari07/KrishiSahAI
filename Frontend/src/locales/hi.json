@@ -224,6 +224,8 @@
     "analysisFailed": "विस्तृत विश्लेषण विफल",
     "returnToAdvisory": "सलाह पर वापस जाएं",
     "backToAdvisory": "सलाह पर वापस जाएं",
+    "backToHome": "होम पर वापस जाएं",
+    "analyzingCropLifecycle": "फसल जीवनचक्र का विश्लेषण किया जा रहा है...",
     "exportPlan": "योजना निर्यात करें",
     "sharePlan": "योजना साझा करें",
     "backToOptions": "विकल्पों पर वापस जाएं",

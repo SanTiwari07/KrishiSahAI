@@ -5,6 +5,7 @@ import { api } from '../src/services/api';
 import { auth } from '../firebase';
 import { ChatMessage } from '../types';
 import { useLanguage } from '../src/context/LanguageContext';
+import { useFarm } from '../src/context/FarmContext';
 import {
     ArrowLeft,
     Recycle,
@@ -20,8 +21,14 @@ import {
     Send,
     Loader2,
     Camera,
-    Upload
+    Upload,
+    History,
+    FileText,
+    ChevronRight,
+    Search as SearchIcon
 } from 'lucide-react';
+import { onAuthStateChanged } from '../firebase';
+import { chatService, ChatSession, Message as FirestoreMessage } from '../src/services/chatService';
 
 /* 
   Refactored to have a dedicated Chat View.
@@ -34,8 +41,10 @@ type ViewState = 'input' | 'processing' | 'results' | 'chat' | 'intro';
 
 const WasteToValue: React.FC = () => {
     const { t, language: lang } = useLanguage();
+    const { activeFarm } = useFarm();
     const navigate = useNavigate();
     const [view, setView] = useState<ViewState>('input');
+
 
     // State
     const [cropInput, setCropInput] = useState('');
@@ -45,7 +54,14 @@ const WasteToValue: React.FC = () => {
     const [chatInput, setChatInput] = useState('');
     const [isChatLoading, setIsChatLoading] = useState(false);
 
+    // History & Auth State
+    const [user, setUser] = useState<any>(null);
+    const [chats, setChats] = useState<ChatSession[]>([]);
+    const [activeChatId, setActiveChatId] = useState<string | null>(null);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
 
     // Initial Greeting when entering results view
     useEffect(() => {
@@ -55,12 +71,44 @@ const WasteToValue: React.FC = () => {
         }
     }, [view, resultData, lang]);
 
+    // Auth & Chat History Subscription
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                setUser(currentUser);
+                // Subscribe to Waste chats only
+                const unsubChats = chatService.subscribeToUserChats(currentUser.uid, (data) => {
+                    setChats(data);
+                }, 'waste');
+                return () => unsubChats();
+            } else {
+                setUser(null);
+                setChats([]);
+            }
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // Load Messages for Active Chat
+    useEffect(() => {
+        if (user && activeChatId) {
+            chatService.getChatMessages(user.uid, activeChatId).then(msgs => {
+                setMessages(msgs.map(m => ({
+                    role: m.role === 'assistant' ? 'model' : 'user',
+                    text: m.content
+                })));
+                setView('chat'); // Switch to chat view if we picked a history item
+            });
+        }
+    }, [activeChatId, user]);
+
     // Scroll to bottom of chat
     useEffect(() => {
         if (view === 'chat') {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages, view]);
+
 
     const formatMessage = (text: string) => {
         if (!text) return '';
@@ -79,6 +127,7 @@ const WasteToValue: React.FC = () => {
 
         setView('processing');
         setMessages([]); // Clear previous chat
+        setActiveChatId(null); // Reset active chat for new analysis
 
         try {
             const response = await api.post('/waste-to-value/analyze', {
@@ -98,6 +147,32 @@ const WasteToValue: React.FC = () => {
         }
     };
 
+
+    const handleActiveCropClick = (crop: string) => {
+        setCropInput(crop);
+        // Trigger analysis directly
+        const langParam = lang === 'HI' ? 'Hindi' : lang === 'MR' ? 'Marathi' : 'English';
+
+        setView('processing');
+        setMessages([]);
+
+        api.post('/waste-to-value/analyze', {
+            crop: crop,
+            language: langParam
+        }).then(response => {
+            if (response.success && response.result) {
+                setResultData(response.result);
+                setView('results');
+            } else {
+                throw new Error('Invalid data format');
+            }
+        }).catch(error => {
+            console.error("Error analyzing waste for active crop:", error);
+            setView('input');
+        });
+    };
+
+
     const handleSendMessage = async (textOverride?: string) => {
         const question = textOverride || chatInput;
         if (!question.trim() || isChatLoading) return;
@@ -105,9 +180,31 @@ const WasteToValue: React.FC = () => {
         if (!textOverride) setChatInput('');
         setIsChatLoading(true);
 
-        // Add User Message
+        // Add User Message to UI
         const userMsg: ChatMessage = { role: 'user', text: question };
         setMessages(prev => [...prev, userMsg]);
+
+        let currentChatId = activeChatId;
+
+        // Create Chat in Firestore if it doesn't exist
+        if (user && !currentChatId) {
+            try {
+                const title = `Waste: ${cropInput || 'Analysis'}`;
+                currentChatId = await chatService.createChat(user.uid, title, undefined, 'waste');
+                setActiveChatId(currentChatId);
+            } catch (err) {
+                console.error("Failed to create chat in Firestore:", err);
+            }
+        }
+
+        // Save User Message to Firestore
+        if (user && currentChatId) {
+            chatService.saveMessage(user.uid, currentChatId, {
+                role: 'user',
+                content: question,
+                createdAt: new Date()
+            }).catch(e => console.error("Failed to save user message:", e));
+        }
 
         // Add Placeholder for AI
         const aiMsgPlaceHolder = { role: 'model', text: '' } as ChatMessage;
@@ -136,12 +233,23 @@ const WasteToValue: React.FC = () => {
                     console.error("Stream error:", error);
                 }
             );
+
+            // Save AI Message to Firestore
+            if (user && currentChatId && accumulatedResponse) {
+                chatService.saveMessage(user.uid, currentChatId, {
+                    role: 'assistant',
+                    content: accumulatedResponse,
+                    createdAt: new Date()
+                }).catch(e => console.error("Failed to save AI message:", e));
+            }
+
         } catch (error) {
             console.error("Chat Error:", error);
         } finally {
             setIsChatLoading(false);
         }
     };
+
 
     const handleAskChatbot = (title: string) => {
         setView('chat');
@@ -252,7 +360,28 @@ const WasteToValue: React.FC = () => {
                                         <Search className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                     </div>
 
+                                    {activeFarm && activeFarm.crops && activeFarm.crops.length > 0 && (
+                                        <div className="mt-8 text-left">
+                                            <h3 className="text-sm font-bold text-deep-green uppercase tracking-wider mb-4 border-l-4 border-deep-green pl-2">
+                                                {activeFarm.nickname ? `${activeFarm.nickname}'s Crops` : "Your Farm Crops"}
+                                            </h3>
+                                            <div className="flex flex-wrap gap-3">
+                                                {activeFarm.crops.map((crop, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        type="button"
+                                                        onClick={() => handleActiveCropClick(crop)}
+                                                        className="px-4 py-2 bg-light-green text-deep-green border border-deep-green/20 font-bold hover:bg-deep-green hover:text-white transition-all transform hover:-translate-y-0.5"
+                                                    >
+                                                        {crop}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <button
+
                                         type="submit"
                                         disabled={!cropInput.trim()}
                                         className="w-full py-4 bg-deep-green hover:bg-deep-green/90 text-white text-lg font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-md group-active:scale-95"
@@ -391,9 +520,19 @@ const WasteToValue: React.FC = () => {
         <div className="max-w-7xl mx-auto space-y-8 pt-8 pb-16 px-4">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <button onClick={() => setView('input')} className="text-[#555555] hover:text-[#1B5E20] transition-colors p-2 rounded-full hover:bg-[#E8F5E9]">
-                    <ArrowLeft className="w-6 h-6" />
-                </button>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => setIsHistoryOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#1B5E20] text-[#1B5E20] rounded-xl font-bold hover:bg-[#1B5E20] hover:text-white transition-all shadow-sm"
+                    >
+                        <History className="w-5 h-5" />
+                        {t.history || "History"}
+                    </button>
+                    <button onClick={() => setView('input')} className="text-[#555555] hover:text-[#1B5E20] transition-colors p-2 rounded-full hover:bg-[#E8F5E9]">
+                        <ArrowLeft className="w-6 h-6" />
+                    </button>
+                </div>
+
                 <div>
                     <h1 className="text-3xl font-extrabold text-[#1E1E1E] flex items-center gap-2">
                         <Recycle className="w-8 h-8 text-[#1B5E20]" /> {t.wasteValue}
@@ -521,8 +660,59 @@ const WasteToValue: React.FC = () => {
                     </div>
                 </div>
             )}
+            {/* History Drawer */}
+            {isHistoryOpen && (
+                <div className="fixed inset-0 z-[110] flex justify-end transition-all animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsHistoryOpen(false)}></div>
+                    <div className="relative w-full max-w-sm bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+                        <div className="p-6 border-b border-[#E6E6E6] flex items-center justify-between bg-deep-green text-white">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <History className="w-6 h-6" /> {t.history || "Waste History"}
+                            </h3>
+                            <button onClick={() => setIsHistoryOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+                            {chats.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-40">
+                                    <FileText className="w-12 h-12 mb-4" />
+                                    <p>No previous waste analysis found.</p>
+                                </div>
+                            ) : (
+                                chats.map((chat) => (
+                                    <button
+                                        key={chat.id}
+                                        onClick={() => {
+                                            setActiveChatId(chat.id);
+                                            setIsHistoryOpen(false);
+                                        }}
+                                        className={`w-full p-4 rounded-2xl border transition-all flex items-center gap-4 text-left group ${activeChatId === chat.id
+                                            ? 'bg-light-green border-deep-green shadow-sm'
+                                            : 'bg-white border-[#E6E6E6] hover:border-deep-green hover:shadow-md'
+                                            }`}
+                                    >
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${activeChatId === chat.id ? 'bg-deep-green text-white' : 'bg-gray-100 text-deep-green group-hover:bg-deep-green group-hover:text-white'
+                                            }`}>
+                                            <Recycle className="w-5 h-5" />
+                                        </div>
+                                        <div className="flex-1 overflow-hidden">
+                                            <h4 className="font-bold text-deep-green truncate">{chat.title}</h4>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                {chat.updatedAt?.toDate ? chat.updatedAt.toDate().toLocaleDateString() : 'Recent'}
+                                            </p>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-deep-green" />
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
+
 
 export default WasteToValue;

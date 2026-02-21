@@ -14,6 +14,7 @@ import NewsPage from './pages/NewsPage';
 import EditProfile from './pages/EditProfile';
 import FarmHealth from './pages/FarmHealth';
 import ArticleDetail from './pages/ArticleDetail';
+import Planner from './pages/Planner';
 import { Leaf } from 'lucide-react';
 import { Language, UserProfile, Farm } from './types';
 
@@ -1068,6 +1069,7 @@ const AppContent: React.FC = () => {
             <Route path="/knowledge/:slug" element={<ArticleDetail />} />
             <Route path="/business/:id" element={<BusinessDetail />} />
             <Route path="/roadmap/:businessName" element={<Roadmap />} />
+            <Route path="/planner" element={<Planner />} />
             <Route path="/profile/edit" element={<EditProfile />} />
           </Routes>
         </div>

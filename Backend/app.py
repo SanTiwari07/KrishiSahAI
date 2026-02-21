@@ -354,10 +354,16 @@ def init_advisor():
         name = data.get('name', 'Farmer')
         print(f"[ADVISOR] Init -> Farmer: {name}")
         
+        def safe_float(val, default=0.0):
+            try:
+                return float(val) if val is not None else default
+            except (ValueError, TypeError):
+                return default
+
         profile = FarmerProfile(
             name=name,
-            land_size=float(data.get('land_size', 5)),
-            capital=float(data.get('capital', 100000)),
+            land_size=safe_float(data.get('land_size'), 5.0),
+            capital=safe_float(data.get('capital'), 100000.0),
             market_access=data.get('market_access', 'moderate'),
             skills=data.get('skills', []),
             risk_level=data.get('risk_level', 'medium'),
@@ -376,7 +382,23 @@ def init_advisor():
             soil_type=data.get('soil_type'),
             water_availability=data.get('water_availability'),
             crops_grown=data.get('crops_grown', []),
-            land_unit=data.get('land_unit', 'acres')
+            land_unit=data.get('land_unit', 'acres'),
+            
+            # Additional Fields
+            current_profit=data.get('current_profit'),
+            running_plan=data.get('running_plan'),
+            space_type=data.get('space_type'),
+            covered_space=data.get('covered_space'),
+            infra_type=data.get('infra_type'),
+            electricity=data.get('electricity'),
+            animal_handling=data.get('animal_handling'),
+            daily_labor=data.get('daily_labor'),
+            hands_on_work=data.get('hands_on_work'),
+            income_comfort=data.get('income_comfort'),
+            main_goal=data.get('main_goal'),
+            interests=data.get('interests', []),
+            total_land=safe_float(data.get('total_land'), 0.0),
+            farm_name=data.get('farm_name')
         )
         
         import uuid
@@ -640,6 +662,35 @@ def generate_roadmap():
 
     except Exception as e:
         print(f"[ROADMAP] Generation Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/generate-crop-roadmap', methods=['POST'])
+@require_auth
+def generate_crop_roadmap():
+    try:
+        data = request.json
+        user_id = request.user.get('uid')
+        
+        if not user_id and os.getenv("FLASK_ENV") == "development":
+             user_id = data.get('user_id', 'test_user')
+
+        crop_name = data.get('crop_name')
+        language = data.get('language', 'en')
+        
+        if not crop_name:
+            return jsonify({'error': 'Crop name is required'}), 400
+            
+        print(f"[CROP-ROADMAP] Generating for User: {user_id}, Crop: {crop_name}, Language: {language}")
+        
+        roadmap = roadmap_generator.generate_crop_roadmap(user_id, crop_name, language)
+        
+        return jsonify({'success': True, 'roadmap': roadmap})
+
+    except Exception as e:
+        print(f"[CROP-ROADMAP] Generation Error: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500

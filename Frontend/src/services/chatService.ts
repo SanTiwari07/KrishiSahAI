@@ -16,7 +16,6 @@ import {
     onSnapshot,
     deleteDoc
 } from 'firebase/firestore';
-
 export interface ChatSession {
     id: string;
     userId: string;
@@ -25,7 +24,9 @@ export interface ChatSession {
     updatedAt: any;
     model: string;
     backendSessionId?: string;
+    type: 'advisor' | 'waste';
 }
+
 
 export interface Message {
     id?: string;
@@ -42,7 +43,7 @@ export const chatService = {
     /**
      * Creates a new chat session for a user
      */
-    createChat: async (userId: string, initialTitle: string = "New Chat", backendSessionId?: string): Promise<string> => {
+    createChat: async (userId: string, initialTitle: string = "New Chat", backendSessionId?: string, type: 'advisor' | 'waste' = 'advisor'): Promise<string> => {
         try {
             const chatRef = collection(db, USERS_COLLECTION, userId, CHATS_COLLECTION);
             const newChat = await addDoc(chatRef, {
@@ -50,11 +51,13 @@ export const chatService = {
                 title: initialTitle,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
-                model: 'krishi-advisor-v1',
-                backendSessionId
+                model: type === 'waste' ? 'waste-to-value-v1' : 'krishi-advisor-v1',
+                backendSessionId,
+                type
             });
             return newChat.id;
         } catch (error) {
+
             console.error("Error creating chat:", error);
             throw error;
         }
@@ -99,11 +102,15 @@ export const chatService = {
     /**
      * Fetch user's chat history ordered by most recent
      */
-    getUserChats: async (userId: string, limitCount: number = 20): Promise<ChatSession[]> => {
+    getUserChats: async (userId: string, limitCount: number = 20, type?: 'advisor' | 'waste'): Promise<ChatSession[]> => {
         try {
             const chatsRef = collection(db, USERS_COLLECTION, userId, CHATS_COLLECTION);
-            const q = query(chatsRef, orderBy('updatedAt', 'desc'), limit(limitCount));
+            let q = query(chatsRef, orderBy('updatedAt', 'desc'), limit(limitCount));
+            if (type) {
+                q = query(chatsRef, where('type', '==', type), orderBy('updatedAt', 'desc'), limit(limitCount));
+            }
             const snapshot = await getDocs(q);
+
             return snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
@@ -117,9 +124,13 @@ export const chatService = {
     /**
      * Real-time listener for user chats
      */
-    subscribeToUserChats: (userId: string, callback: (chats: ChatSession[]) => void) => {
+    subscribeToUserChats: (userId: string, callback: (chats: ChatSession[]) => void, type?: 'advisor' | 'waste') => {
         const chatsRef = collection(db, USERS_COLLECTION, userId, CHATS_COLLECTION);
-        const q = query(chatsRef, orderBy('updatedAt', 'desc'), limit(50));
+        let q = query(chatsRef, orderBy('updatedAt', 'desc'), limit(50));
+        if (type) {
+            q = query(chatsRef, where('type', '==', type), orderBy('updatedAt', 'desc'), limit(50));
+        }
+
 
         return onSnapshot(q, (snapshot) => {
             const chats = snapshot.docs.map(doc => ({

@@ -10,6 +10,7 @@ export interface UserProfile {
     crops_grown?: string[];
     water_availability?: string;
     role?: string;
+    language?: string;
 }
 
 export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {

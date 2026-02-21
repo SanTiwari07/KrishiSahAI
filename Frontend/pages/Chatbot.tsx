@@ -93,6 +93,7 @@ const Chatbot: React.FC = () => {
 
     // Backend Session State
     const [backendSessionId, setBackendSessionId] = useState<string | null>(null);
+    const hasProcessedInitialMessage = useRef(false);
     const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
 
     // Scroll Management
@@ -282,27 +283,52 @@ const Chatbot: React.FC = () => {
 
     // 3. Handle Navigation State (e.g. "Ask AI" from other pages)
     useEffect(() => {
-        if (location.state?.initialMessage && !activeChatId && !isLoading && user) {
+        if (location.state?.initialMessage && !activeChatId && !isLoading && user && !hasProcessedInitialMessage.current) {
             const initMsg = location.state.initialMessage;
+            const stateSessionId = location.state.backendSessionId;
+
+            // Mark as processed immediately to prevent race conditions
+            hasProcessedInitialMessage.current = true;
+
+            if (stateSessionId && !backendSessionId) {
+                setBackendSessionId(stateSessionId);
+            }
+
             // Clear state to prevent loop
             window.history.replaceState({}, document.title);
             handleSend(initMsg);
         }
-    }, [location.state, user]);
+    }, [location.state, user, activeChatId, isLoading, backendSessionId]);
 
+
+    // 4. Handle Global Farm Switch
+    useEffect(() => {
+        if (user && activeFarm) {
+            console.log("[Chatbot] Farm switched to:", activeFarm.nickname);
+            setBackendSessionId(null);
+            // Optionally clear messages if you want a fresh start per farm
+            // setMessages([]); 
+        }
+    }, [activeFarm?.nickname, user]);
 
     const initBackendSession = async () => {
         try {
             console.log("[Chatbot] Initializing backend session for user:", user.uid);
-            const profile = await getUserProfile(user.uid);
+            const profile = await getUserProfile(user.uid) as any;
             console.log("[Chatbot] User profile loaded:", profile);
 
             const data = await api.post('/business-advisor/init', {
                 name: profile?.name || "Farmer",
-                land_size: activeFarm?.landSize || (profile as any)?.landSize || (profile as any)?.land_size || 5,
-                soil_type: activeFarm?.soilType || (profile as any)?.soilType || (profile as any)?.soil_type,
-                water_resource: activeFarm?.waterResource || (profile as any)?.waterResource || (profile as any)?.water_resource,
-                language: lang.toLowerCase(),
+                // Pass active farm details for primary context
+                land_size: activeFarm?.landSize || profile?.landSize || profile?.land_size || 5,
+                soil_type: activeFarm?.soilType || profile?.soilType || profile?.soil_type,
+                water_resource: activeFarm?.waterResource || profile?.waterResource || profile?.water_resource,
+                crops_grown: activeFarm?.crops || [], // Ensure farm-specific crops are known
+                farm_name: activeFarm?.nickname,
+                language: (profile?.language || lang).toLowerCase(),
+                // Pass all farms for broad awareness
+                farms: profile?.farms || [],
+                experience_years: profile?.experience_years || '',
                 ...profile
             });
 
@@ -640,7 +666,9 @@ const Chatbot: React.FC = () => {
                                                     <span className="w-1.5 h-1.5 bg-green-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                                                     <span className="w-1.5 h-1.5 bg-green-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                                                 </div>
-                                                <span className="text-xs text-green-200 font-bold tracking-widest">Thinking.........</span>
+                                                <span className="text-xs text-green-200 font-bold tracking-widest flex items-center">
+                                                    Thinking<span className="thinking-dots min-w-[20px]"></span>
+                                                </span>
                                             </div>
                                         </div>
                                     ) : (

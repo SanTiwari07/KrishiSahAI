@@ -221,14 +221,135 @@ DISCLAIMER: This roadmap is an AI-generated simulation based on provided data an
                 "final_verdict": "Retry Later"
             }
 
-    def parse_markdown_roadmap(self, text, business_name, language='EN'):
+    def generate_crop_roadmap(self, user_id, crop_name, language='en'):
+        # 1. Fetch Data
+        profile = self.get_farmer_profile(user_id)
+        if not profile:
+            profile = {
+                "name": "Guest Farmer",
+                "age": 35,
+                "land_size": 5,
+                "experience_years": 5,
+            }
+
+        lang_upper = str(language).upper()
+        if lang_upper not in ['EN', 'HI', 'MR']:
+            lang_upper = 'EN'
+
+        # 2. Construct Context
+        context = {
+            "farmer_name": profile.get("name", "Farmer"),
+            "location": f"{profile.get('village', 'Unknown Village')}, {profile.get('district', 'Unknown District')}, {profile.get('state', 'Unknown State')}",
+            "land_size": f"{profile.get('landSize', profile.get('land_size', 0))} {profile.get('land_unit', 'acres')}",
+            "crop_name": crop_name,
+            "age": profile.get('age', 35),
+            "experience": profile.get('experience_years', profile.get('experience', 'Not specified')),
+            "soil_type": profile.get('soil_type', 'Not specified'),
+            "water_availability": profile.get('water_availability', 'Not specified'),
+            "market_access": profile.get('market_access', 'Moderate'),
+            "risk_preference": profile.get('risk_level', profile.get('risk_preference', 'Medium')),
+            "language_name": {"EN": "English", "HI": "Hindi", "MR": "Marathi"}[lang_upper]
+        }
+
+        # Language-specific labels/headers for the crop prompt
+        CROP_LANG_CONFIG = {
+            "EN": {
+                "milestone": "Lifecycle Milestone",
+                "focus": "Critical Focus",
+                "actions": "Required Actions",
+                "profit": "Projected Value/Yield",
+                "time_term": "Week/Month",
+                "headers": ["Crop Overview", "1. Crop Lifecycle Planner", "2. Resource & Labor Management", "3. Quality & Harvest Sustainability", "4. Market & Risk Management", "5. Final Harvest Verdict"]
+            },
+            "HI": {
+                "milestone": "जीवनचक्र उपलब्धि",
+                "focus": "महत्वपूर्ण फोकस",
+                "actions": "आवश्यक कार्य",
+                "profit": "अनुमानित मूल्य/उपज",
+                "time_term": "सप्ताह/महीना",
+                "headers": ["फसल अवलोकन", "1. फसल जीवनचक्र योजनाकार", "2. संसाधन और श्रम प्रबंधन", "3. गुणवत्ता और फसल स्थिरता", "4. बाजार और जोखिम प्रबंधन", "5. अंतिम फसल निर्णय"]
+            },
+            "MR": {
+                "milestone": "जीवनचक्र मैलाचा दगड",
+                "focus": "गंभीर लक्ष",
+                "actions": "आवश्यक कृती",
+                "profit": "अपेक्षित मूल्य/उत्पन्न",
+                "time_term": "आठवडा/महिना",
+                "headers": ["पीक आढावा", "1. पीक जीवनचक्र नियोजक", "2. संसाधन आणि श्रम व्यवस्थापन", "3. गुणवत्ता आणि पीक शाश्वतता", "4. बाजार आणि जोखीम व्यवस्थापन", "5. अंतिम पीक निकाल"]
+            }
+        }
+        
+        cfg = CROP_LANG_CONFIG[lang_upper]
+
+        # 3. Crop Roadmap Prompt
+        prompt = f"""You are an expert Agricultural Agronomist and Crop Success Consultant. 
+Create a HIGHLY DETAILED and professional Lifecycle Roadmap for the crop '{context['crop_name']}'.
+STRICTLY generate the ENTIRE response in {context['language_name']} language. EVERY SINGLE WORD must be in {context['language_name']}.
+
+Farmer Profile:
+- Name: {context['farmer_name']}
+- Location: {context['location']}
+- Land: {context['land_size']} (Soil: {context['soil_type']}, Water: {context['water_availability']})
+- Crop to Grow: {context['crop_name']}
+- Experience: {context['experience']} years
+- Market Access: {context['market_access']}
+
+Guidelines:
+1. Provide a step-by-step advisor from sowing to harvest.
+2. Break the timeline into logical phases (e.g., Sowing, Vegetative, Flowering, Fruiting, Harvest).
+3. For each phase, provide specific actions regarding irrigation, fertilization, and pest control.
+4. STRICTLY NO EMOJIS. Use professional Markdown formatting.
+5. Output the response in {context['language_name']}.
+
+Structure (Use these exact Headers in {context['language_name']}):
+
+# {cfg['headers'][0]}
+[A 3-5 sentence summary of the {context['crop_name']} lifecycle on this specific farm.]
+
+# {cfg['headers'][1]}
+[Provide a meticulous Phase-wise breakdown. Each phase must be a clear block:]
+
+## Phase 1: [{cfg['milestone']}]
+- **{cfg['focus']}**: [Detailed objective for this phase]
+- **{cfg['actions']}**: [3-5 highly specific, numbered steps in {context['language_name']}.]
+- **{cfg['profit']}**: [Expected weight or value]
+
+... (Repeat for all phases until harvest) ...
+
+# {cfg['headers'][2]}
+[Explain how resources (water, fertilizer) and labor should be allocated in {context['language_name']}.]
+
+# {cfg['headers'][3]}
+[Focus on post-harvest handling and maintaining soil health for the next cycle in {context['language_name']}.]
+
+# {cfg['headers'][4]}
+[Identify common pests/diseases for {context['crop_name']} and how to mitigate them in {context['language_name']}.]
+
+# {cfg['headers'][5]}
+[Final feasibility score and harvest success probability in {context['language_name']}.]
+
+DISCLAIMER: This roadmap is an AI-generated simulation based on provided data and regional averages. Actual results may vary due to climate conditions and management.
+"""
+        
+        print(f"[CROP-ROADMAP] Generating for {crop_name} in {lang_upper}...")
+        try:
+            response = self.llm.invoke(prompt)
+            content = response.content.strip()
+            roadmap_json = self.parse_markdown_roadmap(content, context['crop_name'], lang_upper, is_crop=True)
+            return roadmap_json
+        except Exception as e:
+            print(f"[CROP-ROADMAP ERROR] {e}")
+            return {"title": f"Roadmap for {crop_name} (Error)", "overview": str(e), "years": [], "verdict": "Error"}
+
+    def parse_markdown_roadmap(self, text, business_name, language='EN', is_crop=False):
         """
         Parses the multi-section Markdown output into a dictionary for the frontend.
         """
         import re
         
+        title_prefix = "Crop Lifecycle" if is_crop else "10-Year Sustainability & Profit"
         roadmap = {
-            "title": f"10-Year Sustainability & Profit Planner for {business_name}",
+            "title": f"{title_prefix} Planner for {business_name}",
             "overview": "",
             "years": [],
             "labor_analysis": "",
@@ -241,12 +362,12 @@ DISCLAIMER: This roadmap is an AI-generated simulation based on provided data an
         # Multi-language header mapping for the parser
         # We look for ANY of these patterns to demarcate sections
         HEADERS = {
-            "overview": r'# (?:Overview|अवलोकन|आढावा)',
-            "planner": r'# (?:1\. 10-Year Growth & Profit Planner|1\. 10-वर्षीय विकास और लाभ योजनाकार|1\. 10-वर्षांचे विकास आणि नफा नियोजक)',
-            "labor": r'# (?:2\. Labor & Aging Analysis|2\. श्रम और उम्र बढ़ने का विश्लेषण|2\. श्रम आणि वृद्धत्व विश्लेषण)',
-            "sustainability": r'# (?:3\. Sustainability & Succession|3\. स्थिरता और उत्तराधिकार|3\. शाश्वतता आणि उत्तराधिकार)',
-            "resilience": r'# (?:4\. Financial Resilience|4\. वित्तीय लचीलापन|4\. आर्थिक लवचिकता)',
-            "verdict": r'# (?:5\. Final Verdict|5\. अंतिम निर्णय|5\. अंतिम निकाल)'
+            "overview": r'# (?:Overview|अवलोकन|आढावा|Crop Overview|फसल अवलोकन|पीक आढावा)',
+            "planner": r'# (?:1\. 10-Year Growth & Profit Planner|1\. 10-वर्षीय विकास और लाभ योजनाकार|1\. 10-वर्षांचे विकास आणि नफा नियोजक|1\. Crop Lifecycle Planner|1\. फसल जीवनचक्र योजनाकार|1\. पीक जीवनचक्र नियोजक)',
+            "labor": r'# (?:2\. Labor & Aging Analysis|2\. श्रम और उम्र बढ़ने का विश्लेषण|2\. श्रम आणि वृद्धत्व विश्लेषण|2\. Resource & Labor Management|2\. संसाधन और श्रम प्रबंधन|2\. संसाधन आणि श्रम व्यवस्थापन)',
+            "sustainability": r'# (?:3\. Sustainability & Succession|3\. स्थिरता और उत्तराधिकार|3\. शाश्वतता आणि उत्तराधिकार|3\. Quality & Harvest Sustainability|3\. गुणवत्ता और फसल स्थिरता|3\. गुणवत्ता आणि पीक शाश्वतता)',
+            "resilience": r'# (?:4\. Financial Resilience|4\. वित्तीय लचीलापन|4\. आर्थिक लवचिकता|4\. Market & Risk Management|4\. बाजार और जोखिम प्रबंधन|4\. बाजार आणि जोखीम व्यवस्थापन)',
+            "verdict": r'# (?:5\. Final Verdict|5\. अंतिम निर्णय|5\. अंतिम निकाल|5\. Final Harvest Verdict|5\. अंतिम फसल निर्णय|5\. अंतिम पीक निकाल)'
         }
 
         def extract_between(start_regex, end_regex=None):
@@ -271,18 +392,18 @@ DISCLAIMER: This roadmap is an AI-generated simulation based on provided data an
         else:
             roadmap['verdict'] = verdict_block
 
-        # Parse Years 1-10 (Flexible for "Year", "वर्ष", etc.)
-        year_pattern = r'## (?:Year|वर्ष) (\d+): (.*?)\n(.*?)(?=## (?:Year|वर्ष) \d+:|\Z|# [2345])'
+        # Parse Years/Phases (Flexible for "Year", "वर्ष", "Phase", etc.)
+        year_pattern = r'## (?:Year|वर्ष|Phase) (\d+): (.*?)\n(.*?)(?=## (?:Year|वर्ष|Phase) \d+:|\Z|# [2345])'
         year_blocks = re.findall(year_pattern, text, re.DOTALL | re.IGNORECASE)
         
         # Labels for inner fields can also be translated
-        focus_labels = r'(?:\*\*Strategic Focus\*\*|\*\*रणनीतिक फोकस\*\*|\*\*धोरणात्मक लक्ष\*\*)'
-        profit_labels = r'(?:\*\*Expected Profit\*\*|\*\*अपेक्षित लाभ\*\*|\*\*अपेक्षित नफा\*\*)'
-        actions_labels = r'(?:\*\*Key Actions\*\*|\*\*मुख्य कार्य\*\*|\*\*मुख्य कृती\*\*)'
+        focus_labels = r'(?:\*\*Strategic Focus\*\*|\*\*रणनीतिक फोकस\*\*|\*\*धोरणात्मक लक्ष\*\*|\*\*Critical Focus\*\*|\*\*महत्वपूर्ण फोकस\*\*|\*\*गंभीर लक्ष\*\*)'
+        profit_labels = r'(?:\*\*Expected Profit\*\*|\*\*अपेक्षित लाभ\*\*|\*\*अपेक्षित नफा\*\*|\*\*Projected Value/Yield\*\*|\*\*अनुमानित मूल्य/उपज\*\*|\*\*अपेक्षित मूल्य/उत्पन्न\*\*)'
+        actions_labels = r'(?:\*\*Key Actions\*\*|\*\*मुख्य कार्य\*\*|\*\*मुख्य कृती\*\*|\*\*Required Actions\*\*|\*\*आवश्यक कार्य\*\*|\*\*आवश्यक कृती\*\*)'
 
         for year_num, goal, content in year_blocks:
             year_data = {
-                "year": f"{'Year' if language=='EN' else 'वर्ष'} {year_num}",
+                "year": f"{'Phase' if is_crop else ('Year' if language=='EN' else 'वर्ष')} {year_num}",
                 "goal": goal.strip(),
                 "focus": "",
                 "actions": [],
@@ -304,6 +425,6 @@ DISCLAIMER: This roadmap is an AI-generated simulation based on provided data an
             roadmap['years'].append(year_data)
 
         if not roadmap['years']:
-            print("[ROADMAP WARNING] Regex year extraction failed. Possible format mismatch.")
+            print("[ROADMAP WARNING] Regex year/phase extraction failed. Possible format mismatch.")
 
         return roadmap

@@ -224,6 +224,8 @@
     "analysisFailed": "Detailed Analysis Failed",
     "returnToAdvisory": "Return to Advisory",
     "backToAdvisory": "Back to Advisory",
+    "backToHome": "Back to Home",
+    "analyzingCropLifecycle": "Analyzing crop lifecycle...",
     "exportPlan": "Export Plan",
     "sharePlan": "Share Plan",
     "backToOptions": "Back to Options",

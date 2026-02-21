@@ -82,6 +82,22 @@ class FarmerProfile(BaseModel):
     water_availability: Optional[str] = None
     crops_grown: Optional[List[str]] = None
     land_unit: str = "acres"
+
+    # Business Advisory Specific Fields
+    current_profit: Optional[str] = None
+    running_plan: Optional[str] = None
+    space_type: Optional[str] = None
+    covered_space: Optional[str] = None
+    infra_type: Optional[str] = None
+    electricity: Optional[str] = None
+    animal_handling: Optional[str] = None
+    daily_labor: Optional[str] = None
+    hands_on_work: Optional[str] = None
+    income_comfort: Optional[str] = None
+    main_goal: Optional[str] = None
+    interests: Optional[List[str]] = None
+    total_land: float = 0.0
+    farm_name: Optional[str] = None
     
     @field_validator('name')
     @classmethod
@@ -100,6 +116,7 @@ class FarmerProfile(BaseModel):
     def to_context(self) -> str:
         """Convert profile to natural language context for AI"""
         lang = self.language.lower()
+        interests_str = ", ".join(self.interests) if self.interests else "None"
         
         # Localized Content
         if lang in ["marathi", "mr"]:
@@ -107,33 +124,56 @@ class FarmerProfile(BaseModel):
             context = f"""
 [शेतकऱ्याची पार्श्वभूमी]
 नाव: {self.name}
+सक्रिय शेत (Active Farm): {self.farm_name or 'निवडलेले नाही'}
 वय: {self.age or 'माहित नाही'}, भूमिका: {self.role}
 स्थान: {self.village or 'माहित नाही'}, {self.district or 'माहित नाही'}, {self.state or 'माहित नाही'}
-जमीन: {self.land_size} {self.land_unit}, माती: {self.soil_type or 'माहित नाही'}, पाणी: {self.water_availability or 'माहित नाही'}
-पिके: {crops_str}
+एकूण जमीन: {self.total_land} {self.land_unit}, जमिनीचा प्रकार: {self.space_type or 'Agri'}
+व्यवसायासाठी जमीन: {self.land_size} {self.land_unit}, माती: {self.soil_type or 'माहित नाही'}, पाणी: {self.water_availability or 'माहित नाही'}
+सध्याची पिके: {crops_str}
 भांडवल: ₹{self.capital:,.0f}, अनुभव: {self.experience_years} वर्षे
+प्राणी हाताळणीत सोयीस्कर: {self.animal_handling or 'माहित नाही'}
+कामगारांची उपलब्धता: {self.daily_labor or 'स्वतः'}
+व्यवसायाचे ध्येय: {self.main_goal or 'माहित नाही'}
+आवड असलेले क्षेत्र: {interests_str}
 """
         elif lang in ["hindi", "hi"]:
             crops_str = ", ".join(self.crops_grown) if self.crops_grown else "नहीं बताया"
             context = f"""
 [किसान की पृष्ठभूमि]
 नाम: {self.name}
+सक्रिय फार्म (Active Farm): {self.farm_name or 'चुना नहीं गया'}
 आयु: {self.age or 'पता नहीं'}, भूमिका: {self.role}
 गाँव: {self.village or 'पता नहीं'}, ज़िला: {self.district or 'पता नहीं'}, राज्य: {self.state or 'पता नहीं'}
-ज़मीन: {self.land_size} {self.land_unit}, मिट्टी: {self.soil_type or 'पता नहीं'}, पानी: {self.water_availability or 'पता नहीं'}
-फसलें: {crops_str}
+कुल ज़मीन: {self.total_land} {self.land_unit}, ज़मीन का प्रकार: {self.space_type or 'Agri'}
+व्यवसाय के लिए ज़मीन: {self.land_size} {self.land_unit}, मिट्टी: {self.soil_type or 'पता नहीं'}, पानी: {self.water_availability or 'पता नहीं'}
+वर्तमान फसलें: {crops_str}
 पूंजी: ₹{self.capital:,.0f}, अनुभव: {self.experience_years} वर्ष
+पशु प्रबंधन में सहजता: {self.animal_handling or 'पता नहीं'}
+श्रम स्रोत: {self.daily_labor or 'स्वयं'}
+व्यापारिक लक्ष्य: {self.main_goal or 'पता नहीं'}
+रुचि के क्षेत्र: {interests_str}
 """
         else:
             crops_str = ", ".join(self.crops_grown) if self.crops_grown else "Not specified"
             context = f"""
-[USER PROFILE CONTEXT]
-Name: {self.name}
-Age: {self.age or 'Unknown'}, Role: {self.role}
+[ACTIVE FARM DATA - MANDATORY]
+Active Farm Identity: {self.farm_name or 'None Selected'}
+Specific Land Size: {self.land_size} {self.land_unit}
+Soil Quality: {self.soil_type or 'Unknown'}
+Water Availability: {self.water_availability or 'Unknown'}
+Crops Currently Growing: {crops_str}
+
+[USER OVERVIEW]
+Name: {self.name}, Age: {self.age or 'Unknown'}, Role: {self.role}
 Location: {self.village}, {self.district}, {self.state}
-Farm: {self.land_size} {self.land_unit}, Soil: {self.soil_type}, Water: {self.water_availability}
-Active Crops: {crops_str}
+Total Farm Portfolio: {self.total_land} {self.land_unit} (Across all farms)
+Space Type: {self.space_type or 'Agricultural'}
 Capital: ₹{self.capital:,.0f}, Experience: {self.experience_years} yrs
+Workforce: {self.daily_labor or 'Self-managed'}, Hands-on: {self.hands_on_work or 'Yes'}
+Livestock Comfort: {self.animal_handling or 'Limited'}
+Financial Strategy: Risk {self.risk_level}, Goal: {self.main_goal or 'Stability'}, Loss Tolerance: {self.loss_tolerance or 'Conservative'}
+Economic Context: Current Profit: {self.current_profit or '0'}, Recovery Expectation: {self.recovery_timeline or 'Medium term'}
+Interests: {interests_str}, Market Access: {self.market_access}, Preference: {self.selling_preference or 'Wholesale'}
 """
         return context
 
@@ -147,8 +187,11 @@ SYSTEM_PROMPTS = {
 high-accuracy, personalized guidance to farmers.
 
 All farmer information is provided dynamically from a verified database.
-This database context is the single source of truth.
-You MUST rely on it and MUST NOT ask again for any data already present.
+The [ACTIVE FARM DATA] section contains the primary data for the farm the user is currently focused on. 
+This database context is the ONLY source of truth.
+You MUST acknowledge the Active Farm name and its specific crops, soil, and land size in your greeting or summary. 
+NEVER claim you don't know the farm details if they are provided in the [ACTIVE FARM DATA] section.
+You MUST NOT ask again for any data already present.
 
 CRITICAL LANGUAGE RULES — READ CAREFULLY:
 

@@ -175,3 +175,27 @@ button {
   background-color: var(--color-accent-light);
   color: var(--text-primary);
 }
+
+/* Loading Dots Animation */
+@keyframes loadingDots {
+  0% {
+    content: '';
+  }
+
+  33% {
+    content: '.';
+  }
+
+  66% {
+    content: '..';
+  }
+
+  100% {
+    content: '...';
+  }
+}
+
+.thinking-dots::after {
+  content: '';
+  animation: loadingDots 1.5s infinite steps(4);
+}

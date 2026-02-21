@@ -132,6 +132,24 @@ export const api = {
         return res.json();
     },
 
+    generateCropRoadmap: async (cropName: string, language: string = 'en') => {
+        const headers = await getHeaders();
+        const res = await fetch(`${BASE_URL}/generate-crop-roadmap`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                crop_name: cropName,
+                language: language.toLowerCase()
+            })
+        });
+        if (res.status === 401) throw new Error("Unauthorized");
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP Error ${res.status}`);
+        }
+        return res.json();
+    },
+
     detectPest: async (formData: FormData) => {
         const headers: any = await getHeaders();
         delete headers['Content-Type']; // Let browser set boundary
@@ -173,12 +191,14 @@ export const api = {
             return { success: false, notifications: [] };
         }
     },
+
     getMandiPrices: async (crop: string, district: string) => {
         const headers = await getHeaders();
         const res = await fetch(`${BASE_URL}/mandi/prices?crop=${encodeURIComponent(crop)}&district=${encodeURIComponent(district)}`, { headers });
         if (!res.ok) throw new Error("Failed to fetch mandi prices");
         return res.json();
     },
+
     getFertilizerAdvice: async (crop: string, soilData: any) => {
         const headers = await getHeaders();
         const res = await fetch(`${BASE_URL}/fertilizer/advice`, {
