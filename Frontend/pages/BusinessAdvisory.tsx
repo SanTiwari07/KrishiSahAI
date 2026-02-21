@@ -73,7 +73,7 @@ const EXPERTS = [
         consultations: 1240,
         bio: "Former NABARD officer turned independent consultant. Helped 500+ farmers set up sustainable agri-businesses across Maharashtra, Madhya Pradesh and Rajasthan. Expert in low-investment, high-return models.",
         expertise: ["Dairy Farming", "Organic Manure", "Agri-Input Trading", "Government Schemes"],
-        photo: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=300&h=300&fit=crop&crop=face&auto=format",
+        photo: "/experts/expert_1.png",
         available: true
     },
     {
@@ -87,7 +87,7 @@ const EXPERTS = [
         consultations: 890,
         bio: "PhD in Horticulture from IARI, New Delhi. Founded three successful plant nurseries and serves as advisor to FPOs in Nashik region. Specialises in export-quality produce and value-added horticulture products.",
         expertise: ["Plant Nursery", "Greenhouse Farming", "Floriculture", "Export Market"],
-        photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&h=300&fit=crop&crop=face&auto=format",
+        photo: "/experts/expert_2.png",
         available: true
     },
     {
@@ -101,7 +101,7 @@ const EXPERTS = [
         consultations: 2100,
         bio: "India's leading poultry business mentor. Has scaled 300+ rural poultry units from backyard to commercial. Certified trainer under National Livestock Mission. Author of 'Poultry Profit Playbook'.",
         expertise: ["Poultry Farming", "Goat Farming", "Fishery", "Animal Health"],
-        photo: "https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=300&h=300&fit=crop&crop=face&auto=format",
+        photo: "/experts/expert_3.png",
         available: false
     },
     {
@@ -115,7 +115,7 @@ const EXPERTS = [
         consultations: 670,
         bio: "MBA in Agribusiness from IIM Ahmedabad. Works with NABARD and State Bank to connect farmers to credit and market systems. Expert in FPO formation, cold chain logistics and agri-export compliance.",
         expertise: ["Agri Finance", "Market Linkage", "FPO Formation", "Cold Chain"],
-        photo: "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=300&h=300&fit=crop&crop=face&auto=format",
+        photo: "/experts/expert_4.png",
         available: true
     }
 ];
