@@ -38,7 +38,7 @@ interface AIResult {
 
 const FarmHealth: React.FC = () => {
     const { t } = useLanguage();
-    const { farms } = useFarm();
+    const { farms, activeFarm } = useFarm();
     const navigate = useNavigate();
 
     // AI Integration States
@@ -59,16 +59,12 @@ const FarmHealth: React.FC = () => {
 
     const initialLoadTriggered = useRef<Set<string>>(new Set(Object.keys(initialAiResults)));
 
-
-
-    const analyzeSoil = async (farmIndex: number, cropIndex: number, crop: string) => {
-        const key = `${farmIndex}-${cropIndex}`;
+    const analyzeSoil = async (farm: any, cropIndex: number, crop: string, key: string) => {
         setAnalyzing(prev => ({ ...prev, [key]: true }));
 
         try {
             const inputs = { n: 'N/A', p: 'N/A', k: 'N/A', ph: 'N/A' };
             const token = localStorage.getItem('token');
-            const farm = farms[farmIndex];
             const location = farm.district && farm.state ? `${farm.district}, ${farm.state}` : (farm.state || 'India');
             const soilType = farm.soilType || farm.landType || 'Unknown Soil Type';
 
@@ -100,21 +96,17 @@ const FarmHealth: React.FC = () => {
 
     // Auto-load analysis
     useEffect(() => {
-        if (farms && farms.length > 0) {
-            farms.forEach((farm, fIndex) => {
-                if (farm.crops) {
-                    farm.crops.forEach((crop, cIndex) => {
-                        const key = `${fIndex}-${cIndex}`;
-                        if (!initialLoadTriggered.current.has(key)) {
-                            initialLoadTriggered.current.add(key);
-                            // Fire and forget analyze call
-                            analyzeSoil(fIndex, cIndex, crop).catch(console.error);
-                        }
-                    });
+        if (activeFarm && activeFarm.crops) {
+            activeFarm.crops.forEach((crop, cIndex) => {
+                const key = `active-${cIndex}`;
+                if (!initialLoadTriggered.current.has(key)) {
+                    initialLoadTriggered.current.add(key);
+                    // Fire and forget analyze call
+                    analyzeSoil(activeFarm, cIndex, crop, key).catch(console.error);
                 }
             });
         }
-    }, [farms]); // Only trigger when farms list changes/loads
+    }, [activeFarm]); // Only trigger when activeFarm changes/loads
 
     return (
         <div className="min-h-screen bg-[#FBFBFA] pb-20">
@@ -137,10 +129,10 @@ const FarmHealth: React.FC = () => {
             </div>
 
             <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-10">
-                {farms.length === 0 ? (
-                    <div className="text-center py-20 text-gray-400 font-bold uppercase tracking-widest text-sm">No farms found. Please add a farm in your Profile.</div>
+                {!activeFarm ? (
+                    <div className="text-center py-20 text-gray-400 font-bold uppercase tracking-widest text-sm">No active farm selected. Please add a farm in your Profile.</div>
                 ) : (
-                    farms.map((farm, fIndex) => (
+                    [activeFarm].map((farm, fIndex) => (
                         <div key={fIndex} className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
                             {/* Farm Header */}
                             <div className="bg-[#E8F5E9] p-6 border-b border-gray-100 flex justify-between items-center">
@@ -163,7 +155,7 @@ const FarmHealth: React.FC = () => {
                                 ) : (
                                     <div className="space-y-8">
                                         {farm.crops.map((crop, cIndex) => {
-                                            const cropKey = `${fIndex}-${cIndex}`;
+                                            const cropKey = `active-${cIndex}`;
                                             const result = aiResults[cropKey];
 
                                             return (
