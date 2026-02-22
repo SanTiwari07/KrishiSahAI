@@ -140,7 +140,8 @@ const Chatbot: React.FC = () => {
         try {
             const token = await user?.getIdToken();
             const langCode = lang.toLowerCase(); // 'en', 'hi', or 'mr'
-            const response = await fetch('http://localhost:5000/api/voice/tts', {
+            const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const response = await fetch(`${API_BASE_URL}/voice/tts`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -151,7 +152,8 @@ const Chatbot: React.FC = () => {
 
             const data = await response.json();
             if (data.success && data.audio_url) {
-                const audio = new Audio(`http://localhost:5000${data.audio_url}`);
+                const ORIGIN_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
+                const audio = new Audio(`${ORIGIN_URL}${data.audio_url}`);
                 audioRef.current = audio;
                 setPlayingMessageId(messageId);
 
@@ -184,7 +186,8 @@ const Chatbot: React.FC = () => {
                 setIsLoading(true);
                 try {
                     const token = await user?.getIdToken();
-                    const response = await fetch('http://localhost:5000/api/voice/stt', {
+                    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                    const response = await fetch(`${API_BASE_URL}/voice/stt`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -536,7 +539,8 @@ const Chatbot: React.FC = () => {
                     try {
                         setIsGeneratingTitle(true);
                         const token = await user?.getIdToken();
-                        const titleRes = await fetch('http://localhost:5000/api/chat/generate-title', {
+                        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                        const titleRes = await fetch(`${API_BASE_URL}/chat/generate-title`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',

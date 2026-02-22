@@ -82,7 +82,8 @@ const Planner: React.FC = () => {
         setLoading(true);
         try {
             const token = await auth.currentUser?.getIdToken();
-            const response = await fetch('http://localhost:5000/api/generate-roadmap-pdf', {
+            const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const response = await fetch(`${API_BASE_URL}/generate-roadmap-pdf`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

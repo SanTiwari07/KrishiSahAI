@@ -72,7 +72,8 @@ const FarmHealth: React.FC = () => {
             const location = farm.district && farm.state ? `${farm.district}, ${farm.state}` : (farm.state || 'India');
             const soilType = farm.soilType || farm.landType || 'Unknown Soil Type';
 
-            const res = await fetch('http://localhost:5000/api/farm-health/analyze', {
+            const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const res = await fetch(`${API_BASE_URL}/farm-health/analyze`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
