@@ -7,6 +7,25 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Save, ArrowLeft, User, MapPin, Sprout, RefreshCw, Plus, Trash2, Globe } from 'lucide-react';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useFarm } from '../src/context/FarmContext';
+import en from '../src/locales/en.json';
+import hi from '../src/locales/hi.json';
+import mr from '../src/locales/mr.json';
+
+const normalizeValue = (val: string, category: 'states' | 'crops') => {
+    if (!val) return val;
+    const enList = en.signupFlow.options[category];
+    if (enList.includes(val)) return val;
+
+    const hiList = hi.signupFlow.options[category];
+    const hiIdx = hiList.indexOf(val);
+    if (hiIdx !== -1) return enList[hiIdx];
+
+    const mrList = mr.signupFlow.options[category];
+    const mrIdx = mrList.indexOf(val);
+    if (mrIdx !== -1) return enList[mrIdx];
+
+    return val;
+};
 
 const EditProfile: React.FC = () => {
     const { t, setLanguage, language } = useLanguage();
@@ -50,8 +69,8 @@ const EditProfile: React.FC = () => {
                             soilType: f.soilType || 'black',
                             landSize: f.landSize?.toString() || '',
                             unit: f.unit || 'Acre',
-                            crops: f.crops || [],
-                            state: f.state || (data as any).location?.state || '',
+                            crops: (f.crops || []).map((c: string) => normalizeValue(c, 'crops')),
+                            state: normalizeValue(f.state || (data as any).location?.state || '', 'states'),
                             district: f.district || (data as any).location?.district || '',
                             village: f.village || (data as any).location?.village || ''
                         }))
@@ -281,7 +300,11 @@ const EditProfile: React.FC = () => {
                                                     <label className={labelClasses}>{t.signupFlow.state}</label>
                                                     <select className={inputClasses} value={farm.state || ''} onChange={e => updateFarm(index, 'state', e.target.value)} required>
                                                         <option value="">{t.selectState}</option>
-                                                        {t.signupFlow.options.states.map(s => <option key={s} value={s}>{s}</option>)}
+                                                        {t.signupFlow.options.states.map((s, i) => (
+                                                            <option key={en.signupFlow.options.states[i]} value={en.signupFlow.options.states[i]}>
+                                                                {s}
+                                                            </option>
+                                                        ))}
                                                     </select>
                                                 </div>
                                                 <div className="flex flex-col justify-end">
@@ -344,19 +367,20 @@ const EditProfile: React.FC = () => {
                                             <div className="md:col-span-2">
                                                 <label className={labelClasses}>{t.mainCrops}</label>
                                                 <div className="flex flex-wrap gap-2 mb-3">
-                                                    {t.signupFlow.options.crops.map(cropName => {
-                                                        const selected = (farm.crops || []).includes(cropName);
+                                                    {t.signupFlow.options.crops.map((cropLabel, i) => {
+                                                        const cropValue = en.signupFlow.options.crops[i];
+                                                        const selected = (farm.crops || []).includes(cropValue);
                                                         return (
                                                             <button
-                                                                key={cropName}
+                                                                key={cropValue}
                                                                 type="button"
-                                                                onClick={() => toggleCrop(index, cropName)}
+                                                                onClick={() => toggleCrop(index, cropValue)}
                                                                 className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-colors ${selected
                                                                     ? 'bg-[#1B5E20] text-white border-[#1B5E20]'
                                                                     : 'bg-white text-gray-600 border-gray-100 hover:border-[#1B5E20] hover:text-[#1B5E20]'
                                                                     }`}
                                                             >
-                                                                {selected ? '✓ ' : ''}{cropName}
+                                                                {selected ? '✓ ' : ''}{cropLabel}
                                                             </button>
                                                         );
                                                     })}

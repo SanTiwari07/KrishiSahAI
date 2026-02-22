@@ -28,6 +28,8 @@ import { FarmProvider, useFarm } from './src/context/FarmContext';
 import logo from './src/assets/logo.png';
 import WeatherModal from './components/WeatherModal';
 import NotificationBell from './components/NotificationBell';
+import { normalizeValue, getLocalizedValue } from './src/utils/localizationUtils';
+import en from './src/locales/en.json';
 
 const getBestLocation = (farm: Farm | null) => {
   if (!farm) return "";
@@ -36,10 +38,11 @@ const getBestLocation = (farm: Farm | null) => {
   return district || state || "India";
 };
 
-const getDisplayLocation = (farm: Farm | null) => {
+const getDisplayLocation = (farm: Farm | null, lang: string) => {
   if (!farm) return "";
   const { district, state } = farm;
-  return district || state || "India";
+  const localizedState = getLocalizedValue(state, 'states', lang);
+  return district || localizedState || "India";
 };
 
 
@@ -163,7 +166,7 @@ const Header: React.FC<{
                   >
                     <span className="text-lg">☁</span>
                     <span className="uppercase tracking-wider">
-                      {getDisplayLocation(activeFarm)}: {getWeatherDisplay()}
+                      {getDisplayLocation(activeFarm, language)}: {getWeatherDisplay()}
                     </span>
                   </button>
                   <button
@@ -760,7 +763,11 @@ const SignupFlow: React.FC<{ onSignup: (p: UserProfile, password?: string) => vo
                               <label className={labelClasses}>{t.signupFlow.state} *</label>
                               <select required className={inputClasses} value={farm.state || ''} onChange={e => updateFarm(index, 'state', e.target.value)}>
                                 <option value="">{t.selectState}</option>
-                                {t.signupFlow.options.states.map(s => <option key={s} value={s}>{s}</option>)}
+                                {t.signupFlow.options.states.map((s, i) => (
+                                  <option key={en.signupFlow.options.states[i]} value={en.signupFlow.options.states[i]}>
+                                    {s}
+                                  </option>
+                                ))}
                               </select>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

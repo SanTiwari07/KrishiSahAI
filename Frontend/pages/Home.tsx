@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Recycle, Briefcase, Loader2, Target, Activity, ShieldCheck, TrendingUp, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useFarm } from '../src/context/FarmContext';
 import { api } from '../src/services/api';
+import { getLocalizedValue } from '../src/utils/localizationUtils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { auth, db } from '../firebase';
@@ -159,7 +160,7 @@ const Home: React.FC = () => {
                                         : 'text-white/80 hover:text-white hover:bg-white/10'
                                         }`}
                                 >
-                                    {crop}
+                                    {getLocalizedValue(crop, 'crops', lang)}
                                 </button>
                             ))}
                         </div>
