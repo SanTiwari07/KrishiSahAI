@@ -32,15 +32,24 @@ jobs:
           URL="${{ github.event.inputs.manifest_url }}"
           # Remove trailing slash if present
           URL="${URL%/}"
-          # If URL doesn't end with .webmanifest or .json, append /manifest.webmanifest
+          # If URL doesn't end with .webmanifest or .json, try to find manifest.json first
           if [[ ! "$URL" =~ \.(webmanifest|json)$ ]]; then
-            URL="$URL/manifest.webmanifest"
+             # We try manifest.json by default as it's more standard for simple tools
+             URL_JSON="$URL/manifest.json"
+             URL_WEBM="$URL/manifest.webmanifest"
+             
+             echo "Checking $URL_JSON"
+             if curl -f -s -I -H "User-Agent: Mozilla/5.0" "$URL_JSON" > /dev/null; then
+               URL="$URL_JSON"
+             else
+               URL="$URL_WEBM"
+             fi
           fi
-          echo "Corrected Manifest URL: $URL"
+          echo "Final Manifest URL: $URL"
           echo "url=$URL" >> $GITHUB_OUTPUT
           
-          # Check reachability with a browser-like User-Agent to avoid 403 Forbidden
-          curl -f -I -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "$URL" || (echo "ERROR: Manifest URL is not reachable from GitHub. Ensure your Cloudflare Tunnel is running and that you can open $URL in your computer's browser." && exit 1)
+          # Final reachability check
+          curl -f -I -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "$URL" || (echo "ERROR: Manifest URL is not reachable from GitHub. Ensure your project is deployed and that you can open $URL in your computer's browser." && exit 1)
 
       - name: Install Bubblewrap
         run: sudo npm install -g @bubblewrap/cli

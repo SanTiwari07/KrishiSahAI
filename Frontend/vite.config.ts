@@ -23,19 +23,22 @@ export default defineConfig(({ mode }) => {
           theme_color: '#4CAF50',
           background_color: '#ffffff',
           display: 'standalone',
+          start_url: '/',
+          scope: '/',
           icons: [
             {
-              src: 'icon.png',
+              src: 'icon_192.png',
               sizes: '192x192',
               type: 'image/png'
             },
             {
-              src: 'icon.png',
+              src: 'icon_512.png',
               sizes: '512x512',
               type: 'image/png'
             }
           ]
-        }
+        },
+        filename: 'manifest.json'
       })
     ],
     define: {
