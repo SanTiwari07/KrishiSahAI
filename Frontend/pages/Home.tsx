@@ -124,6 +124,7 @@ const Home: React.FC = () => {
             label: t.homeActions?.fertilizers?.title || 'Fertilizers',
             path: '/health',
             icon: <Activity className="w-8 h-8 md:w-10 md:h-10" />,
+            description: t.homeActions?.fertilizers?.desc || 'Get smart fertilizer & market advice for your farm.'
         },
         {
             label: t.homeActions?.cropCare?.title || 'Disease/Pest Solution',
@@ -282,7 +283,9 @@ const Home: React.FC = () => {
                                                             {btnConfig.icon}
                                                         </div>
                                                         <span className="font-black text-base md:text-2xl uppercase tracking-widest text-center leading-tight">{btnConfig.label}</span>
-                                                        <span className="hidden md:block text-sm md:text-base font-medium text-white/90 text-center leading-snug">{btnConfig.description}</span>
+                                                        {btnConfig.description && (
+                                                            <span className="text-xs md:text-base font-medium text-white/90 text-center leading-snug">{btnConfig.description}</span>
+                                                        )}
                                                         <ArrowRight className="w-6 h-6 mt-2 transform group-hover/btn:translate-y-1 transition-transform opacity-70" />
                                                     </button>
                                                 )}
