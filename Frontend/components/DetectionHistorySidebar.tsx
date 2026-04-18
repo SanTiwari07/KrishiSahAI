@@ -4,13 +4,15 @@ import { useLanguage } from '../src/context/LanguageContext';
 import { useFarm } from '../src/context/FarmContext';
 import { normalizeValue } from '../src/utils/localizationUtils';
 
-interface DetectionEntry {
+export interface DetectionEntry {
     id: string;
     type: 'disease' | 'pest';
     name: string;
     confidence: number;
     timestamp: number;
     preview?: string;
+    /** Snapshot fields to restore the full results panel (API payload minus name). */
+    details?: Record<string, unknown>;
 }
 
 interface DetectionHistorySidebarProps {

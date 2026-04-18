@@ -1,70 +1,58 @@
 """
-Standalone disease detector helper.
-Loads the trained TensorFlow model from `plant_disease_model.h5`
-and exposes a simple `predict(image_path)` function that returns the
-detected crop, disease and confidence score.
+Disease detector: loads TensorFlow weights from `plant_disease_model.h5` and
+class names from `plant_disease_labels.txt` (same order as training). CSV
+extension metadata is resolved in `disease_lookup.py` / app layer.
 """
 
 from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 import numpy as np
+
 try:
     import tensorflow as tf
 except ImportError:
     tf = None
 from PIL import Image
 
-# Resolve paths relative to this file so the script works from anywhere.
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "plant_disease_model.h5"
-
-# Class labels used during model training (must keep ordering intact).
-CLASS_NAMES = [
-    'Apple___Apple_scab',
-    'Apple___Black_rot',
-    'Apple___Cedar_apple_rust',
-    'Apple___healthy',
-    'Blueberry___healthy',
-    'Cherry_(including_sour)___Powdery_mildew',
-    'Cherry_(including_sour)___healthy',
-    'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot',
-    'Corn_(maize)___Common_rust_',
-    'Corn_(maize)___Northern_Leaf_Blight',
-    'Corn_(maize)___healthy',
-    'Grape___Black_rot',
-    'Grape___Esca_(Black_Measles)',
-    'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)',
-    'Grape___healthy',
-    'Orange___Haunglongbing_(Citrus_greening)',
-    'Peach___Bacterial_spot',
-    'Peach___healthy',
-    'Pepper,_bell___Bacterial_spot',
-    'Pepper,_bell___healthy',
-    'Potato___Early_blight',
-    'Potato___Late_blight',
-    'Potato___healthy',
-    'Raspberry___healthy',
-    'Soybean___healthy',
-    'Squash___Powdery_mildew',
-    'Strawberry___Leaf_scorch',
-    'Strawberry___healthy',
-    'Tomato___Bacterial_spot',
-    'Tomato___Early_blight',
-    'Tomato___Late_blight',
-    'Tomato___Leaf_Mold',
-    'Tomato___Septoria_leaf_spot',
-    'Tomato___Spider_mites Two-spotted_spider_mite',
-    'Tomato___Target_Spot',
-    'Tomato___Tomato_Yellow_Leaf_Curl_Virus',
-    'Tomato___Tomato_mosaic_virus',
-    'Tomato___healthy'
-]
+LABELS_PATH = BASE_DIR / "plant_disease_labels.txt"
 
 _MODEL: Any | None = None
+_CLASS_NAMES: list[str] | None = None
+
+
+def _read_class_names() -> list[str]:
+    if not LABELS_PATH.exists():
+        raise FileNotFoundError(
+            f"Missing {LABELS_PATH.name}: add one PlantVillage-style label per line "
+            f"(same order as the softmax outputs of {MODEL_PATH.name})."
+        )
+    text = LABELS_PATH.read_text(encoding="utf-8")
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    if not lines:
+        raise ValueError(f"{LABELS_PATH.name} is empty.")
+    return lines
+
+
+def _ensure_labels_match_model(model: Any) -> list[str]:
+    global _CLASS_NAMES
+    names = _read_class_names()
+    try:
+        out_dim = int(model.output_shape[-1])
+    except Exception:
+        out_dim = len(names)
+    if out_dim != len(names):
+        print(
+            f"[DISEASE] Warning: model output dim ({out_dim}) != "
+            f"label count ({len(names)}) in {LABELS_PATH.name}"
+        )
+    _CLASS_NAMES = names
+    return names
 
 
 def _load_model() -> Any:
@@ -82,13 +70,17 @@ def _load_model() -> Any:
         except Exception as e:
             print(f"Error loading model: {e}")
             return None
+    if _MODEL is not None and _CLASS_NAMES is None:
+        _ensure_labels_match_model(_MODEL)
     return _MODEL
 
 
 def init_model():
     """Explicitly load the model to warm it up."""
     print("Preloading Disease Detection Model...")
-    _load_model()
+    m = _load_model()
+    if m is not None:
+        _ensure_labels_match_model(m)
     print("Disease Detection Model loaded successfully.")
 
 
@@ -101,11 +93,12 @@ def _preprocess(image_path: str | os.PathLike) -> np.ndarray:
     return np.expand_dims(arr, axis=0)
 
 
-def predict(image_path: str | os.PathLike) -> Dict[str, Any]:
+def predict(image_path: str | os.PathLike) -> dict[str, Any]:
     """
     Run detection on the provided image path.
 
-    Returns a dict containing crop, disease, confidence and severity.
+    Returns crop/disease derived from the model's argmax class, raw training
+    label, confidence, severity, and a short description tied to that prediction.
     """
     model = _load_model()
     if model is None:
@@ -114,7 +107,12 @@ def predict(image_path: str | os.PathLike) -> Dict[str, Any]:
             "disease": "Disease detection service is currently unavailable (TensorFlow/Model missing).",
             "confidence": 0.0,
             "severity": "low",
+            "raw_class_label": None,
+            "class_index": None,
+            "description": "Model could not be loaded.",
         }
+
+    class_names = _CLASS_NAMES or _ensure_labels_match_model(model)
     processed = _preprocess(image_path)
     prediction = model.predict(processed, verbose=0)[0]
     class_idx = int(np.argmax(prediction))
@@ -123,31 +121,69 @@ def predict(image_path: str | os.PathLike) -> Dict[str, Any]:
     if confidence < 0.25:
         return {
             "crop": "Unknown",
-            "disease": "Cannot detect disease. Please try another image.",
+            "disease": "Low confidence",
             "confidence": confidence,
             "severity": "low",
+            "raw_class_label": None,
+            "class_index": class_idx,
+            "description": (
+                f"The model could not confidently classify this image "
+                f"(top score {confidence * 100:.1f}% is below the 25% threshold). "
+                "Try a clearer, closer photo of a single affected leaf."
+            ),
         }
 
-    label = CLASS_NAMES[class_idx]
+    if class_idx < 0 or class_idx >= len(class_names):
+        return {
+            "crop": "Error",
+            "disease": "Class index out of range for label file",
+            "confidence": confidence,
+            "severity": "low",
+            "raw_class_label": None,
+            "class_index": class_idx,
+            "description": f"Label file has {len(class_names)} entries; model returned index {class_idx}.",
+        }
+
+    label = class_names[class_idx]
     crop_raw, disease_raw = label.split("___", 1)
     crop = crop_raw.replace("_", " ").strip()
     disease = disease_raw.replace("_", " ").strip()
+    is_healthy = disease_raw.lower() == "healthy" or label.lower().endswith("___healthy")
 
-    if "healthy" in disease.lower():
-        disease = "Healthy leaf (no disease detected)"
+    if is_healthy:
+        disease = "Healthy"
         severity = "low"
+        description = (
+            f"The classifier labels this sample as healthy {crop} "
+            f"({confidence * 100:.1f}% confidence)."
+        )
     elif confidence > 0.8:
         severity = "high"
+        description = (
+            f"Predicted class: {label.replace('___', ' › ').replace('_', ' ')} "
+            f"({confidence * 100:.1f}% confidence)."
+        )
     elif confidence > 0.5:
         severity = "medium"
+        description = (
+            f"Predicted class: {label.replace('___', ' › ').replace('_', ' ')} "
+            f"({confidence * 100:.1f}% confidence)."
+        )
     else:
         severity = "low"
+        description = (
+            f"Predicted class: {label.replace('___', ' › ').replace('_', ' ')} "
+            f"({confidence * 100:.1f}% confidence); treat as tentative."
+        )
 
     return {
         "crop": crop,
         "disease": disease,
         "confidence": confidence,
         "severity": severity,
+        "raw_class_label": label,
+        "class_index": class_idx,
+        "description": description,
     }
 
 
@@ -160,4 +196,3 @@ if __name__ == "__main__":
 
     result = predict(args.image)
     print(result)
-

@@ -3,7 +3,7 @@ import { useLanguage } from '../src/context/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../src/services/api';
 import { Bug, Upload, MessageCircle, ArrowLeft, Loader2 } from 'lucide-react';
-import DetectionHistorySidebar, { getDetectionHistory, saveDetectionHistory, clearDetectionHistory } from '../components/DetectionHistorySidebar';
+import DetectionHistorySidebar, { getDetectionHistory, saveDetectionHistory, clearDetectionHistory, type DetectionEntry } from '../components/DetectionHistorySidebar';
 import { useLoadingTips } from '../src/hooks/useLoadingTips';
 
 const PestDetector: React.FC = () => {
@@ -14,8 +14,13 @@ const PestDetector: React.FC = () => {
     // Recover from history
     useEffect(() => {
         if (location.state?.historyItem) {
-            const item = location.state.historyItem;
-            setPestResult({ pest_name: item.name, confidence: item.confidence });
+            const item = location.state.historyItem as DetectionEntry;
+            const d = item.details || {};
+            setPestResult({
+                pest_name: item.name,
+                confidence: item.confidence,
+                ...(typeof d === 'object' ? d : {}),
+            });
             if (item.preview) setPestPreview(item.preview);
         }
     }, [location.state]);
@@ -56,26 +61,41 @@ const PestDetector: React.FC = () => {
         setPestLoading(true);
         setPestError(null);
 
-        // Hardcoded result — simulated analysis delay
-        await new Promise(resolve => setTimeout(resolve, 2200));
-
-        const hardcodedResult = {
-            pest_name: 'Stem Borer (Chilo partellus)',
-            confidence: 0.953,
-            severity: 'high',
-            description:
-                'Larvae bore into the stem causing ‘dead heart’ in the vegetative stage and ‘white ear’ in the reproductive stage. Severely damages sugarcane, maize, and sorghum. Early-stage infestation can lead to 30–70% yield loss if left untreated.',
-        };
-
-        setPestResult(hardcodedResult);
-        const updated = saveDetectionHistory('pest', {
-            type: 'pest',
-            name: hardcodedResult.pest_name,
-            confidence: hardcodedResult.confidence,
-            preview: pestPreview || undefined,
-        });
-        setHistory(updated);
-        setPestLoading(false);
+        try {
+            const formData = new FormData();
+            formData.append('image', pestFile);
+            const data = await api.detectPest(formData);
+            if (!data?.success || !data?.result) {
+                throw new Error(data?.error || 'Detection failed');
+            }
+            const r = data.result;
+            const next = {
+                pest_name: r.pest_name,
+                confidence: r.confidence,
+                severity: r.severity,
+                description: r.description ?? '',
+                class_id: r.class_id ?? null,
+            };
+            setPestResult(next);
+            const updated = saveDetectionHistory('pest', {
+                type: 'pest',
+                name: next.pest_name,
+                confidence: next.confidence,
+                preview: pestPreview || undefined,
+                details: {
+                    severity: next.severity,
+                    description: next.description,
+                    class_id: next.class_id,
+                },
+            });
+            setHistory(updated);
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : 'Detection failed';
+            setPestError(msg);
+            setPestResult(null);
+        } finally {
+            setPestLoading(false);
+        }
     };
 
     const handlePestAskChatbot = () => {
@@ -91,8 +111,14 @@ const PestDetector: React.FC = () => {
         });
     };
 
-    const handleHistorySelect = (entry: any) => {
-        setPestResult({ pest_name: entry.name, confidence: entry.confidence });
+    const handleHistorySelect = (entry: DetectionEntry) => {
+        const d = entry.details || {};
+        setPestResult({
+            pest_name: entry.name,
+            confidence: entry.confidence,
+            ...(typeof d === 'object' ? d : {}),
+        });
+        if (entry.preview) setPestPreview(entry.preview);
         setIsSidebarOpen(false);
     };
 
@@ -188,6 +214,9 @@ const PestDetector: React.FC = () => {
 
                                     {pestResult.description && (
                                         <p className="text-sm mt-2">{pestResult.description}</p>
+                                    )}
+                                    {pestResult.class_id != null && (
+                                        <p className="text-xs text-[#78350F]/80 font-mono">Model class id: {pestResult.class_id}</p>
                                     )}
 
                                     <button

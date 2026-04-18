@@ -135,33 +135,27 @@ def predict(image_path):
                 'description': f'Failed to open image: {str(e)}'
             }
 
-        # Run inference
+        # Run inference — class names come from the trained weights / model.names only.
         results = _model(img)
 
         # Convert detections to DataFrame
         df = results.pandas().xyxy[0]  # columns: xmin, ymin, xmax, ymax, confidence, class, name
 
-        ALLOWED_PESTS = {
-            "rice leaf roller", "rice leaf caterpillar", "paddy stem maggot", "asiatic rice borer",
-            "yellow rice borer", "rice gall midge", "rice stemfly", "brown plant hopper",
-            "white backed plant hopper", "small brown plant hopper", "rice water weevil",
-            "rice leafhopper", "grain spreader thrips", "grub", "mole cricket", "wireworm",
-            "black cutworm", "large cutworm", "yellow cutworm", "red spider", "corn borer",
-            "army worm", "aphids", "english grain aphid", "green bug", "bird cherry-oataphid",
-            "wheat blossom midge", "longlegged spider mite", "wheat phloeothrips", "wheat sawfly",
-            "beet fly", "flea beetle", "cabbage army worm", "beet army worm", "meadow moth",
-            "beet weevil", "alfalfa weevil", "alfalfa plant bug", "tarnished plant bug",
-            "locustoidea", "thrips", "viteus vitifoliae", "colomerus vitis",
-            "polyphagotarsonemus latus", "pseudococcus comstocki kuwana", "panonchus citri mcgregor",
-            "phyllocoptes oleiverus ashmead", "aleurocanthus spiniferus", "dacus dorsalis(hendel)",
-            "prodenia litura", "phyllocnistis citrella stainton", "toxoptera citricidus",
-            "toxoptera aurantii", "aphis citricola vander goot", "scirtothrips dorsalis hood",
-            "mango flat beak leafhopper", "sternochetus frigidus"
-        }
+        names_map = getattr(_model, "names", None) or {}
+        if not df.empty and names_map:
+            def _resolve_row_name(row):
+                cid = row.get("class")
+                try:
+                    cid_int = int(cid)
+                except (TypeError, ValueError):
+                    cid_int = None
+                if cid_int is not None and cid_int in names_map:
+                    return str(names_map[cid_int])
+                n = row.get("name")
+                return str(n) if n is not None else ""
 
-        # Filter for allowed pests using case-insensitive check
-        if not df.empty:
-            df = df[df['name'].str.lower().isin(ALLOWED_PESTS)]
+            df = df.copy()
+            df["name"] = df.apply(_resolve_row_name, axis=1)
 
         if df.empty:
             return {
@@ -173,8 +167,12 @@ def predict(image_path):
 
         # Get highest-confidence detection
         best = df.sort_values('confidence', ascending=False).iloc[0]
-        pest_name = best['name']
+        pest_name = str(best['name']).strip() or "unknown_class"
         confidence = float(best['confidence'])
+        try:
+            class_id = int(best['class'])
+        except (TypeError, ValueError):
+            class_id = None
 
         if confidence > 0.8:
             severity = 'high'
@@ -183,11 +181,25 @@ def predict(image_path):
         else:
             severity = 'low'
 
+        desc_parts = [
+            f"Top YOLO detection: class “{pest_name}”",
+            f"confidence {confidence * 100:.1f}%",
+            f"severity {severity}",
+        ]
+        if class_id is not None:
+            desc_parts.append(f"class_index={class_id}")
+        try:
+            x1, y1, x2, y2 = float(best['xmin']), float(best['ymin']), float(best['xmax']), float(best['ymax'])
+            desc_parts.append(f"box=({x1:.0f},{y1:.0f})-({x2:.0f},{y2:.0f}) px")
+        except (TypeError, ValueError, KeyError):
+            pass
+
         return {
             'pest_name': pest_name,
             'confidence': confidence,
             'severity': severity,
-            'description': f"Detected {pest_name} with {confidence * 100:.1f}% confidence."
+            'class_id': class_id,
+            'description': "; ".join(desc_parts) + ".",
         }
 
     except Exception as e:

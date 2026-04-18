@@ -55,9 +55,9 @@ const CropCare: React.FC = () => {
     const handleHistorySelect = (entry: any) => {
         setIsSidebarOpen(false);
         if (entry.type === 'disease') {
-            navigate('/crop-care/disease');
+            navigate('/crop-care/disease', { state: { historyItem: entry } });
         } else {
-            navigate('/crop-care/pest');
+            navigate('/crop-care/pest', { state: { historyItem: entry } });
         }
     };
 

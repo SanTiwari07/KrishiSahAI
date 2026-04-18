@@ -172,6 +172,24 @@ export const api = {
         return res.json();
     },
 
+    detectDisease: async (formData: FormData) => {
+        const headers: any = await getHeaders();
+        delete headers['Content-Type'];
+
+        const res = await fetch(`${BASE_URL}/disease/detect`, {
+            method: 'POST',
+            headers,
+            body: formData
+        });
+
+        if (res.status === 401) throw new Error("Unauthorized");
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP Error ${res.status}`);
+        }
+        return res.json();
+    },
+
     getCurrentWeather: async (location: string) => {
         const headers = await getHeaders();
         const res = await fetch(`${BASE_URL}/weather/current?location=${encodeURIComponent(location)}`, {

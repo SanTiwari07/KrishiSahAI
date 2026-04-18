@@ -3,7 +3,7 @@ import { useLanguage } from '../src/context/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../src/services/api';
 import { Sprout, Upload, MessageCircle, ArrowLeft, Loader2 } from 'lucide-react';
-import DetectionHistorySidebar, { getDetectionHistory, saveDetectionHistory, clearDetectionHistory } from '../components/DetectionHistorySidebar';
+import DetectionHistorySidebar, { getDetectionHistory, saveDetectionHistory, clearDetectionHistory, type DetectionEntry } from '../components/DetectionHistorySidebar';
 import { useLoadingTips } from '../src/hooks/useLoadingTips';
 
 const DiseaseDetector: React.FC = () => {
@@ -11,11 +11,16 @@ const DiseaseDetector: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Recover from history
+    // Recover from history (Crop Care sidebar or in-page history)
     useEffect(() => {
         if (location.state?.historyItem) {
-            const item = location.state.historyItem;
-            setDiseaseResult({ disease: item.name, confidence: item.confidence });
+            const item = location.state.historyItem as DetectionEntry;
+            const d = item.details || {};
+            setDiseaseResult({
+                disease: item.name,
+                confidence: item.confidence,
+                ...(typeof d === 'object' ? d : {}),
+            });
             if (item.preview) setDiseasePreview(item.preview);
         }
     }, [location.state]);
@@ -56,31 +61,47 @@ const DiseaseDetector: React.FC = () => {
         setDiseaseLoading(true);
         setDiseaseError(null);
 
-        // Hardcoded result — simulated analysis delay
-        await new Promise(resolve => setTimeout(resolve, 2200));
-
-        const hardcodedResult = {
-            disease: 'Brown Spot (Helminthosporium oryzae)',
-            crop: 'Rice',
-            confidence: 0.927,
-            treatment: [
-                'Apply fungicide spray: Propiconazole 25% EC @ 1 ml/L or Mancozeb 75% WP @ 2.5 g/L',
-                'Ensure balanced NPK fertilization — avoid nitrogen deficiency which worsens infection',
-                'Use certified disease-free seeds and treat seeds with Carbendazim before sowing',
-                'Improve field drainage to lower leaf wetness and reduce humidity around the crop',
-                'Remove and destroy infected plant debris after harvest to break the disease cycle',
-            ],
-        };
-
-        setDiseaseResult(hardcodedResult);
-        const updated = saveDetectionHistory('disease', {
-            type: 'disease',
-            name: hardcodedResult.disease,
-            confidence: hardcodedResult.confidence,
-            preview: diseasePreview || undefined,
-        });
-        setHistory(updated);
-        setDiseaseLoading(false);
+        try {
+            const formData = new FormData();
+            formData.append('image', diseaseFile);
+            const data = await api.detectDisease(formData);
+            if (!data?.success || !data?.result) {
+                throw new Error(data?.error || 'Detection failed');
+            }
+            const r = data.result;
+            const next = {
+                disease: r.disease,
+                crop: r.crop,
+                confidence: r.confidence,
+                treatment: Array.isArray(r.treatment) ? r.treatment : [],
+                severity: r.severity,
+                pathogen: r.pathogen ?? null,
+                raw_class_label: r.raw_class_label ?? null,
+                description: r.description ?? null,
+            };
+            setDiseaseResult(next);
+            const updated = saveDetectionHistory('disease', {
+                type: 'disease',
+                name: next.disease,
+                confidence: next.confidence,
+                preview: diseasePreview || undefined,
+                details: {
+                    crop: next.crop,
+                    treatment: next.treatment,
+                    severity: next.severity,
+                    pathogen: next.pathogen,
+                    raw_class_label: next.raw_class_label,
+                    description: next.description,
+                },
+            });
+            setHistory(updated);
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : 'Detection failed';
+            setDiseaseError(msg);
+            setDiseaseResult(null);
+        } finally {
+            setDiseaseLoading(false);
+        }
     };
 
     const handleDiseaseAskChatbot = () => {
@@ -96,8 +117,14 @@ const DiseaseDetector: React.FC = () => {
         });
     };
 
-    const handleHistorySelect = (entry: any) => {
-        setDiseaseResult({ disease: entry.name, confidence: entry.confidence });
+    const handleHistorySelect = (entry: DetectionEntry) => {
+        const d = entry.details || {};
+        setDiseaseResult({
+            disease: entry.name,
+            confidence: entry.confidence,
+            ...(typeof d === 'object' ? d : {}),
+        });
+        if (entry.preview) setDiseasePreview(entry.preview);
         setIsSidebarOpen(false);
     };
 
@@ -187,8 +214,23 @@ const DiseaseDetector: React.FC = () => {
                             <div className="bg-[#E8F5E9] p-6 border border-deep-green rounded-xl">
                                 <h3 className="text-xl font-bold text-deep-green mb-4 uppercase">{t.analysisResult}</h3>
                                 <div className="space-y-3 text-deep-green">
+                                    {diseaseResult.crop != null && diseaseResult.crop !== '' && (
+                                        <p><span className="font-bold">{t.labelCrop}:</span> {diseaseResult.crop}</p>
+                                    )}
                                     <p><span className="font-bold">{t.labelDisease}:</span> {diseaseResult.disease}</p>
                                     <p><span className="font-bold">{t.labelConfidence}:</span> {(diseaseResult.confidence * 100).toFixed(1)}%</p>
+                                    {diseaseResult.severity != null && (
+                                        <p><span className="font-bold">{t.labelSeverity}:</span> <span className="capitalize">{diseaseResult.severity}</span></p>
+                                    )}
+                                    {diseaseResult.pathogen != null && diseaseResult.pathogen !== '' && (
+                                        <p><span className="font-bold">{t.labelPathogen}:</span> {diseaseResult.pathogen}</p>
+                                    )}
+                                    {diseaseResult.description != null && diseaseResult.description !== '' && (
+                                        <p className="text-sm text-deep-green/90 border-t border-deep-green/15 pt-3 mt-1">{diseaseResult.description}</p>
+                                    )}
+                                    {diseaseResult.raw_class_label != null && diseaseResult.raw_class_label !== '' && (
+                                        <p className="text-xs text-deep-green/70 font-mono break-all">Model class: {diseaseResult.raw_class_label}</p>
+                                    )}
 
                                     {diseaseResult.treatment && (
                                         <div className="mt-4 pt-4 border-t border-deep-green/20">

@@ -104,6 +104,7 @@ if str(DISEASE_DETECTOR_DIR) not in sys.path:
     sys.path.append(str(DISEASE_DETECTOR_DIR))
 
 from disease_detector import predict as detector_predict, init_model as detector_init
+from disease_lookup import match_extension_metadata
 
 # We will lazy-load the model to speed up server boot
 _disease_model_loaded = False
@@ -214,22 +215,14 @@ except Exception as e:
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def get_disease_info(crop_name, disease_name):
-    if disease_data is None: return None
+def get_disease_info(crop_name, disease_name, raw_class_label=None):
+    """Resolve extension CSV rows from model-derived crop/disease + raw training label."""
+    if disease_data is None:
+        return None
     try:
-        match = disease_data[
-            (disease_data['Crop Name'].str.lower() == crop_name.lower()) &
-            (disease_data['Crop Disease'].str.lower() == disease_name.lower())
-        ]
-        if not match.empty:
-            row = match.iloc[0]
-            return {
-                'crop': row['Crop Name'],
-                'disease': row['Crop Disease'],
-                'pathogen': row['Pathogen'],
-                'home_remedy': row['Home Remedy'],
-                'chemical_recommendation': row['Chemical Recommendation']
-            }
+        return match_extension_metadata(
+            disease_data, crop_name, disease_name, raw_class_label
+        )
     except Exception as e:
         print(f"Error getting disease info: {e}")
     return None
@@ -313,8 +306,10 @@ def detect_disease():
         result = predict_disease(image_path)
         print(f"[SCAN] Result: {result.get('disease')} ({int(result.get('confidence',0)*100)}%)")
         
-        disease_info = get_disease_info(result['crop'], result['disease'])
-        
+        disease_info = get_disease_info(
+            result['crop'], result['disease'], result.get('raw_class_label')
+        )
+
         treatment = []
         if disease_info:
             if disease_info['home_remedy'] and disease_info['home_remedy'] != 'N/A':
@@ -322,7 +317,13 @@ def detect_disease():
             if disease_info['chemical_recommendation'] and disease_info['chemical_recommendation'] != 'N/A':
                 treatment.append(f"Chemical: {disease_info['chemical_recommendation']}")
         else:
-            treatment = ['Remove affected leaves', 'Apply fungicide']
+            treatment = [
+                result.get('description')
+                or (
+                    "No extension factsheet row matched this prediction; "
+                    "consult a local agricultural expert with the image and predicted class."
+                )
+            ]
             
         try: os.remove(image_path)
         except: pass
@@ -335,7 +336,10 @@ def detect_disease():
                 'severity': result['severity'],
                 'confidence': result['confidence'],
                 'treatment': treatment,
-                'pathogen': disease_info['pathogen'] if disease_info else None
+                'pathogen': disease_info['pathogen'] if disease_info else None,
+                'raw_class_label': result.get('raw_class_label'),
+                'class_index': result.get('class_index'),
+                'description': result.get('description'),
             }
         })
     except Exception as e:
@@ -383,7 +387,8 @@ def detect_pest():
                 'pest_name': result['pest_name'],
                 'confidence': result['confidence'],
                 'severity': result['severity'],
-                'description': result.get('description', '')
+                'description': result.get('description', ''),
+                'class_id': result.get('class_id'),
             }
         })
     except Exception as e:
@@ -1488,4 +1493,23 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     # Set debug=False in production. In development, FLASK_ENV=development enables helpful errors.
     debug_mode = os.getenv('FLASK_ENV') == 'development'
-    app.run(debug=debug_mode, host='0.0.0.0', port=port, use_reloader=debug_mode, threaded=True)
+    # Default reloader is "watchdog" when installed; it recursively watches the project tree and
+    # also sees venv/. Importing PyTorch/Torch touches files under site-packages and triggers a
+    # reload mid-request (pest/YOLO load looks "stuck" then the server restarts). Use the stat
+    # reloader unless WERKZEUG_RELOADER_TYPE overrides, and never treat site-packages as app code.
+    disable_reloader = os.getenv('DISABLE_RELOADER', '').lower() in ('1', 'true', 'yes')
+    run_kwargs = {
+        'debug': debug_mode,
+        'host': '0.0.0.0',
+        'port': port,
+        'use_reloader': bool(debug_mode and not disable_reloader),
+        'threaded': True,
+    }
+    if run_kwargs['use_reloader']:
+        run_kwargs['reloader_type'] = os.getenv('WERKZEUG_RELOADER_TYPE', 'stat')
+        run_kwargs['exclude_patterns'] = [
+            '*site-packages*',
+            '*\\site-packages\\*',
+            '*/site-packages/*',
+        ]
+    app.run(**run_kwargs)
