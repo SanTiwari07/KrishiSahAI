@@ -4,9 +4,11 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ mode }) => {
+  // Parent repo root: GEMINI_* for build-time `define` (not exposed as VITE_*).
   const env = loadEnv(mode, path.resolve(__dirname, '..'), '');
   return {
-    envDir: '../',
+    // Load `Frontend/.env` for VITE_* (matches INSTALLATION.md). Do not use `..` or root `.env` is required instead.
+    envDir: path.resolve(__dirname),
     server: {
       port: 3000,
       host: '0.0.0.0',
@@ -15,6 +17,9 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
+        workbox: {
+          maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+        },
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
         manifest: {
           name: 'KrishiSahAI - Farmer Advisory System',

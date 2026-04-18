@@ -12,6 +12,9 @@ export interface Farm {
   state?: string;
   district?: string;
   village?: string;
+  /** WGS-84 decimal degrees — used for satellite / map features */
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface UserProfile {

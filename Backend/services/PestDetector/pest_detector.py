@@ -4,6 +4,7 @@ Pest Detection Module using YOLOv5 (PyTorch Hub) with Custom Local Repository an
 
 import sys
 from pathlib import Path
+import os
 from PIL import Image
 
 # Global model instance
@@ -201,10 +202,12 @@ def predict(image_path):
         }
 
 
-# Warm up the model on import
-try:
-    print("Initializing pest detection model...")
-    init_model()
-    print("Pest detection model initialized successfully")
-except Exception as e:
-    print(f"Warning: Could not initialize pest detection model: {e}")
+# Optional warm-up on import.
+# Default OFF to avoid startup crashes on low-memory environments.
+if os.getenv("PEST_WARMUP_ON_BOOT", "false").lower() == "true":
+    try:
+        print("Initializing pest detection model...")
+        init_model()
+        print("Pest detection model initialized successfully")
+    except Exception as e:
+        print(f"Warning: Could not initialize pest detection model: {e}")

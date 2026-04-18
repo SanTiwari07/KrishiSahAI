@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from flask_apscheduler import APScheduler
 from werkzeug.utils import secure_filename
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from middleware.auth import init_firebase, require_auth
 import firebase_admin
 
@@ -56,21 +56,29 @@ def log_request():
 
 # CORS Configuration - Must be set BEFORE Talisman
 # In development, allow all origins so phone/emulator can access the API
+_cors_opts_dev = {
+    "origins": "*",
+    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization", "Bypass-Tunnel-Reminder", "ngrok-skip-browser-warning"],
+    "supports_credentials": False,
+}
 if os.getenv('FLASK_ENV') == 'development':
-    CORS(app, resources={r"/api/*": {
-        "origins": "*",
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization", "Bypass-Tunnel-Reminder", "ngrok-skip-browser-warning"],
-        "supports_credentials": False  # Must be False when origins='*'
-    }})
+    CORS(app, resources={
+        r"/api/*": _cors_opts_dev,
+        r"/chatbot/*": _cors_opts_dev,
+    })
 else:
     allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173').split(',')
-    CORS(app, resources={r"/api/*": {
+    _cors_opts_prod = {
         "origins": allowed_origins,
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization", "Bypass-Tunnel-Reminder", "ngrok-skip-browser-warning"],
-        "supports_credentials": True
-    }})
+        "supports_credentials": True,
+    }
+    CORS(app, resources={
+        r"/api/*": _cors_opts_prod,
+        r"/chatbot/*": _cors_opts_prod,
+    })
 
 # Security Headers - Disabled in development to avoid CORS conflicts
 # TODO: Re-enable Talisman in production with proper CORS configuration
@@ -169,8 +177,37 @@ try:
 except Exception as e:
     print(f"Warning: Farm Health AI Engine failed to initialize: {e}")
 
+from services.SatelliteHealth import (
+    get_satellite_analysis,
+    analyze_satellite_geometry,
+    get_satellite_available_dates,
+    analyze_satellite_day,
+    sample_satellite_point,
+)
+
+try:
+    from services.SatelliteHealth.chatbot import chatbot_bp
+    app.register_blueprint(chatbot_bp)
+    print("Satellite AI advisor (Krishi Mitra) registered at /chatbot/*")
+except Exception as _e_chat:
+    print(f"Warning: Satellite /chatbot blueprint not registered: {_e_chat}")
+
 # --- VoiceText Setup ---
-from services.VoiceText.voice_service import voice_service, AUDIO_FOLDER
+try:
+    from services.VoiceText.voice_service import voice_service, AUDIO_FOLDER
+except Exception as e:
+    print(f"Warning: VoiceText service unavailable at startup: {e}")
+    AUDIO_FOLDER = BASE_DIR / 'uploads' / 'audio'
+    os.makedirs(AUDIO_FOLDER, exist_ok=True)
+
+    class _UnavailableVoiceService:
+        def transcribe(self, *_args, **_kwargs):
+            return {"error": "Speech-to-text service unavailable on this machine"}
+
+        def text_to_speech(self, *_args, **_kwargs):
+            return {"error": "Text-to-speech service unavailable on this machine"}
+
+    voice_service = _UnavailableVoiceService()
 
 
 # --- Utilities ---
@@ -654,6 +691,9 @@ def chat_waste_stream():
         print(f"[WASTE] Stream Chat Error: {e}")
         return jsonify({'error': str(e)}), 500
 
+# Satellite chatbot is registered once near the top (services.SatelliteHealth.chatbot)
+# with url_prefix /chatbot on the blueprint — do not register chatbot_bp again here.
+
 # --- Farm Health AI Routes ---
 @app.route('/api/farm-health/analyze', methods=['POST'])
 @require_auth
@@ -683,6 +723,187 @@ def analyze_farm_health():
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/satellite-health', methods=['POST'])
+@require_auth
+def satellite_health():
+    try:
+        data = request.json or {}
+        try:
+            lat = float(data['lat'])
+            lon = float(data['lon'])
+            start_date = data['startDate']
+            end_date = data['endDate']
+        except KeyError as e:
+            return jsonify({'error': f'Missing field: {e.args[0]}'}), 400
+        crop = data.get('crop', 'crop')
+        language = data.get('language', 'en')
+        result = get_satellite_analysis(
+            lat, lon, start_date, end_date, crop=crop, language=language
+        )
+        return jsonify({'status': 'success', 'data': result}), 200
+    except Exception as e:
+        app.logger.error('Satellite health error: %s', e, exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/satellite-health/analyze', methods=['POST'])
+@require_auth
+def satellite_health_analyze_geometry():
+    try:
+        data = request.json or {}
+        geometry = data.get('geometry')
+        start_date = data.get('startDate')
+        end_date = data.get('endDate')
+        if not geometry:
+            return jsonify({'error': 'Missing field: geometry'}), 400
+        if not start_date or not end_date:
+            return jsonify({'error': 'Missing field: startDate or endDate'}), 400
+
+        result = analyze_satellite_geometry(geometry, start_date, end_date)
+        return jsonify({'status': 'success', 'data': result}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        app.logger.error('Satellite geometry analyze error: %s', e, exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/satellite-health/dates', methods=['POST'])
+@require_auth
+def satellite_health_dates():
+    try:
+        data = request.json or {}
+        geometry = data.get('geometry')
+        if not geometry:
+            return jsonify({'error': 'Missing field: geometry'}), 400
+        lookback_days = int(data.get('lookbackDays', 90))
+        dates = get_satellite_available_dates(geometry, lookback_days=lookback_days)
+        return jsonify({'status': 'success', 'data': {'dates': dates}}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        app.logger.error('Satellite dates error: %s', e, exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/satellite-health/day', methods=['POST'])
+@require_auth
+def satellite_health_day():
+    try:
+        data = request.json or {}
+        geometry = data.get('geometry')
+        target_date = data.get('date')
+        if not geometry:
+            return jsonify({'error': 'Missing field: geometry'}), 400
+        if not target_date:
+            return jsonify({'error': 'Missing field: date'}), 400
+
+        result = analyze_satellite_day(geometry, target_date)
+        return jsonify({'status': 'success', 'data': result}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        app.logger.error('Satellite day analyze error: %s', e, exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/analyze', methods=['POST'])
+def legacy_ndvi_analyze():
+    """
+    NDVI-project compatible endpoint.
+    Request body: { "geometry": GeoJSONPolygon, "startDate"?: "...", "endDate"?: "..." }
+    """
+    try:
+        data = request.json or {}
+        geometry = data.get('geometry')
+        if not geometry:
+            return jsonify({'error': "Request body must contain 'geometry'"}), 400
+
+        end_date = data.get('endDate')
+        start_date = data.get('startDate')
+        if not end_date or not start_date:
+            end_dt = datetime.utcnow().date()
+            start_dt = end_dt - timedelta(days=90)
+            start_date = start_date or start_dt.isoformat()
+            end_date = end_date or end_dt.isoformat()
+
+        result = analyze_satellite_geometry(geometry, start_date, end_date)
+        return jsonify(result), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        app.logger.error('Legacy /api/analyze error: %s', e, exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/analyze-dates', methods=['POST'])
+def legacy_ndvi_analyze_dates():
+    """
+    NDVI-project compatible endpoint.
+    Request body: { "geometry": GeoJSONPolygon }
+    """
+    try:
+        data = request.json or {}
+        geometry = data.get('geometry')
+        if not geometry:
+            return jsonify({'error': "Request body must contain 'geometry'"}), 400
+        dates = get_satellite_available_dates(geometry, lookback_days=90)
+        return jsonify({'dates': dates}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        app.logger.error('Legacy /api/analyze-dates error: %s', e, exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/analyze-day', methods=['POST'])
+def legacy_ndvi_analyze_day():
+    """
+    NDVI-project compatible endpoint.
+    Request body: { "geometry": GeoJSONPolygon, "date": "YYYY-MM-DD" }
+    """
+    try:
+        data = request.json or {}
+        geometry = data.get('geometry')
+        target_date = data.get('date')
+        if not geometry:
+            return jsonify({'error': "Request body must contain 'geometry'"}), 400
+        if not target_date:
+            return jsonify({'error': "Request body must contain 'date'"}), 400
+        result = analyze_satellite_day(geometry, target_date)
+        return jsonify(result), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        app.logger.error('Legacy /api/analyze-day error: %s', e, exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/sample', methods=['GET'])
+def legacy_ndvi_sample():
+    """
+    NDVI-project compatible endpoint.
+    Query params: lat, lng, band (optional, default NDVI)
+    """
+    try:
+        lat = float(request.args.get('lat'))
+        lng = float(request.args.get('lng'))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'lat and lng must be valid numbers'}), 400
+
+    band = request.args.get('band', 'NDVI')
+    try:
+        value = sample_satellite_point(lat, lng, band=band, scale=10)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+    if value is None:
+        return jsonify({'error': 'No analysis available. Run /api/analyze first.'}), 404
+
+    return jsonify({'value': value, 'band': band.upper()}), 200
+
 
 @app.route('/api/farm-health/chat/stream', methods=['POST'])
 @require_auth

@@ -204,3 +204,181 @@ export const api = {
         return res.json();
     }
 };
+
+// Satellite Health types
+export interface SatelliteHealthRequest {
+    lat: number;
+    lon: number;
+    startDate: string;
+    endDate: string;
+    crop?: string;
+    language?: string;
+}
+
+export interface IndexStat {
+    mean: number;
+    median: number;
+    stdDev: number;
+    interpretation: string;
+}
+
+export interface SatelliteHealthResponse {
+    cvi: IndexStat & { status: string; confidence: number };
+    indices: Record<string, IndexStat>;
+    timeSeries: { date: string; cvi: number }[];
+    advisory: string;
+    meta: {
+        lat: number;
+        lon: number;
+        startDate: string;
+        endDate: string;
+        crop: string;
+        generatedAt: string;
+    };
+}
+
+export type GeoJsonPolygon = {
+    type: 'Polygon';
+    coordinates: number[][][];
+};
+
+export interface SatelliteGridFeature {
+    type: 'Feature';
+    geometry: GeoJsonPolygon;
+    properties: Record<string, number | string | null>;
+}
+
+export interface SatelliteFieldSummary {
+    confidence: number;
+    scene_count: number;
+    indices: Record<string, { mean: number | null; interpretation: string }>;
+    cvi?: IndexStat & { status: string; confidence: number };
+}
+
+export interface SatelliteGeometryAnalysisResponse {
+    type?: 'FeatureCollection';
+    features?: SatelliteGridFeature[];
+    farm_boundary: GeoJsonPolygon;
+    farm_summary: SatelliteFieldSummary;
+    index_tiles: Record<string, string | null>;
+    ndvi_tile_url?: string | null;
+    tile_url?: string | null;
+    startDate?: string;
+    endDate?: string;
+    date?: string;
+    scene_count?: number;
+    error?: string;
+}
+
+export const fetchSatelliteHealth = async (
+    payload: SatelliteHealthRequest,
+    token: string
+): Promise<SatelliteHealthResponse> => {
+    const res = await fetch(`${BASE_URL}/satellite-health`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Bypass-Tunnel-Reminder': 'true',
+            'ngrok-skip-browser-warning': 'true',
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+            lat: payload.lat,
+            lon: payload.lon,
+            startDate: payload.startDate,
+            endDate: payload.endDate,
+            crop: payload.crop ?? 'crop',
+            language: payload.language ?? 'en',
+        }),
+    });
+    if (res.status === 401) throw new Error('Unauthorized');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+        throw new Error((data as { error?: string }).error || `HTTP Error ${res.status}`);
+    }
+    const body = data as { status?: string; data?: SatelliteHealthResponse; error?: string };
+    if (body.status === 'success' && body.data) {
+        return body.data;
+    }
+    throw new Error(body.error || 'Satellite analysis failed');
+};
+
+export const fetchSatelliteGeometryAnalysis = async (
+    payload: {
+        geometry: GeoJsonPolygon;
+        startDate: string;
+        endDate: string;
+    },
+    token: string
+): Promise<SatelliteGeometryAnalysisResponse> => {
+    const res = await fetch(`${BASE_URL}/satellite-health/analyze`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Bypass-Tunnel-Reminder': 'true',
+            'ngrok-skip-browser-warning': 'true',
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+    });
+    if (res.status === 401) throw new Error('Unauthorized');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+        throw new Error((data as { error?: string }).error || `HTTP Error ${res.status}`);
+    }
+    const body = data as { status?: string; data?: SatelliteGeometryAnalysisResponse; error?: string };
+    if (body.status === 'success' && body.data) return body.data;
+    throw new Error(body.error || 'Satellite geometry analysis failed');
+};
+
+export const fetchSatelliteAvailableDates = async (
+    payload: { geometry: GeoJsonPolygon; lookbackDays?: number },
+    token: string
+): Promise<string[]> => {
+    const res = await fetch(`${BASE_URL}/satellite-health/dates`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Bypass-Tunnel-Reminder': 'true',
+            'ngrok-skip-browser-warning': 'true',
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+    });
+    if (res.status === 401) throw new Error('Unauthorized');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+        throw new Error((data as { error?: string }).error || `HTTP Error ${res.status}`);
+    }
+    const body = data as {
+        status?: string;
+        data?: { dates?: string[] };
+        error?: string;
+    };
+    if (body.status === 'success') return body.data?.dates ?? [];
+    throw new Error(body.error || 'Failed to fetch satellite dates');
+};
+
+export const fetchSatelliteDayAnalysis = async (
+    payload: { geometry: GeoJsonPolygon; date: string },
+    token: string
+): Promise<SatelliteGeometryAnalysisResponse> => {
+    const res = await fetch(`${BASE_URL}/satellite-health/day`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Bypass-Tunnel-Reminder': 'true',
+            'ngrok-skip-browser-warning': 'true',
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+    });
+    if (res.status === 401) throw new Error('Unauthorized');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+        throw new Error((data as { error?: string }).error || `HTTP Error ${res.status}`);
+    }
+    const body = data as { status?: string; data?: SatelliteGeometryAnalysisResponse; error?: string };
+    if (body.status === 'success' && body.data) return body.data;
+    throw new Error(body.error || 'Failed to fetch day analysis');
+};
