@@ -18,6 +18,7 @@ google-api-core>=2.10.0
 grpcio>=1.49.0
 grpcio-status>=1.49.0
 protobuf>=5.28.0
+earthengine-api>=0.1.390
 
 # Web Framework / Deployment
 flask>=3.0.0

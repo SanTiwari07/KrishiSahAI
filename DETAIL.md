@@ -8,6 +8,7 @@ This document is the authoritative internal engineering reference for the Krishi
 
 1. [Vision and System Philosophy](#1-vision-and-system-philosophy)
 2. [System Architecture](#2-system-architecture)
+   - [2.8 Satellite Health subsystem (in the monolith)](#28-satellite-health-subsystem-in-the-monolith)
 3. [Feature-by-Feature Technical Breakdown](#3-feature-by-feature-technical-breakdown)
 4. [API Documentation](#4-api-documentation)
 5. [Database Schema Documentation](#5-database-schema-documentation)
@@ -18,6 +19,7 @@ This document is the authoritative internal engineering reference for the Krishi
 10. [DevOps and Deployment Architecture](#10-devops-and-deployment-architecture)
 11. [Risk Analysis and Mitigation](#11-risk-analysis-and-mitigation)
 12. [Future Roadmap](#12-future-roadmap)
+13. [Satellite Health Module](#13-satellite-health-module-full-detailed-update)
 
 ---
 
@@ -95,6 +97,7 @@ Backend/
     PestDetector/               # YOLO v8 inference + class mapping
     WasteToValue/src/           # LLM-driven residue analysis
     FarmHealth/src/             # Soil and crop health advisory
+    SatelliteHealth/            # Google Earth Engine + NDVI grid + satellite chatbot blueprint
     FiveToTenYear/              # Multi-year roadmap generator
     Planner/                    # Crop-specific phased planner
     NotificationService/        # Background alert generation
@@ -119,23 +122,27 @@ Backend/
 ### 2.4 AI/ML Pipeline Overview
 
 ```
-User Input (image / text / audio)
+User Input (image / text / audio / GeoJSON polygon + dates)
         |
         v
   Frontend (React)
         |
         v
-  Flask API Gateway (app.py)
+  Flask (app.py) — same process, route handlers (not a separate API gateway)
         |
-        |--- Image ---> DiseaseDetector (TF CNN) ---> result JSON
-        |--- Image ---> PestDetector (YOLO v8) -----> result JSON
-        |--- Text  ---> BusinessAdvisor (LangChain + Ollama) --> stream / JSON
-        |--- Text  ---> WasteToValue (Ollama JSON mode) -------> result JSON
-        |--- Audio ---> VoiceText (Whisper STT) ----------------> transcript
-        |--- Text  ---> VoiceText (gTTS TTS) -------------------> audio stream
+        |--- Image ---> DiseaseDetector (TF CNN) -------------> result JSON
+        |--- Image ---> PestDetector (YOLO v8) -------------> result JSON
+        |--- Text  ---> BusinessAdvisor (LangChain + LLM) --> stream / JSON
+        |--- Text  ---> WasteToValue (Ollama JSON mode) ---> result JSON
+        |--- Audio ---> VoiceText (Whisper STT) ------------> transcript
+        |--- Text  ---> VoiceText (gTTS TTS) ----------------> audio stream
+        |--- GeoJSON + dates -> SatelliteHealth (GEE) ------> GeoJSON + tiles + summary
+        |--- Chat msg --------> SatelliteHealth/chatbot ------> Ollama (LangChain) reply JSON
         v
   Firebase Firestore (profile reads / notification writes)
 ```
+
+**Satellite branch note:** There is **no** separate microservice or queue for satellite jobs. The browser waits for the Flask handler to finish Earth Engine work (same synchronous request model as the rest of the monolith, consistent with `architecture_analysis.md`).
 
 ### 2.5 Authentication Flow
 
@@ -163,6 +170,88 @@ Client Request
 ### 2.7 Error Handling Flow
 
 All route handlers wrap service calls in `try/except` blocks. Errors are logged to stdout with a service prefix tag (e.g., `[ADVISOR]`, `[PEST]`, `[SCAN]`) and a full traceback is printed for debug visibility. HTTP error responses use appropriate status codes: 400 for missing/invalid input, 401 for auth failures, 404 for invalid session IDs, 503 for unavailable service modules, and 500 for unexpected internal errors.
+
+### 2.8 Satellite Health subsystem (in the monolith)
+
+This subsection ties Satellite Health to the **actual** KrishiSahAI architecture pattern described in `architecture_analysis.md`: a **single Flask process**, **no API gateway**, **no job queue**, **synchronous HTTP** for heavy steps unless explicitly streaming elsewhere.
+
+#### 2.8.1 Placement in the system
+
+| Layer | Satellite-related responsibility |
+|-------|-----------------------------------|
+| **Browser (React)** | `SatelliteHealth.tsx` orchestrates auth token calls, map props, timeline, floating indices UI, and chat panel. `SatelliteFarmMap.tsx` runs Leaflet + canvas heatmap. `KrishiMitraSatellitePanel.tsx` calls `/chatbot/chat` (no Firebase header required today). |
+| **Flask (`app.py`)** | Registers `/api/satellite-health/*`, legacy `/api/analyze*`, `/api/sample`, and mounts `chatbot_bp` at `/chatbot`. Applies CORS to `/api/*` **and** `/chatbot/*`. |
+| **`services/SatelliteHealth/`** | `gee_engine.py` initializes Earth Engine (non-interactive). `satellite_service.py` implements composites, indices, grid features, summaries, tile URLs, day analysis, date listing, point sampling cache. `chatbot/` is a **nested** HTTP surface (LangChain + Ollama) scoped to satellite advisory. |
+| **Google Earth Engine** | Remote execution of image collections, reductions, and tile URL generation; results returned to Python via `getInfo()` / URL templates. |
+| **Ollama (optional)** | Local LLM for `/chatbot/chat` satellite advisor; not required for NDVI raster math. |
+| **Third-party map tiles** | Esri World Imagery (Leaflet default in app) + optional GEE `tile_url` overlays from backend. |
+| **Nominatim (optional)** | Frontend reverse geocode for live location label (usage policy applies). |
+
+#### 2.8.2 Logical architecture diagram (Satellite slice)
+
+```mermaid
+flowchart TB
+  subgraph Client["Browser — React SPA"]
+    SH["SatelliteHealth.tsx"]
+    MAP["SatelliteFarmMap.tsx"]
+    CHAT["KrishiMitraSatellitePanel.tsx"]
+    API["src/services/api.ts"]
+  end
+
+  subgraph Flask["Backend — Flask monolith (app.py)"]
+    R1["/api/satellite-health/*  (@require_auth)"]
+    R2["/api/analyze*  (legacy NDVI parity)"]
+    R3["/chatbot/*  (chatbot_bp)"]
+    SVC["services/SatelliteHealth/satellite_service.py"]
+    GEE["services/SatelliteHealth/gee_engine.py"]
+    CB["services/SatelliteHealth/chatbot/*"]
+  end
+
+  subgraph Remote["External systems"]
+    EE["Google Earth Engine API"]
+    OL["Ollama localhost:11434"]
+    OSM["OpenStreetMap Nominatim"]
+    ESRI["Esri World Imagery tiles"]
+  end
+
+  SH --> MAP
+  SH --> CHAT
+  SH --> API
+  API -->|Bearer Firebase JWT| R1
+  API -->|Bearer Firebase JWT| R2
+  CHAT -->|JSON POST| R3
+  R1 --> SVC
+  R2 --> SVC
+  SVC --> GEE
+  GEE --> EE
+  R3 --> CB
+  CB --> OL
+  SH -->|reverse geocode| OSM
+  MAP --> ESRI
+```
+
+#### 2.8.3 Request path checklist (each integration point)
+
+| Step | What happens | Failure surface |
+|------|----------------|-----------------|
+| 1 | User loads Satellite page; map initializes Leaflet + Geoman. | Tile CDN latency; offline map tiles. |
+| 2 | User draws polygon; `onPolygonGeometry` fires with GeoJSON polygon. | Invalid ring; client rejects before POST. |
+| 3 | `runAnalysis(geometry)` posts to `/api/satellite-health/analyze` with `startDate`/`endDate` (defaults from last 90d window in UI code path). | 401 if not signed in; 400 if missing fields; GEE errors bubble as JSON `error`. |
+| 4 | `analyze_satellite_geometry` builds composite, indices, grid `features`, `farm_summary`, `index_tiles`. | No scenes: structured error string; partial response may include `farm_boundary`. |
+| 5 | Frontend loads dates via `/api/satellite-health/dates`. | Empty list if no qualifying scenes; timeline hidden. |
+| 6 | User picks date → `/api/satellite-health/day`. | Same GEE constraints as composite. |
+| 7 | Heatmap renders from `features` + `activeBand`; tooltip uses interpolated value. | Large polygons: more cells; slower canvas fill. |
+| 8 | Chat panel POST `/chatbot/chat` with optional `farmData`/`heatmapData`. | Ollama down → 502 JSON `error`; UI shows assistant fallback text. |
+| 9 | Legacy `/api/sample` reads last analysis cache for pixel drill-down. | Requires prior successful analysis in same process. |
+
+#### 2.8.4 Consistency with `architecture_analysis.md`
+
+| `architecture_analysis.md` claim | Satellite module reality |
+|----------------------------------|----------------------------|
+| No API gateway | Satellite routes are plain Flask routes; same process. |
+| Synchronous request/response | GEE `getInfo()` work blocks the HTTP request until completion. |
+| No message queue | No async NDVI worker; long analyses are user-visible wait states. |
+| Horizontal scaling caveat | Satellite chatbot uses in-process session memory (`chatbot/memory.py`); same scaling caveats as other in-memory session stores unless migrated to Redis. |
 
 ---
 
@@ -1121,6 +1210,309 @@ python app.py        # Development server (Flask debug mode disabled in prod)
 - Agri-input marketplace integration: connect treatment recommendations to verified supplier catalogs.
 - Drone automation hooks: generate precision spraying waypoint data from pest detection results for compatible drone hardware.
 - API as a service: expose the disease detection and advisory APIs to third-party agri-tech applications via a managed API gateway.
+
+---
+
+## 13. Satellite Health Module (Full Detailed Update)
+
+This section supersedes earlier short notes and describes the current, end-to-end
+Satellite Health implementation as it exists in the repository after the NDVI
+parity integration and UI refinements.
+
+### 13.0 Architecture (vertical slice, every integration point)
+
+This subsection is the **checklist view** of Satellite Health: files, HTTP routes, auth, caches, and external calls. It complements **§2.8** (monolith placement) and should be read together with **§4** for generic API conventions.
+
+#### 13.0.1 Repository module map
+
+| Path | Role |
+|------|------|
+| `Backend/app.py` | Declares satellite + legacy NDVI routes; registers `chatbot_bp` **once**; CORS for `/api/*` and `/chatbot/*`. |
+| `Backend/services/SatelliteHealth/__init__.py` | Package exports for imports from `app.py`. |
+| `Backend/services/SatelliteHealth/config.py` | Service-level constants (collection id, bands, thresholds) consumed by `satellite_service.py`. |
+| `Backend/services/SatelliteHealth/gee_engine.py` | Earth Engine initialization (`ee.Initialize`) and shared setup; imported before heavy GEE use. |
+| `Backend/services/SatelliteHealth/satellite_service.py` | Core pipeline: geometry → Sentinel-2 composite → indices → grid features, summaries, tile URLs, day analysis, date listing, point sampling; maintains **process-global** last-analysis pointers for `/api/sample`. |
+| `Backend/services/SatelliteHealth/chatbot/__init__.py` | Exports blueprint for registration. |
+| `Backend/services/SatelliteHealth/chatbot/routes.py` | Flask blueprint `chatbot_bp`: `/chatbot/chat`, `/chatbot/reset`, `/chatbot/health`. |
+| `Backend/services/SatelliteHealth/chatbot/chain.py` | LangChain invocation of Ollama-backed model. |
+| `Backend/services/SatelliteHealth/chatbot/memory.py` | **In-process** per-`session_id` message history (same scaling caveats as other in-memory advisors). |
+| `Backend/services/SatelliteHealth/chatbot/prompts.py` | System prompt construction from `farmData` / `heatmapData`. |
+| `Backend/services/SatelliteHealth/chatbot/config.py` | Ollama base URL and model name for health checks and chain. |
+| `Frontend/pages/SatelliteHealth.tsx` | Page-level state machine: geometry, analysis lifecycle, timeline, map props, chat sidebar host. |
+| `Frontend/components/SatelliteFarmMap.tsx` | Leaflet + Geoman + canvas IDW heatmap + tooltips. |
+| `Frontend/components/KrishiMitraSatellitePanel.tsx` | Satellite chat UI; posts to `/chatbot/chat` (no Firebase JWT on that path today). |
+| `Frontend/src/services/api.ts` | Authenticated helpers for `/api/satellite-health/*` and legacy analyze paths where used. |
+| `Frontend/src/utils/ndviColor.ts` | Legend-aligned NDVI ramp → hex/RGB for heatmap LUT and category text. |
+
+#### 13.0.2 HTTP surface and authentication matrix
+
+| Route | Method | `@require_auth` (Firebase JWT) | Response envelope |
+|-------|--------|-------------------------------|-------------------|
+| `/api/satellite-health` | POST | Yes | `{ status, data }` or `{ error }` |
+| `/api/satellite-health/analyze` | POST | Yes | `{ status, data }` or `{ error }` |
+| `/api/satellite-health/dates` | POST | Yes | `{ status, data: { dates } }` or `{ error }` |
+| `/api/satellite-health/day` | POST | Yes | `{ status, data }` or `{ error }` |
+| `/api/analyze` | POST | **No** (legacy parity) | Raw `result` dict (reference-style) |
+| `/api/analyze-dates` | POST | **No** | `{ dates: [...] }` or `{ error }` |
+| `/api/analyze-day` | POST | **No** | Raw day payload or `{ error }` |
+| `/api/sample` | GET | **No** | `{ value, band }` or 404 if no prior analysis in this worker |
+| `/chatbot/chat` | POST | **No** | `{ reply, session_id }` or `{ error }` with 4xx/502 |
+| `/chatbot/reset` | POST | **No** | `{ ok: true }` |
+| `/chatbot/health` | GET | **No** | `{ status, model, base_url }` |
+
+**Implication:** Production deployments that require end-to-end auth should either front the chat blueprint with a gateway rule, add `@require_auth` to chat routes, or accept that satellite chat is an open HTTP surface on the same origin as the SPA (typical for local-first Ollama setups).
+
+#### 13.0.3 In-process shared state (important for ops)
+
+| Mechanism | Location | Behavior |
+|-----------|----------|----------|
+| Last indexed GEE image + geometry | `satellite_service.py` globals `_last_indexed_image`, `_last_ee_geometry`; set by `analyze_satellite_geometry` / `analyze_satellite_day` | Enables `sample_satellite_point` and `GET /api/sample` without resending full analysis. **Per worker process only** — not shared across Gunicorn/uwsgi workers. |
+| Chat transcript memory | `chatbot/memory.py` | Keyed by `session_id` from client; cleared on `/chatbot/reset`. Lost on process restart. |
+
+#### 13.0.4 External systems checklist
+
+| System | Call site | Purpose |
+|--------|-----------|---------|
+| Google Earth Engine | `gee_engine` + `satellite_service` | Sentinel-2 collections, cloud mask, composites, reductions, `getMapId` tile URLs. |
+| Ollama HTTP API | `chatbot/chain.py`, `chatbot/config.py` | LLM completion for satellite advisor. |
+| Esri World Imagery | `SatelliteFarmMap.tsx` (Leaflet layer URL) | Basemap tiles in the browser. |
+| Nominatim (OSM) | `SatelliteHealth.tsx` (fetch from client) | Human-readable label for geolocation pin (respect OSM usage policy). |
+
+#### 13.0.5 Primary request sequences (happy path)
+
+**A. Polygon analysis (Krishi contract)**
+
+1. User completes polygon → `SatelliteHealth.tsx` calls authenticated `POST /api/satellite-health/analyze` with `geometry`, `startDate`, `endDate`.
+2. `analyze_satellite_geometry` runs GEE pipeline → returns `features`, `farm_summary`, `index_tiles`, boundary GeoJSON, etc.
+3. Service calls `_set_last_analysis(...)` for downstream sampling.
+4. UI calls `POST /api/satellite-health/dates` with same geometry → populates timeline.
+5. User selects date → `POST /api/satellite-health/day` refreshes day-specific rasters/features.
+
+**B. Heatmap + tooltip**
+
+1. Map receives `heatmapFeatures` + `activeBand` from page state.
+2. `SatelliteFarmMap.tsx` builds LUT via `ndviToRgb`, rasterizes IDW field, clips to polygon, shows interpolated value under cursor.
+
+**C. Krishi Mitra (satellite chat)**
+
+1. Panel ensures `session_id` (client-generated UUID if absent).
+2. `POST /chatbot/chat` with `message`, optional `farmData` / `heatmapData`.
+3. Route loads history from memory, builds system prompt, invokes chain, appends messages, returns `reply`.
+
+### 13.1 Scope and Design Constraints
+
+The module imports NDVI_satellite behavior while preserving KrishiSahAI shell UX:
+
+- Keep global Krishi top bar/navigation and theme.
+- Keep existing SatelliteHealth page route and map page structure.
+- Integrate NDVI parity features in-place (not by replacing app shell).
+- Support both Krishi API contracts and NDVI-compatible legacy routes.
+
+### 13.2 Frontend Components and Responsibilities
+
+#### 13.2.1 `Frontend/pages/SatelliteHealth.tsx`
+
+Primary orchestrator for:
+
+- draw/geometry state,
+- analysis calls,
+- date timeline loading and day switching,
+- map overlay inputs (tile URL, boundary, grid features),
+- satellite chatbot sidebar integration.
+
+Key behavior:
+
+1. **Auto analyze on polygon closure**
+   - On `onPolygonGeometry`, field geometry is stored and `runAnalysis(geometry)` is immediately invoked.
+   - This removes an extra click after polygon closure and mirrors reference behavior expectations.
+
+2. **Toolbar actions**
+   - **Run Analysis** button is a prominent CTA in the top toolbar.
+   - Positioned on the **left side of Draw Field** per latest UI request.
+   - Draw Field remains available for manual redraw.
+   - Live location action still supported (`navigator.geolocation` + reverse geocode label).
+
+3. **Date range controls removed**
+   - Start Date / End Date sidebar inputs are intentionally removed from UI.
+   - Analysis defaults still remain internally based on computed range logic.
+
+4. **Timeline interaction**
+   - Horizontal swipe scroll remains enabled.
+   - Added left/right arrow controls for explicit timeline scrolling.
+   - `scrollTimeline(direction)` performs smooth partial-width shifts.
+
+5. **Index panel placement**
+   - Detailed indices moved from sidebar into a **floating map-side box** (desktop visible).
+   - Chatbot gets primary sidebar footprint.
+
+#### 13.2.2 `Frontend/components/SatelliteFarmMap.tsx`
+
+Responsibilities:
+
+- Leaflet map init and geoman draw controls.
+- Satellite base + tile overlay rendering.
+- Heatmap rendering and hover tooltip.
+- Boundary stroke rendering and fit bounds behavior.
+
+Heatmap pipeline:
+
+1. Receives `heatmapFeatures` and `activeBand`.
+2. Computes cell centers from geometry.
+3. Builds 512 LUT from `ndviToRgb` color mapping.
+4. Runs regularised Shepard IDW interpolation:
+   - `w = 1 / (d² + eps²)` for smooth non-spiky surface.
+5. Draws to canvas in overlay pane.
+6. Clips raster to farm polygon.
+7. Keeps sync while zooming using transform during zoom animation.
+
+Hover behavior:
+
+- Map-level hover computes interpolated value under cursor.
+- Tooltip displays:
+  - active band value (fixed precision),
+  - interpretation text (NDVI style categories / moisture categories for NDMI, NDWI).
+
+#### 13.2.3 `Frontend/components/KrishiMitraSatellitePanel.tsx`
+
+Satellite-specific AI advisor panel with NDVI_satellite-style flow:
+
+- Session id generation and lifecycle.
+- Initial auto-summary prompt once analysis context is available.
+- Optional context payload (`farmData`, `heatmapData`) passed to backend chat route.
+- Typing indicator, skeleton loader, history rendering, resilient error fallback.
+- Input now remains usable in broader states; lock mainly during active send.
+
+Layout update:
+
+- Panel uses `flex-1` in sidebar for dominant chat area occupancy.
+
+#### 13.2.4 `Frontend/src/utils/ndviColor.ts`
+
+Current canonical NDVI color map utility.
+
+- `LEGEND_NDVI_STOPS` defines the active ramp.
+- `ndviToColor(value)` performs stop interpolation.
+- `ndviToRgb(value)` used by heatmap LUT.
+- Includes backwards alias `EOS_NDVI_STOPS` for compatibility with prior naming.
+
+### 13.3 Backend Routes and Contracts
+
+#### 13.3.1 Authenticated Krishi routes (`Backend/app.py`)
+
+- `POST /api/satellite-health`
+- `POST /api/satellite-health/analyze`
+- `POST /api/satellite-health/dates`
+- `POST /api/satellite-health/day`
+
+All return consistent `{ status, data }` envelopes (or `{ error }` on failure).
+
+#### 13.3.2 NDVI legacy compatibility routes
+
+- `POST /api/analyze`
+- `POST /api/analyze-dates`
+- `POST /api/analyze-day`
+- `GET /api/sample`
+
+These support reference-style payload/response semantics for parity and migration.
+
+### 13.4 Satellite Service Internals
+
+File: `Backend/services/SatelliteHealth/satellite_service.py`
+
+Core internals:
+
+- GEE geometry validation and conversion.
+- Cloud masking and Sentinel-2 collection filtering.
+- Composite generation and index computation.
+- Grid feature generation (`features`) with per-cell means.
+- Farm summary aggregation (`farm_summary.indices`, confidence, scene count).
+- Tile URL generation per index.
+
+Notable bug fix:
+
+- Resolved `method_descriptor has no attribute today` by avoiding datetime symbol shadowing:
+  - module usage now through `_dt` (`_dt.date.today()`, `_dt.timedelta(...)`).
+
+### 13.5 Satellite Chatbot Backend
+
+Files under:
+
+- `Backend/services/SatelliteHealth/chatbot/`
+
+Blueprint registration:
+
+- `chatbot_bp` registered once in `Backend/app.py`.
+- Effective endpoints:
+  - `POST /chatbot/chat`
+  - `POST /chatbot/reset`
+  - `GET /chatbot/health`
+
+Important behavior:
+
+- If frontend context absent, route applies fallback farm/heatmap payload.
+- History is session-scoped and persisted via module memory service.
+- Chain invocation errors return `502` with actionable message.
+
+### 13.6 CORS and Runtime Wiring
+
+`Backend/app.py` CORS covers:
+
+- `/api/*`
+- `/chatbot/*`
+
+in both development and production branches to prevent chat route cross-origin failures.
+
+### 13.7 Current UI State (as shipped now)
+
+Satellite page currently has:
+
+- Top toolbar: Run Analysis (left of Draw Field), Draw Field, live location, source, index selector.
+- Sidebar: location and status blocks, chatbot panel occupying the main section.
+- Floating map box: index cards with value + interpretation.
+- Timeline: swipe + left/right arrows.
+- Auto-run analysis after polygon close.
+
+### 13.8 Removed / intentionally changed from older versions
+
+- Start Date and End Date visible controls removed.
+- Sidebar CVI hero card removed.
+- Sidebar index list replaced by floating map-side index panel.
+- Duplicate chatbot blueprint registration removed.
+
+### 13.9 Validation and Runbook
+
+#### Backend
+
+```bash
+cd Backend
+venv\\Scripts\\activate
+python app.py
+```
+
+Expected startup includes satellite advisor registration line and Flask bind output.
+
+#### Frontend
+
+```bash
+cd Frontend
+npm run dev
+```
+
+Smoke checks:
+
+1. Draw polygon and close shape -> analysis auto starts.
+2. Run Analysis button works manually.
+3. Timeline is horizontally scrollable by swipe and arrows.
+4. Index floating box appears after analysis.
+5. Chat panel can send messages; if Ollama unavailable, fallback error bubble appears.
+6. Heatmap remains aligned during pan/zoom.
+
+### 13.10 Known Constraints / Follow-ups
+
+- **Roadmap vs implementation:** [§12 Phase 2](#phase-2-intelligence-enhancement-q3-2026) still lists ISRO Bhuvan-style satellite integration as future work; the **current** stack in this repo is **Sentinel-2 via Google Earth Engine** (`services/SatelliteHealth`), not Bhuvan.
+- Chat quality and latency depend on local Ollama availability and model choice.
+- Floating index panel is desktop-prioritized; mobile visibility can be tuned further if needed.
+- If NDVI palette policy changes (strict EOS vs legend-aligned), only `ndviColor.ts` should be edited and all dependent rendering remains consistent.
 
 ---
 

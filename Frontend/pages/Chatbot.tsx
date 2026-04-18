@@ -12,7 +12,6 @@ import {
     Bot,
     User,
     Map,
-    Briefcase,
     Newspaper,
 
     Mic,

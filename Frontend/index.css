@@ -204,3 +204,22 @@ button {
   content: '';
   animation: loadingDots 1.5s infinite steps(4);
 }
+
+/* Satellite page — Leaflet fills flex layout */
+.satellite-leaflet-host .leaflet-container {
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+  background: #061208;
+  font-family: var(--font-sans);
+}
+
+.satellite-leaflet-host .leaflet-control-attribution {
+  background: rgba(27, 94, 32, 0.85);
+  color: #e8f5e9;
+  font-size: 10px;
+}
+
+.satellite-leaflet-host .leaflet-control-attribution a {
+  color: #c8e6c9;
+}

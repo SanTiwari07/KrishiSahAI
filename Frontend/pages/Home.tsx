@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../src/context/LanguageContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Recycle, Briefcase, Loader2, Target, Activity, ShieldCheck, TrendingUp, CheckCircle, AlertTriangle, MapPin, Sprout } from 'lucide-react';
 import { useFarm } from '../src/context/FarmContext';
 import { api } from '../src/services/api';

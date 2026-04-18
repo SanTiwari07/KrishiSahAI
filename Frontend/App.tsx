@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import Home from './pages/Home';
 import BusinessAdvisory from './pages/BusinessAdvisory';
@@ -12,6 +12,7 @@ import Roadmap from './pages/Roadmap';
 import NewsPage from './pages/NewsPage';
 import EditProfile from './pages/EditProfile';
 import FarmHealth from './pages/FarmHealth';
+const SatelliteHealth = lazy(() => import('./pages/SatelliteHealth'));
 import ArticleDetail from './pages/ArticleDetail';
 import Planner from './pages/Planner';
 import PestForecast from './pages/PestForecast';
@@ -80,6 +81,8 @@ const Header: React.FC<{
   const navItems = [
     { label: t.navHome, path: '/' },
     { label: t.navNews, path: '/news' },
+    { label: t.navAdvisory, path: '/advisory' },
+    { label: t.navSatellite, path: '/satellite' },
   ];
 
   const getWeatherDisplay = () => {
@@ -88,7 +91,11 @@ const Header: React.FC<{
     return `${weatherData.temperature}°C`;
   };
 
-  const isFeaturePage = location.pathname !== '/' && location.pathname !== '/chat' && location.pathname !== '/news';
+  const isFeaturePage =
+    location.pathname !== '/' &&
+    location.pathname !== '/chat' &&
+    location.pathname !== '/news' &&
+    location.pathname !== '/satellite';
 
   const quickFeatures = [
     { icon: <Sprout size={22} />, path: '/crop-care', label: t.navCropCare },
@@ -1029,6 +1036,20 @@ const AppContent: React.FC = () => {
             <Route path="/advisory" element={<BusinessAdvisory />} />
             <Route path="/news" element={<NewsPage />} />
             <Route path="/health" element={<FarmHealth />} />
+            <Route
+              path="/satellite"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="flex min-h-[50vh] items-center justify-center bg-[#061208] px-4 text-sm font-bold text-emerald-200">
+                      Loading satellite view…
+                    </div>
+                  }
+                >
+                  <SatelliteHealth />
+                </Suspense>
+              }
+            />
             <Route path="/crop-care" element={<CropCare />} />
             <Route path="/crop-care/disease" element={<DiseaseDetector />} />
             <Route path="/crop-care/pest" element={<PestDetector />} />

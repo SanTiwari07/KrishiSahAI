@@ -12,14 +12,20 @@ AUDIO_FOLDER = BASE_DIR / 'uploads' / 'audio'
 os.makedirs(AUDIO_FOLDER, exist_ok=True)
 
 # Try imports
+WHISPER_AVAILABLE = False
+WHISPER_IMPORT_ERROR = None
 try:
-    import whisper
+    # NOTE:
+    # Import can fail with OSError on low-memory/pagefile setups (not only ImportError).
+    import whisper  # noqa: F401
     WHISPER_AVAILABLE = True
-    # Load model lazily to avoid startup delay
-    whisper_model = None
-except ImportError:
+except Exception as e:
     WHISPER_AVAILABLE = False
-    print("Warning: 'openai-whisper' not installed. STT will not work.")
+    WHISPER_IMPORT_ERROR = str(e)
+    print(
+        "Warning: Whisper runtime is unavailable. STT will be disabled. "
+        f"Reason: {e}"
+    )
 
 try:
     from gtts import gTTS
@@ -44,7 +50,9 @@ class VoiceService:
         self._log("Loading model...")
         if not WHISPER_AVAILABLE:
             self._log("Whisper not installed!")
-            raise ImportError("Whisper is not installed")
+            raise ImportError(
+                f"Whisper is unavailable: {WHISPER_IMPORT_ERROR or 'missing dependency'}"
+            )
         
         if self.model is None:
             self._log("Model is None, loading base model...")
