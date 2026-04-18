@@ -22,7 +22,8 @@ import {
     BookOpen,
     Sprout,
     Wheat,
-    Download
+    Download,
+    Satellite
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { api } from '../src/services/api';
@@ -115,10 +116,19 @@ const Chatbot: React.FC = () => {
     const [featureModalOpen, setFeatureModalOpen] = useState(false);
     const [selectedFeature, setSelectedFeature] = useState<{ id: string; name: string; description: string; path?: string } | null>(null);
 
-    const featureButtons = [
-        { id: 'disease-pest', name: t.featureCropCareTitle || 'Crop Care', description: t.featureCropCareSub || 'Detect diseases and pests in your crops using AI.', path: '/crop-care', icon: <Sprout className="w-8 h-8 md:w-10 md:h-10 text-[#1B5E20]" /> },
-        { id: 'plan', name: t.featurePlannerTitle || 'CropCycle', description: t.featurePlannerSub || 'Know the crop lifecycle in simple 4 phases.', path: '/plan', icon: <Map className="w-8 h-8 md:w-10 md:h-10 text-[#1B5E20]" /> },
-        { id: 'waste', name: t.featureWasteTitle || 'Waste to Value', description: t.featureWasteSub || 'Explore profitable ways to reuse, sell, or compost farm waste.', path: '/waste-to-value', icon: <Recycle className="w-8 h-8 md:w-10 md:h-10 text-[#1B5E20]" /> }
+    const digitalFarmTwinFeature = {
+        id: 'digital-farm-twin',
+        name: t.featureDigitalFarmTwinTitle || 'Digital Farm Twin',
+        description: t.featureDigitalFarmTwinSub || 'Satellite vegetation health, field mapping, and AI advisory for your plot.',
+        path: '/satellite' as const,
+        icon: <Satellite className="w-8 h-8 md:w-10 md:h-10 text-[#1B5E20]" />,
+    };
+
+    // Row below Digital Farm Twin: CropCycle (left) → Crop Care (middle) → Waste to Value (right)
+    const secondaryFeatureButtons = [
+        { id: 'plan', name: t.featurePlannerTitle || 'CropCycle', description: t.featurePlannerSub || 'Know the crop lifecycle in simple 4 phases.', path: '/plan', icon: <Map className="w-7 h-7 md:w-9 md:h-9 text-[#1B5E20]" /> },
+        { id: 'disease-pest', name: t.featureCropCareTitle || 'Crop Care', description: t.featureCropCareSub || 'Detect diseases and pests in your crops using AI.', path: '/crop-care', icon: <Sprout className="w-7 h-7 md:w-9 md:h-9 text-[#1B5E20]" /> },
+        { id: 'waste', name: t.featureWasteTitle || 'Waste to Value', description: t.featureWasteSub || 'Explore profitable ways to reuse, sell, or compost farm waste.', path: '/waste-to-value', icon: <Recycle className="w-7 h-7 md:w-9 md:h-9 text-[#1B5E20]" /> },
     ];
 
     const handleFeatureSelect = (feature: any) => {
@@ -712,22 +722,39 @@ const Chatbot: React.FC = () => {
                             <div>
                                 <p className="text-stone-500 text-sm">{t.chatbot?.welcomeSub || "Ask me anything about farming, crops, weather, or government schemes."}</p>
                             </div>
-                            {/* Feature Buttons */}
-                            <div className="grid grid-cols-2 gap-4 w-full max-w-lg mt-4 px-2">
-                                {featureButtons.map((f) => (
-                                    <button
-                                        key={f.id}
-                                        onClick={() => handleFeatureSelect(f)}
-                                        className={`flex flex-col items-center justify-center gap-3 p-6 md:p-8 bg-white border-2 border-[#E0E6E6] hover:border-[#1B5E20] rounded-2xl text-center transition-all shadow-sm hover:shadow-lg active:scale-95 ${
-                                            f.id === 'disease-pest' ? 'col-span-2 min-h-[140px] md:min-h-[160px]' : 'col-span-1 min-h-[120px] md:min-h-[140px]'
-                                        }`}
-                                    >
-                                        <div className="w-12 h-12 md:w-14 md:h-14 bg-[#E8F5E9] rounded-xl flex items-center justify-center">
-                                            {f.icon}
-                                        </div>
-                                        <span className="text-sm md:text-base font-bold text-[#1B5E20]">{f.name}</span>
-                                    </button>
-                                ))}
+                            {/* Digital Farm Twin (hero) + three feature tiles */}
+                            <div className="flex w-full max-w-lg flex-col gap-4 mt-4 px-2">
+                                <button
+                                    type="button"
+                                    onClick={() => navigate(digitalFarmTwinFeature.path)}
+                                    title={digitalFarmTwinFeature.description}
+                                    className="flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-[#E0E6E6] bg-white p-8 text-center shadow-sm transition-all hover:border-[#1B5E20] hover:shadow-lg active:scale-[0.98] md:min-h-[160px] md:p-10"
+                                >
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#E8F5E9] md:h-14 md:w-14">
+                                        {digitalFarmTwinFeature.icon}
+                                    </div>
+                                    <span className="text-base font-bold text-[#1B5E20] md:text-lg">{digitalFarmTwinFeature.name}</span>
+                                    <span className="max-w-md text-xs font-medium leading-snug text-stone-500 md:text-sm">
+                                        {digitalFarmTwinFeature.description}
+                                    </span>
+                                </button>
+
+                                <div className="grid w-full grid-cols-3 gap-2 sm:gap-3">
+                                    {secondaryFeatureButtons.map((f) => (
+                                        <button
+                                            type="button"
+                                            key={f.id}
+                                            title={f.description}
+                                            onClick={() => handleFeatureSelect(f)}
+                                            className="flex min-h-[118px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-[#E0E6E6] bg-white p-3 text-center shadow-sm transition-all hover:border-[#1B5E20] hover:shadow-md active:scale-95 sm:min-h-[132px] sm:p-4 md:min-h-[140px]"
+                                        >
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E8F5E9] sm:h-11 sm:w-11 md:h-12 md:w-12">
+                                                {f.icon}
+                                            </div>
+                                            <span className="text-[11px] font-bold leading-tight text-[#1B5E20] sm:text-xs md:text-sm">{f.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     )}

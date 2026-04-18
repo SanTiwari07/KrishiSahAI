@@ -22,7 +22,7 @@ import { Language, UserProfile, Farm } from './types';
 
 import { auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from './firebase';
 import { onSnapshot, doc, setDoc, getDoc } from 'firebase/firestore';
-import { MapPin, Settings, LogOut, Menu, X, Plus, User, Info, Smartphone, CheckCircle, ArrowRight, ChevronRight, Wind, Droplets, Thermometer, Sun, CloudRain, RefreshCw, Cloud, Newspaper, BookOpen, Sprout, Layout, Briefcase, Recycle, Map, ArrowLeft, MessageSquare } from 'lucide-react';
+import { MapPin, Settings, LogOut, Menu, X, Plus, User, Info, Smartphone, CheckCircle, ArrowRight, ChevronRight, Wind, Droplets, Thermometer, Sun, CloudRain, RefreshCw, Cloud, Newspaper, BookOpen, Layout, Briefcase, ArrowLeft, MessageSquare, Satellite } from 'lucide-react';
 import { api } from './src/services/api';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
@@ -78,37 +78,24 @@ const Header: React.FC<{
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [profileOpen]);
 
-  const navItems = [
+  /** Top bar: exactly three tabs — no horizontal scroll */
+  const primaryNav = [
     { label: t.navHome, path: '/' },
-    { label: t.navNews, path: '/news' },
-    { label: t.navAdvisory, path: '/advisory' },
-    { label: t.navSatellite, path: '/satellite' },
+    { label: (t as any).navPrimaryDigitalTwin || t.navSatellite, path: '/satellite' },
+    { label: t.navPlan, path: '/plan' },
   ];
 
-  const getWeatherDisplay = () => {
-    if (weatherLoading) return "...";
-    if (!weatherData) return "N/A";
-    return `${weatherData.temperature}°C`;
+  const isPrimaryNavActive = (path: string) => {
+    if (path === '/') return location.pathname === '/' || location.pathname === '/chat';
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
-
-  const isFeaturePage =
-    location.pathname !== '/' &&
-    location.pathname !== '/chat' &&
-    location.pathname !== '/news' &&
-    location.pathname !== '/satellite';
-
-  const quickFeatures = [
-    { icon: <Sprout size={22} />, path: '/crop-care', label: t.navCropCare },
-    { icon: <Layout size={22} />, path: '/plan', label: t.navPlan },
-    { icon: <Recycle size={22} />, path: '/waste-to-value', label: t.navWaste },
-  ];
 
   return (
     <header className="fixed top-0 z-[60] w-full bg-[#1B5E20] border-b border-[#2E7D32] shadow-md transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-[64px]">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4">
+        <div className="flex items-center h-[64px] gap-1 sm:gap-2 min-w-0">
           {/* Left: Navigation Icon (Hamburger everywhere) */}
-          <div className="flex items-center gap-1 md:gap-3">
+          <div className="flex flex-shrink-0 items-center gap-1 md:gap-3">
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('toggle-sidebar'))}
               className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
@@ -118,58 +105,46 @@ const Header: React.FC<{
             </button>
           </div>
 
-          {/* Center: Feature Navigation (bigger icons + labels) - Shown on feature pages */}
-          {user && isFeaturePage && (
-            <div className="flex items-center gap-1 md:gap-2 mx-auto">
-              {quickFeatures.map((f) => (
-                <Link
-                  key={f.path}
-                  to={f.path}
-                  title={f.label}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all active:scale-95 ${(f.path === '/' ? location.pathname === '/' : location.pathname.startsWith(f.path))
-                      ? 'bg-white text-[#1B5E20] shadow-lg'
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
-                    }`}
-                >
-                  {f.icon}
-                  <span className="hidden sm:inline">{f.label}</span>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* Desktop Navigation (Main Links) - Hidden on feature pages if many icons, or keep it? The user said "add buttons here only" */}
-          {user && !isFeaturePage && (
-            <nav className="hidden lg:flex items-center gap-1">
-              {navItems.map((item) => (
+          {/* Center: Home | Digital Farm Twin | CropCycle — fixed 3 columns, no scroll */}
+          {user && (
+            <nav
+              className="grid min-w-0 flex-1 grid-cols-3 gap-0.5 px-0.5 sm:gap-1 sm:px-1"
+              aria-label="Primary"
+            >
+              {primaryNav.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-200 border-b-4 whitespace-nowrap rounded-lg ${location.pathname === item.path ? 'text-white border-white bg-white/10' : 'text-white/70 border-transparent hover:text-white hover:bg-white/5'}`}
+                  title={item.label}
+                  className={`flex min-h-[44px] min-w-0 items-center justify-center rounded-lg px-0.5 py-1.5 text-center text-[10px] font-bold uppercase leading-tight tracking-tight transition-all duration-200 sm:px-2 sm:text-xs md:text-sm ${isPrimaryNavActive(item.path)
+                      ? 'bg-white/15 text-white ring-1 ring-white/40'
+                      : 'text-white/75 hover:bg-white/10 hover:text-white'
+                    }`}
                 >
-                  {item.label}
+                  <span className="line-clamp-2 break-words [overflow-wrap:anywhere]">{item.label}</span>
                 </Link>
               ))}
             </nav>
           )}
 
           {/* Right Side */}
-          <div className="flex items-center gap-2 md:gap-4 relative z-50">
-            {user && !isFeaturePage && (
-              <div className="flex items-center gap-3 md:gap-6 mr-2">
+          <div className="flex flex-shrink-0 items-center gap-2 md:gap-4 relative z-50">
+            {user && (
+              <div className="hidden items-center gap-2 sm:flex md:gap-6 mr-1 sm:mr-2">
                 <Link
                   to="/news"
-                  className="relative flex items-center justify-center w-12 h-12 bg-[#FAFAF7] border border-[#E6E6E6] rounded-full hover:bg-[#E8F5E9] transition-all shadow-sm group"
+                  className="relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 bg-[#FAFAF7] border border-[#E6E6E6] rounded-full hover:bg-[#E8F5E9] transition-all shadow-sm group"
                   title={t.navNews || "News"}
                 >
-                  <Newspaper size={22} className="text-[#043744] group-hover:scale-110 transition-transform" />
+                  <Newspaper size={20} className="text-[#043744] group-hover:scale-110 transition-transform" />
                 </Link>
                 <button
+                  type="button"
                   onClick={toggleWeather}
-                  className="relative flex items-center justify-center w-12 h-12 bg-[#FAFAF7] border border-[#E6E6E6] rounded-full hover:bg-[#E8F5E9] transition-all shadow-sm group"
+                  className="relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 bg-[#FAFAF7] border border-[#E6E6E6] rounded-full hover:bg-[#E8F5E9] transition-all shadow-sm group"
                   title={(t as any).navWeather || "Weather"}
                 >
-                  <Cloud size={22} className="text-[#043744] group-hover:scale-110 transition-transform" />
+                  <Cloud size={20} className="text-[#043744] group-hover:scale-110 transition-transform" />
                 </button>
               </div>
             )}
@@ -220,16 +195,15 @@ const Header: React.FC<{
                   <Link to="/advisory" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
                     <Briefcase size={16} /> {t.navAdvisory || "Business Advisory"}
                   </Link>
-                  {isFeaturePage && (
-                    <>
-                      <Link to="/news" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
-                        <Newspaper size={16} /> {t.navNews || "News"}
-                      </Link>
-                      <button onClick={() => { toggleWeather(); setProfileOpen(false); }} className="flex items-center gap-3 w-full px-5 py-4 text-left text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
-                        <Cloud size={16} /> {(t as any).navWeather || "Weather"}
-                      </button>
-                    </>
-                  )}
+                  <Link to="/satellite" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
+                    <Satellite size={16} /> {t.navSatellite || "Digital Farm Twin"}
+                  </Link>
+                  <Link to="/news" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
+                    <Newspaper size={16} /> {t.navNews || "News"}
+                  </Link>
+                  <button type="button" onClick={() => { toggleWeather(); setProfileOpen(false); }} className="flex items-center gap-3 w-full px-5 py-4 text-left text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
+                    <Cloud size={16} /> {(t as any).navWeather || "Weather"}
+                  </button>
                   <Link to="/profile/edit" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
                     <Settings size={16} /> {t.editProfile}
                   </Link>
