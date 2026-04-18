@@ -11,6 +11,7 @@
   "dependencies": {
     "@google/genai": "^1.40.0",
     "firebase": "^12.9.0",
+    "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.563.0",

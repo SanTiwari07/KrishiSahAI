@@ -1,0 +1,1472 @@
+=== PAGE 1 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 1
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+ CROP DISEASE
+ 
+EPIDEMIOLOGICAL RULES
+ Temperature · Humidity · Rainfall · Wind · Season · Management
+ 
+ 60 Crop-Disease Profiles across 13 Crops
+ 
+Purpose: This reference document compiles epidemiological decision rules for 60 crop-disease combinations across 13
+economically important crops. Each profile specifies the critical temperature range, relative humidity threshold,
+rainfall/leaf-wetness requirement, dispersal mechanism, high-risk season, pathogen identity, infection trigger conditions,
+and integrated management options. These rules can be directly embedded into real-time disease-risk advisory systems,
+early-warning dashboards, or AI-based crop protection models.
+Field Definitions
+FIELD
+MEANING
+Temperature
+Air temperature range favouring infection/sporulation (°C)
+Relative Humidity
+% RH threshold at/above which infection probability rises sharply
+Rainfall/Wetness
+Rain amount or leaf-wetness duration that triggers infection cycles
+Wind/Dispersal
+Primary spore/pathogen dispersal mechanism
+High-Risk Season
+Crop growth stage or calendar period of peak risk
+High-Risk Trigger
+Quantitative rule or threshold that defines epidemic onset conditions
+Management
+Key chemical, cultural, and varietal control options
+
+
+=== PAGE 2 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 2
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+BEAN
+■   Angular Leaf Spot
+PATHOGEN
+Phaeoisariopsis griseola (Fungi – Deuteromycetes)
+TEMPERATURE
+16 – 28 °C (opt. 22 °C)
+RELATIVE HUMIDITY
+>85 % RH
+RAINFALL / WETNESS
+Moderate rain; prolonged leaf wetness (>8 h)
+WIND / DISPERSAL
+Wind-driven rain spreads conidia
+HIGH-RISK SEASON
+Warm-wet growing season
+HIGH-RISK TRIGGER
+Risk peaks when night temps stay above 16 °C with morning dew lasting >6 h.
+MANAGEMENT
+Resistant varieties; copper-based fungicides; avoid overhead irrigation; crop rotation ≥2 yrs.
+■   Rust
+PATHOGEN
+Uromyces appendiculatus (Basidiomycete)
+TEMPERATURE
+15 – 25 °C (opt. 20 °C)
+RELATIVE HUMIDITY
+80 – 95 % RH
+RAINFALL / WETNESS
+Light rain / heavy dew; wet periods >6 h
+WIND / DISPERSAL
+Wind disperses urediniospores over long distances
+HIGH-RISK SEASON
+Cool-humid periods
+HIGH-RISK TRIGGER
+Urediniospore germination is optimal at 18–22 °C; spores killed above 32 °C.
+MANAGEMENT
+Mancozeb / triazole fungicides; early sowing to escape peak inoculum; destroy crop residues.
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Regular scouting; prophylactic measures to remain healthy.
+NOTES
+No disease pressure. Maintain balanced nutrition and irrigation for optimal yield.
+COTTON
+
+
+=== PAGE 3 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 3
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Bacterial Blight
+PATHOGEN
+Xanthomonas citri pv. malvacearum (Bacterium)
+TEMPERATURE
+28 – 34 °C (opt. 30 °C)
+RELATIVE HUMIDITY
+>80 % RH
+RAINFALL / WETNESS
+Heavy rain + high humidity; water-soaked soils
+WIND / DISPERSAL
+Wind / rain splash disperses Xanthomonas
+HIGH-RISK SEASON
+Hot-humid monsoon period
+HIGH-RISK TRIGGER
+Storm events causing leaf wounding dramatically raise infection probability.
+MANAGEMENT
+Disease-free certified seed; copper oxychloride sprays; resistant cultivars (immune lines B-2, Stoneville
+213).
+■   Fusarium Wilt
+PATHOGEN
+Fusarium oxysporum f. sp. vasinfectum (Ascomycete)
+TEMPERATURE
+20 – 32 °C (opt. 28 °C)
+RELATIVE HUMIDITY
+Soil moisture: 60–80 % FC
+RAINFALL / WETNESS
+Waterlogging / soil compaction predisposes plants
+WIND / DISPERSAL
+Soil movement; root-to-root contact
+HIGH-RISK SEASON
+Early season planting in warm soils
+HIGH-RISK TRIGGER
+Chlamydospores persist in soil >10 years; sandy soils with low pH (<6) increase severity.
+MANAGEMENT
+Wilt-resistant varieties; soil solarisation; seed treatment with Trichoderma; balanced K nutrition.
+■   Leaf Curl Virus
+PATHOGEN
+Cotton Leaf Curl Virus – CLCuV (Begomovirus, ssDNA)
+TEMPERATURE
+28 – 35 °C
+RELATIVE HUMIDITY
+40 – 70 % RH (dry, warm favours vector)
+RAINFALL / WETNESS
+Low rainfall favours whitefly build-up
+WIND / DISPERSAL
+Whitefly (Bemisia tabaci) is primary vector
+HIGH-RISK SEASON
+Dry, hot conditions
+HIGH-RISK TRIGGER
+Vector population explodes when temp >30 °C and rainfall <25 mm/month.
+MANAGEMENT
+Vector management (imidacloprid seed treatment, neem sprays); resistant hybrids (NHH-44, MRC-7351);
+remove infected plants.
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Regular scouting for early detection; balanced NPK; optimum plant spacing.
+NOTES
+Optimal growth: 25–35 °C, well-drained loam, pH 6–8. No disease pressure.
+
+
+=== PAGE 4 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 4
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+GRAPE
+■   Bacterial Rot (Crown Gall)
+PATHOGEN
+Agrobacterium vitis (Rhizobiaceae)
+TEMPERATURE
+20 – 28 °C
+RELATIVE HUMIDITY
+High soil moisture
+RAINFALL / WETNESS
+Waterlogged soils; freeze-thaw wounding
+WIND / DISPERSAL
+Contaminated pruning tools; soil water
+HIGH-RISK SEASON
+Early spring / after frost injury
+HIGH-RISK TRIGGER
+Risk highest after winter freeze damage that creates wound entry points.
+MANAGEMENT
+Certified pathogen-free planting material; heat therapy of cuttings (50 °C, 30 min); biological control with
+K1026 strain.
+■   Black Rot
+PATHOGEN
+Guignardia bidwellii (Ascomycete)
+TEMPERATURE
+15 – 32 °C (opt. 26 °C)
+RELATIVE HUMIDITY
+>85 % RH
+RAINFALL / WETNESS
+Frequent rain ≥2.5 mm; wet periods >6 h post-budbreak
+WIND / DISPERSAL
+Rain-splash disperses pycnidiospores
+HIGH-RISK SEASON
+Spring–early summer (budbreak to fruit set)
+HIGH-RISK TRIGGER
+Infection risk table (Mills chart): at 26 °C, only 6 h wet period needed; at 15 °C, 24 h needed.
+MANAGEMENT
+Mancozeb or myclobutanil from early shoot growth; canopy management for air circulation; remove
+mummies.
+■   Downy Mildew
+PATHOGEN
+Plasmopara viticola (Oomycete)
+TEMPERATURE
+12 – 25 °C (opt. 20 °C)
+RELATIVE HUMIDITY
+>90 % RH
+RAINFALL / WETNESS
+Rain >10 mm triggers primary infection; overnight wetness
+WIND / DISPERSAL
+Wind disperses sporangia (Plasmopara viticola)
+HIGH-RISK SEASON
+Spring–autumn wet periods
+HIGH-RISK TRIGGER
+Primary (oospore) infection: ≥10 mm rain + soil temp >11 °C + avg temp >10 °C ('10-10-10 rule').
+MANAGEMENT
+Copper-based fungicides; phosphonate sprays; resistant rootstocks/varieties; leaf removal to improve
+airflow.
+
+
+=== PAGE 5 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 5
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Esca / Black Measles
+PATHOGEN
+Phaeomoniella chlamydospora + Phaeoacremonium spp. + Fomitiporia mediterranea (Basidiomycete)
+complex
+TEMPERATURE
+25 – 35 °C (stress aggravates)
+RELATIVE HUMIDITY
+Fluctuating moisture stress
+RAINFALL / WETNESS
+Drought then re-watering triggers apoplexy
+WIND / DISPERSAL
+Pruning wounds are entry points
+HIGH-RISK SEASON
+Mid-summer heat stress
+HIGH-RISK TRIGGER
+Apoplectic (rapid collapse) form triggered by water stress at >35 °C.
+MANAGEMENT
+Protect pruning wounds (Trichoderma paste); delayed pruning; remove and burn symptomatic wood; no
+cure once established.
+■   Leaf Blight (Isariopsis Leaf Spot)
+PATHOGEN
+Pseudocercospora vitis (syn. Isariopsis clavispora) (Fungi)
+TEMPERATURE
+23 – 30 °C
+RELATIVE HUMIDITY
+>80 % RH
+RAINFALL / WETNESS
+Warm-wet conditions post-veraison
+WIND / DISPERSAL
+Rain-splash of conidia
+HIGH-RISK SEASON
+Late season (post-veraison)
+HIGH-RISK TRIGGER
+Disease intensifies when post-harvest canopy remains wet with warm temperatures.
+MANAGEMENT
+Mancozeb or copper sprays; canopy management; vineyard sanitation at leaf fall.
+■   Powdery Mildew
+PATHOGEN
+Erysiphe necator (Uncinula necator) (Ascomycete)
+TEMPERATURE
+20 – 27 °C (opt. 25 °C)
+RELATIVE HUMIDITY
+40 – 70 % RH (does NOT require rain; dry-warm favoured)
+RAINFALL / WETNESS
+Rain-free periods; moderate humidity
+WIND / DISPERSAL
+Wind disperses conidia – key spread mechanism
+HIGH-RISK SEASON
+Warm, dry summers with mild humid nights
+HIGH-RISK TRIGGER
+Unique: rain inhibits spore germination. Critical period: 20–25 °C + 40–70 % RH without rain.
+MANAGEMENT
+Sulfur (120–240 g/hl); DMI / SDHI fungicides; resistant varieties (e.g., Norton, Regent); early season
+applications at budbreak.
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Annual soil tests; proper canopy management; preventative spray calendar.
+NOTES
+No disease pressure. Balanced irrigation and pruning maintain vine health.
+
+
+=== PAGE 6 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 6
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+GROUNDNUT
+■   Alternaria Leaf Spot
+PATHOGEN
+Alternaria alternata / A. tenuissima (Hyphomycete)
+TEMPERATURE
+25 – 35 °C (opt. 30 °C)
+RELATIVE HUMIDITY
+>80 % RH
+RAINFALL / WETNESS
+Frequent light showers; prolonged dew
+WIND / DISPERSAL
+Wind-borne conidia
+HIGH-RISK SEASON
+Late season, warm-wet
+HIGH-RISK TRIGGER
+Risk escalates sharply after physiological leaf senescence when plant immunity declines.
+MANAGEMENT
+Mancozeb 75 WP (2 kg/ha); avoid late-season moisture stress; destroy crop debris.
+■   Early Leaf Spot
+PATHOGEN
+Cercospora arachidicola (Ascomycete)
+TEMPERATURE
+23 – 30 °C (opt. 27 °C)
+RELATIVE HUMIDITY
+>85 % RH
+RAINFALL / WETNESS
+Intermittent rainfall + high humidity
+WIND / DISPERSAL
+Rain-splash and wind
+HIGH-RISK SEASON
+Mid-season (45–60 DAP)
+HIGH-RISK TRIGGER
+Infection requires 3+ consecutive days with >90 % RH at 27 °C.
+MANAGEMENT
+Tebuconazole 25.9 EC; crop rotation with non-hosts; resistant varieties (ICGV 86031).
+■   Rosette
+PATHOGEN
+Groundnut Rosette Virus (GRV) + Groundnut Rosette Assistor Virus (GRAV) complex
+TEMPERATURE
+25 – 35 °C
+RELATIVE HUMIDITY
+Dry conditions favour aphid vector
+RAINFALL / WETNESS
+Low rainfall increases aphid populations
+WIND / DISPERSAL
+Aphis craccivora (aphid) – persistent circulative transmission
+HIGH-RISK SEASON
+Dry, hot growing season
+HIGH-RISK TRIGGER
+Single aphid can transmit virus; early season infection causes >100 % yield loss.
+MANAGEMENT
+Early planting (within 2 weeks of rains); imidacloprid seed treatment; reflective mulch; resistant varieties
+(ICGV-IS 96894).
+
+
+=== PAGE 7 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 7
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Rust
+PATHOGEN
+Puccinia arachidis (Basidiomycete)
+TEMPERATURE
+20 – 28 °C (opt. 25 °C)
+RELATIVE HUMIDITY
+>80 % RH
+RAINFALL / WETNESS
+Moderate rain + high humidity; leaf wetness >6 h
+WIND / DISPERSAL
+Urediniospores wind-dispersed long distances
+HIGH-RISK SEASON
+Cool-humid late season
+HIGH-RISK TRIGGER
+Epidemics develop when 3-day rainfall exceeds 25 mm at temps of 22–27 °C.
+MANAGEMENT
+Mancozeb; Propiconazole; plant date manipulation; resistant cultivars (ICG 4750).
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Balanced gypsum (Ca) application at pegging; 4-yr crop rotation.
+NOTES
+Optimal: 25–30 °C, well-drained sandy loam, pH 6–6.5. Regular scouting required.
+MAIZE
+■   Cercospora Leaf Spot (Gray Leaf Spot)
+PATHOGEN
+Cercospora zeae-maydis / C. zeina (Ascomycete)
+TEMPERATURE
+22 – 30 °C (opt. 25 °C)
+RELATIVE HUMIDITY
+>90 % RH
+RAINFALL / WETNESS
+Extended dew / fog periods; high moisture
+WIND / DISPERSAL
+Wind-dispersed conidia
+HIGH-RISK SEASON
+Warm, humid, cloudy seasons
+HIGH-RISK TRIGGER
+Infection requires ≥11–13 h of continuous leaf wetness at 25 °C.
+MANAGEMENT
+Resistant hybrids; no-till increases risk; strobilurin + triazole fungicides; crop rotation.
+■   Common Rust
+PATHOGEN
+Puccinia sorghi (Basidiomycete)
+TEMPERATURE
+15 – 25 °C (opt. 20 °C)
+RELATIVE HUMIDITY
+>95 % RH
+RAINFALL / WETNESS
+Cool, moist conditions; dew critical
+WIND / DISPERSAL
+Wind-borne urediniospores from southern/tropical regions
+HIGH-RISK SEASON
+Cool-humid periods
+HIGH-RISK TRIGGER
+Epidemic risk highest when dew period >8 h at 15–22 °C during vegetative-to-tassel stage.
+MANAGEMENT
+Resistant hybrids (Rp gene); foliar fungicides (propiconazole) if infection before silking.
+
+
+=== PAGE 8 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 8
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Northern Leaf Blight
+PATHOGEN
+Exserohilum turcicum (Setosphaeria turcica) (Ascomycete)
+TEMPERATURE
+18 – 27 °C (opt. 22 °C)
+RELATIVE HUMIDITY
+>90 % RH
+RAINFALL / WETNESS
+Heavy dew / drizzle; wet, cool evenings
+WIND / DISPERSAL
+Wind-dispersed conidia (primary + secondary cycles)
+HIGH-RISK SEASON
+Cool-wet growing periods
+HIGH-RISK TRIGGER
+Critical window: >12 h wetness at 18–22 °C from tasseling to grain fill.
+MANAGEMENT
+Resistant hybrids (Ht1, Ht2, HtN genes); foliar fungicides; crop rotation; bury residues.
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Balanced NPK; timely sowing; certified disease-free seed.
+NOTES
+Optimal: 21–27 °C, 500–800 mm well-distributed rainfall, pH 6–7.
+MILLET
+■   Blast
+PATHOGEN
+Magnaporthe grisea (syn. Pyricularia grisea) (Ascomycete)
+TEMPERATURE
+20 – 30 °C (opt. 26 °C)
+RELATIVE HUMIDITY
+>90 % RH
+RAINFALL / WETNESS
+Prolonged leaf wetness (>10 h); light intermittent rains
+WIND / DISPERSAL
+Wind-dispersed conidia (night-time peak release)
+HIGH-RISK SEASON
+Humid, warm growing season
+HIGH-RISK TRIGGER
+Nitrogen over-fertilisation dramatically increases blast susceptibility.
+MANAGEMENT
+Resistant varieties; silicon supplementation reduces severity; tricyclazole 75 WP (0.6 kg/ha); balanced
+nitrogen.
+■   Rust
+PATHOGEN
+Puccinia substriata var. indica (Basidiomycete)
+TEMPERATURE
+20 – 28 °C
+RELATIVE HUMIDITY
+>80 % RH
+RAINFALL / WETNESS
+Light rains and dew; wet leaf surface >6 h
+WIND / DISPERSAL
+Wind-borne urediniospores
+HIGH-RISK SEASON
+Warm-humid season
+HIGH-RISK TRIGGER
+Cool nights (18–22 °C) followed by warm days create ideal dew-urediniospore cycle.
+MANAGEMENT
+Mancozeb 75 WP; crop rotation; resistant varieties (SDMV 89004); timely harvest.
+
+
+=== PAGE 9 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 9
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Avoid waterlogging; balanced P-K fertilization; early sowing.
+NOTES
+Optimal: 25–30 °C, 200–600 mm rain, tolerates drought. Coarse sandy soils.
+POTATO
+■   Early Blight
+PATHOGEN
+Alternaria solani (Ascomycete)
+TEMPERATURE
+24 – 30 °C (opt. 27 °C)
+RELATIVE HUMIDITY
+80 – 90 % RH
+RAINFALL / WETNESS
+Light intermittent rain; dew >8 h
+WIND / DISPERSAL
+Wind and rain-splash disperse conidia
+HIGH-RISK SEASON
+Warm-humid mid-season
+HIGH-RISK TRIGGER
+Older, senescent leaves are primary entry points; stress (drought, nutrient deficiency) greatly increases
+severity.
+MANAGEMENT
+Chlorothalonil; mancozeb; azoxystrobin; adequate K and N nutrition; avoid overhead irrigation.
+■   Late Blight
+PATHOGEN
+Phytophthora infestans (Oomycete)
+TEMPERATURE
+10 – 25 °C (opt. 18 °C)
+RELATIVE HUMIDITY
+>90 % RH
+RAINFALL / WETNESS
+Prolonged rain / cool wet weather; leaf wetness >10 h
+WIND / DISPERSAL
+Wind disperses sporangia up to 50 km
+HIGH-RISK SEASON
+Cool-wet seasons (monsoon highlands)
+HIGH-RISK TRIGGER
+Blitecast / Smith Period: 2 consecutive days with temp 7.2–26.7 °C AND RH >90 % for ≥4 h each day.
+MANAGEMENT
+Metalaxyl + mancozeb; Ridomil Gold; resistant varieties (Sarpo Mira, Cara); haulm destruction; certified
+seed.
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Certified seed; 3-yr rotation; balanced NPK; hilling to protect tubers.
+NOTES
+Optimal: 15–20 °C, 500–700 mm, well-drained soil pH 5.5–6.5.
+SORGHUM
+
+
+=== PAGE 10 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 10
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Anthracnose
+PATHOGEN
+Colletotrichum sublineolum (Ascomycete)
+TEMPERATURE
+25 – 35 °C (opt. 30 °C)
+RELATIVE HUMIDITY
+>80 % RH
+RAINFALL / WETNESS
+Frequent rains during grain fill; high humidity
+WIND / DISPERSAL
+Rain-splash disperses conidia
+HIGH-RISK SEASON
+Warm-wet grain-fill period
+HIGH-RISK TRIGGER
+Susceptibility peaks at flowering-to-grain-fill when plant immunity naturally declines.
+MANAGEMENT
+Resistant varieties (RTx2536, BTx623); propiconazole; avoid late planting into wet season.
+■   Head Smut
+PATHOGEN
+Sporisorium reilianum (Basidiomycete)
+TEMPERATURE
+19 – 28 °C (opt. 23 °C)
+RELATIVE HUMIDITY
+Moderate moisture at germination
+RAINFALL / WETNESS
+Cool-moist soils at planting
+WIND / DISPERSAL
+Teliospores soil- and seed-borne; no aerial spread
+HIGH-RISK SEASON
+Cool, moist planting conditions
+HIGH-RISK TRIGGER
+Systemic infection occurs only at germination; plants infected before 3-leaf stage show symptoms.
+MANAGEMENT
+Thiram / carboxin seed treatment; resistant varieties (DeKalb 28-E); clean seed source.
+■   Kernel Smut
+PATHOGEN
+Sporisorium sorghi (Basidiomycete)
+TEMPERATURE
+20 – 30 °C
+RELATIVE HUMIDITY
+High humidity at flowering
+RAINFALL / WETNESS
+Rainfall at anthesis increases infection
+WIND / DISPERSAL
+Wind-dispersed teliospores at anthesis
+HIGH-RISK SEASON
+Humid, warm flowering period
+HIGH-RISK TRIGGER
+Infection window is restricted to 2–5 days of flowering; humidity during that window is critical.
+MANAGEMENT
+Carboxin + thiram seed treatment; resistant varieties; field sanitation.
+
+
+=== PAGE 11 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 11
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Loose Smut
+PATHOGEN
+Sporisorium cruentum (Basidiomycete)
+TEMPERATURE
+22 – 30 °C (opt. 26 °C)
+RELATIVE HUMIDITY
+Moderate-high humidity at heading
+RAINFALL / WETNESS
+Rainfall during heading
+WIND / DISPERSAL
+Airborne teliospores at anthesis
+HIGH-RISK SEASON
+Warm, humid heading period
+HIGH-RISK TRIGGER
+Like kernel smut, infection window is narrow (anthesis); single wet day at flowering can start epidemic.
+MANAGEMENT
+Carboxin 37.5 % + thiram 37.5 % seed treatment; rogue infected heads before spore release.
+■   Rust
+PATHOGEN
+Puccinia purpurea (Basidiomycete)
+TEMPERATURE
+18 – 30 °C (opt. 25 °C)
+RELATIVE HUMIDITY
+>80 % RH
+RAINFALL / WETNESS
+Moderate rain + dew; leaf wetness >6 h
+WIND / DISPERSAL
+Wind-borne urediniospores
+HIGH-RISK SEASON
+Warm-humid growing season
+HIGH-RISK TRIGGER
+Secondary cycles can cause explosive epidemics within 10–14 days under optimal conditions.
+MANAGEMENT
+Mancozeb; propiconazole; resistant varieties (IS 2205); early planting.
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Balanced fertilization; ensure adequate boron for smut resistance.
+NOTES
+Optimal: 25–32 °C, 400–700 mm, tolerates drought. Deep loam soils.
+SOYBEAN
+■   Powdery Mildew
+PATHOGEN
+Erysiphe diffusa / Microsphaera diffusa (Ascomycete)
+TEMPERATURE
+17 – 28 °C (opt. 23 °C)
+RELATIVE HUMIDITY
+50 – 80 % RH (moderate; rain not required)
+RAINFALL / WETNESS
+Dry periods; no rain needed
+WIND / DISPERSAL
+Wind-dispersed conidia
+HIGH-RISK SEASON
+Warm-dry spells
+HIGH-RISK TRIGGER
+High N levels in leaf tissue increase susceptibility; epidemic accelerates at canopy closure.
+MANAGEMENT
+Tebuconazole; sulfur dust; resistant varieties (Hartwig); balanced N fertilization.
+
+
+=== PAGE 12 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 12
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Sudden Death Syndrome (SDS)
+PATHOGEN
+Fusarium virguliforme (Ascomycete)
+TEMPERATURE
+10 – 25 °C (infection at germination: opt. 16 °C)
+RELATIVE HUMIDITY
+High soil moisture at planting
+RAINFALL / WETNESS
+High rainfall early season + waterlogging
+WIND / DISPERSAL
+Soil-borne; no aerial spread
+HIGH-RISK SEASON
+Cool-wet planting conditions
+HIGH-RISK TRIGGER
+Root infection at germination in cold (<15 °C) wet soils; foliar symptoms appear later during pod fill.
+MANAGEMENT
+Seed treatment (fluopyram); IleVO; resistant varieties; improved drainage; delayed planting until soils
+warm.
+■   Yellow Mosaic
+PATHOGEN
+Mungbean Yellow Mosaic India Virus (MYMIV) / Bean Yellow Mosaic Virus (BYMV) – Begomovirus
+TEMPERATURE
+25 – 35 °C
+RELATIVE HUMIDITY
+Dry-warm conditions favour whitefly vector
+RAINFALL / WETNESS
+Low rainfall increases whitefly populations
+WIND / DISPERSAL
+Bemisia tabaci (whitefly) – persistent transmission
+HIGH-RISK SEASON
+Hot, dry conditions with whitefly pressure
+HIGH-RISK TRIGGER
+Single viruliferous whitefly can infect multiple plants; early season infection (before V3) = >80 % yield loss.
+MANAGEMENT
+Imidacloprid seed treatment; neem oil sprays; yellow sticky traps; resistant varieties (MACS 450, JS
+20-29); roguing.
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Bradyrhizobium inoculation; balanced P; 2-yr rotation with non-legume.
+NOTES
+Optimal: 20–30 °C, 600–700 mm, well-drained loam pH 6–7.
+SUGARCANE
+
+
+=== PAGE 13 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 13
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Bacterial Blight
+PATHOGEN
+Xanthomonas albilineans (Bacterium)
+TEMPERATURE
+25 – 35 °C (opt. 30 °C)
+RELATIVE HUMIDITY
+>80 % RH
+RAINFALL / WETNESS
+Heavy rain + waterlogging
+WIND / DISPERSAL
+Rain-splash; contaminated machinery; leaf contact
+HIGH-RISK SEASON
+Hot-humid monsoon
+HIGH-RISK TRIGGER
+Latent infection (systemic) makes disease control difficult; often detected only at harvest.
+MANAGEMENT
+Certified disease-free setts; hot water treatment (50 °C, 2 h); resistant varieties (Co 86032); copper
+sprays.
+■   Mosaic
+PATHOGEN
+Sugarcane Mosaic Virus (SCMV) – Potyvirus
+TEMPERATURE
+20 – 32 °C
+RELATIVE HUMIDITY
+Moderate; vector favoured in dry conditions
+RAINFALL / WETNESS
+Low rainfall favours aphid vector activity
+WIND / DISPERSAL
+Rhopalosiphum maidis + Melanaphis sacchari (aphids)
+HIGH-RISK SEASON
+Dry-warm conditions with aphid pressure
+HIGH-RISK TRIGGER
+Rapid spread in ratoon crops; aphid colonies peak at 25–30 °C.
+MANAGEMENT
+Certified mosaic-free seed setts; aphid management; resistant varieties (CoC 671, Co 8208); remove
+infected clumps.
+■   Red Rot
+PATHOGEN
+Colletotrichum falcatum (Glomerella tucumanensis) (Ascomycete)
+TEMPERATURE
+25 – 33 °C (opt. 28 °C)
+RELATIVE HUMIDITY
+>85 % RH
+RAINFALL / WETNESS
+Waterlogging; flooding promotes infection
+WIND / DISPERSAL
+Soil-borne; infected setts; contaminated tools
+HIGH-RISK SEASON
+Post-monsoon waterlogged soils
+HIGH-RISK TRIGGER
+Flooding for >24 h at 28–33 °C creates near-100 % infection probability in susceptible varieties.
+MANAGEMENT
+Resistant varieties (Co 0238, CoS 8436); hot water treatment of setts; improve field drainage;
+Trichoderma soil application.
+
+
+=== PAGE 14 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 14
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Rust (Orange Rust)
+PATHOGEN
+Puccinia melanocephala (Brown Rust) / P. kuehnii (Orange Rust) (Basidiomycete)
+TEMPERATURE
+18 – 28 °C (opt. 23 °C)
+RELATIVE HUMIDITY
+>80 % RH
+RAINFALL / WETNESS
+Dew / light rains; leaf wetness >8 h
+WIND / DISPERSAL
+Wind-borne urediniospores
+HIGH-RISK SEASON
+Cool-humid periods during grand growth phase
+HIGH-RISK TRIGGER
+Orange rust (P. kuehnii) is more aggressive; spreads at 18–26 °C; warm tropical regions favour brown
+rust.
+MANAGEMENT
+Resistant varieties (Q208 for orange rust); triadimefon sprays; early detection critical.
+■   Yellow (Yellow Leaf Disease)
+PATHOGEN
+Sugarcane Yellow Leaf Virus (ScYLV) – Polerovirus
+TEMPERATURE
+25 – 32 °C
+RELATIVE HUMIDITY
+Warm-moderate humidity; aphid-vector conditions
+RAINFALL / WETNESS
+Moderate rainfall; drought stress exacerbates symptoms
+WIND / DISPERSAL
+Melanaphis sacchari (aphid) – primary vector
+HIGH-RISK SEASON
+Warm seasons with high aphid pressure
+HIGH-RISK TRIGGER
+Phloem-restricted; mid-rib yellowing is diagnostic; yield loss 10–40 %.
+MANAGEMENT
+Certified virus-free planting material; aphid management; resistant/tolerant varieties; roguing symptomatic
+clumps.
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Use certified seed setts; avoid ratoon beyond 3rd year; balanced nutrition (N-P-K-S).
+NOTES
+Optimal: 27–38 °C, 1500–2500 mm, well-drained deep loam pH 6–7.5.
+TOMATO
+
+
+=== PAGE 15 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 15
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Bacterial Spot
+PATHOGEN
+Xanthomonas vesicatoria / X. euvesicatoria / X. perforans / X. gardneri (Bacterium complex)
+TEMPERATURE
+24 – 30 °C (opt. 28 °C)
+RELATIVE HUMIDITY
+>85 % RH
+RAINFALL / WETNESS
+Frequent rain; wind-driven rain splashes bacteria
+WIND / DISPERSAL
+Rain-splash primary dispersal of Xanthomonas
+HIGH-RISK SEASON
+Warm-wet growing season
+HIGH-RISK TRIGGER
+Overhead irrigation at 28 °C + high humidity creates near-ideal infection conditions within 4 h.
+MANAGEMENT
+Copper bactericides + mancozeb; drip irrigation; resistant varieties (FL 7060, Sunpride); crop rotation.
+■   Early Blight
+PATHOGEN
+Alternaria solani (Ascomycete)
+TEMPERATURE
+24 – 30 °C (opt. 27 °C)
+RELATIVE HUMIDITY
+80 – 90 % RH
+RAINFALL / WETNESS
+Intermittent rain + dew; leaf wetness >8 h
+WIND / DISPERSAL
+Wind and rain-splash
+HIGH-RISK SEASON
+Warm-humid mid-season on stressed plants
+HIGH-RISK TRIGGER
+Plants stressed by drought, poor nutrition, or nematodes develop blight 10–14 days earlier than healthy
+plants.
+MANAGEMENT
+Chlorothalonil; mancozeb; azoxystrobin; adequate K nutrition; remove lower infected leaves; drip
+irrigation.
+■   Late Blight
+PATHOGEN
+Phytophthora infestans (Oomycete)
+TEMPERATURE
+10 – 25 °C (opt. 18 °C)
+RELATIVE HUMIDITY
+>90 % RH
+RAINFALL / WETNESS
+Cool, wet weather; fog; rain >25 mm/week
+WIND / DISPERSAL
+Wind disperses sporangia; rapidly spreads in cool-moist air
+HIGH-RISK SEASON
+Cool-wet highland conditions
+HIGH-RISK TRIGGER
+10-25-10 Rule: temp 10–25 °C + RH >90 % for 10+ hours. Can destroy a field in 7–10 days.
+MANAGEMENT
+Metalaxyl + mancozeb; cymoxanil; resistant varieties (Mountain Magic, Defiant); remove infected material
+immediately.
+
+
+=== PAGE 16 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 16
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Leaf Curl Virus (ToLCV)
+PATHOGEN
+Tomato Leaf Curl New Delhi Virus (ToLCNDV) + allies – Begomovirus
+TEMPERATURE
+30 – 40 °C
+RELATIVE HUMIDITY
+30 – 60 % RH (dry-hot favours whitefly)
+RAINFALL / WETNESS
+Low rainfall = higher whitefly population
+WIND / DISPERSAL
+Bemisia tabaci biotype B/Q – persistent circulative
+HIGH-RISK SEASON
+Hot, dry conditions with whitefly pressure
+HIGH-RISK TRIGGER
+Single viruliferous whitefly acquisition: 15–30 min; transmission: 15 min. Inoculum builds in kharif season.
+MANAGEMENT
+Imidacloprid/acetamiprid seed treatment; silver mulch; yellow sticky traps; resistant hybrids (H-86, Pusa
+Hybrid 4); border crops.
+■   Leaf Mold
+PATHOGEN
+Passalora fulva (syn. Cladosporium fulvum / Fulvia fulva) (Ascomycete)
+TEMPERATURE
+22 – 25 °C (opt. 24 °C)
+RELATIVE HUMIDITY
+>85 % RH (night humidity critical)
+RAINFALL / WETNESS
+Free water not needed; high RH sufficient
+WIND / DISPERSAL
+Wind-borne conidia in protected/greenhouse crops
+HIGH-RISK SEASON
+Humid greenhouse / protected cultivation
+HIGH-RISK TRIGGER
+Restricted to protected cultivation; night humidity >85 % with poor ventilation = explosive spread.
+MANAGEMENT
+Ventilation management; chlorothalonil; resistant varieties (Cf gene carrying hybrids); avoid overhead
+wetting.
+■   Mosaic Virus (ToMV/TMV)
+PATHOGEN
+Tomato Mosaic Virus (ToMV) / Tobacco Mosaic Virus (TMV) – Tobamovirus
+TEMPERATURE
+20 – 30 °C
+RELATIVE HUMIDITY
+Not humidity-dependent (mechanical transmission)
+RAINFALL / WETNESS
+Irrigation water can spread virus on hands/tools
+WIND / DISPERSAL
+Mechanical – pruning, handling, contaminated tools
+HIGH-RISK SEASON
+Throughout season where handling is frequent
+HIGH-RISK TRIGGER
+Extremely stable virus; survives in dried plant material >50 years; resistant to disinfectants.
+MANAGEMENT
+Resistant varieties (Tm-2a gene); worker hygiene (soap wash, gloves); milk solution as disinfectant; no
+tobacco use near crop.
+
+
+=== PAGE 17 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 17
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Septoria Leaf Spot
+PATHOGEN
+Septoria lycopersici (Ascomycete)
+TEMPERATURE
+20 – 25 °C (opt. 22 °C)
+RELATIVE HUMIDITY
+>85 % RH
+RAINFALL / WETNESS
+Prolonged wet weather; rain >10 mm; leaf wetness >6 h
+WIND / DISPERSAL
+Rain-splash disperses pycnidiospores (short range)
+HIGH-RISK SEASON
+Warm-wet mid-to-late season
+HIGH-RISK TRIGGER
+Spreads from lowest leaves upward; defoliation reduces photosynthesis and exposes fruit to sunscald.
+MANAGEMENT
+Chlorothalonil; copper fungicides; remove infected lower leaves; avoid overhead irrigation; mulching.
+■   Spider Mites (Two-Spotted)
+PATHOGEN
+Tetranychus urticae (Acari: Tetranychidae) – arachnid pest
+TEMPERATURE
+26 – 35 °C (opt. 30 °C)
+RELATIVE HUMIDITY
+<50 % RH (dry-hot favours mites)
+RAINFALL / WETNESS
+Low rainfall; dry, dusty conditions
+WIND / DISPERSAL
+Wind dispersal on silk threads; movement on workers
+HIGH-RISK SEASON
+Hot, dry summer conditions
+HIGH-RISK TRIGGER
+Population doubles every 5 days at 30 °C + low humidity; 1 female = 1 million descendants in 30 days.
+MANAGEMENT
+Abamectin; spiromesifen; predatory mites (Phytoseiulus persimilis); overhead irrigation to raise humidity.
+■   Target Spot
+PATHOGEN
+Corynespora cassiicola (Ascomycete)
+TEMPERATURE
+24 – 30 °C (opt. 27 °C)
+RELATIVE HUMIDITY
+>80 % RH
+RAINFALL / WETNESS
+Warm-wet conditions; long dew periods
+WIND / DISPERSAL
+Wind and rain-splash
+HIGH-RISK SEASON
+Warm-wet season (similar to early blight)
+HIGH-RISK TRIGGER
+Lesions with concentric rings (target pattern) are diagnostic; often confused with early blight.
+MANAGEMENT
+Azoxystrobin; fluxapyroxad; canopy management; crop rotation; resistant varieties under development.
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Balanced NPK; drip irrigation; staking; regular scouting every 3–5 days.
+NOTES
+Optimal: 20–27 °C, 600–1200 mm, well-drained loam pH 6–7.
+WHEAT
+
+
+=== PAGE 18 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 18
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+■   Crown and Root Rot
+PATHOGEN
+Fusarium culmorum / F. graminearum / Bipolaris sorokiniana complex
+TEMPERATURE
+15 – 25 °C (opt. 20 °C)
+RELATIVE HUMIDITY
+Moderate-high soil moisture
+RAINFALL / WETNESS
+Waterlogged or excessively wet soils at sowing/tillering
+WIND / DISPERSAL
+Soil-borne; no aerial spread
+HIGH-RISK SEASON
+Cool-wet post-sowing period
+HIGH-RISK TRIGGER
+Stress from waterlogging, compaction, or aluminium toxicity dramatically amplifies crown rot severity.
+MANAGEMENT
+Seed treatment (tebuconazole / trifloxystrobin); balanced nutrition (avoid N excess); improve drainage;
+resistant varieties.
+■   Leaf Rust (Brown Rust)
+PATHOGEN
+Puccinia triticina (Basidiomycete)
+TEMPERATURE
+15 – 22 °C (opt. 18 °C)
+RELATIVE HUMIDITY
+>95 % RH
+RAINFALL / WETNESS
+Dew / light rain; leaf wetness ≥3–4 h (shorter than stem rust)
+WIND / DISPERSAL
+Wind-borne urediniospores (long distance >1000 km)
+HIGH-RISK SEASON
+Warm-mild humid periods
+HIGH-RISK TRIGGER
+Urediniospores germinate after just 3 h leaf wetness at 15–20 °C; 7–10 day latent period under optimal
+conditions.
+MANAGEMENT
+Propiconazole; tebuconazole; resistant varieties (Lr gene: Lr34 durable); fungicide at flag-leaf stage.
+■   Loose Smut
+PATHOGEN
+Ustilago tritici (Basidiomycete)
+TEMPERATURE
+16 – 22 °C (opt. 20 °C)
+RELATIVE HUMIDITY
+Moderate humidity at anthesis (flower infection)
+RAINFALL / WETNESS
+Rain at anthesis allows teliospore dispersal and stigma colonization
+WIND / DISPERSAL
+Airborne teliospores at anthesis
+HIGH-RISK SEASON
+Cool, mild-humid anthesis period
+HIGH-RISK TRIGGER
+Infection window = anthesis only (2–7 days); infected spikelet = systemic embryo infection = diseased
+next generation.
+MANAGEMENT
+Carboxin (Vitavax) or tebuconazole seed treatment; hot water treatment (52 °C, 10 min pre-soaking at 32
+°C, 4 h); certified seed.
+✔   Healthy
+PATHOGEN / AGENT
+N/A – No pathogen
+OPTIMAL CONDITIONS
+See notes
+MANAGEMENT
+Balanced NPK+S; certified seed; 3-yr rotation; optimal sowing date.
+NOTES
+Optimal: 15–20 °C (vegetative), 12–18 °C (grain fill), 450–650 mm, loam pH 6–7.
+
+
+=== PAGE 19 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 19
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+Quick-Reference Risk Conditions Summary
+Crop / Disease
+Temp (°C)
+RH (%)
+Rainfall/Wetness
+Pathogen
+Type
+Bean – Angular Leaf Spot
+16 – 28 °C
+>85 % RH
+Moderate rain; prolonged leaf
+wetness (>8 h)
+Fungus
+Bean – Rust
+15 – 25 °C
+80 – 95 %
+RH
+Light rain / heavy dew; wet periods
+>6 h
+Basidiomycet
+e
+Cotton – Bacterial Blight
+28 – 34 °C
+>80 % RH
+Heavy rain + high humidity;
+water-soaked soils
+Bacterium
+Cotton – Fusarium Wilt
+20 – 32 °C
+Soil
+moisture:
+60–80 % FC
+Waterlogging / soil compaction
+predisposes plants
+Ascomycete
+Cotton – Leaf Curl Virus
+28 – 35 °C
+40 – 70 %
+RH
+Low rainfall favours whitefly
+build-up
+Virus
+Grape – Bacterial Rot (Crown Gall)
+20 – 28 °C
+High soil
+moisture
+Waterlogged soils; freeze-thaw
+wounding
+Fungus
+Grape – Black Rot
+15 – 32 °C
+>85 % RH
+Frequent rain ≥2.5 mm; wet
+periods >6 h post-budbreak
+Ascomycete
+Grape – Downy Mildew
+12 – 25 °C
+>90 % RH
+Rain >10 mm triggers primary
+infection; overnight wetne…
+Oomycete
+Grape – Esca / Black Measles
+25 – 35 °C
+Fluctuating
+moisture
+stress
+Drought then re-watering triggers
+apoplexy
+Basidiomycet
+e
+Grape – Leaf Blight (Isariopsis Leaf
+Spot)
+23 – 30 °C
+>80 % RH
+Warm-wet conditions
+post-veraison
+Fungus
+Grape – Powdery Mildew
+20 – 27 °C
+40 – 70 %
+RH
+Rain-free periods; moderate
+humidity
+Ascomycete
+Groundnut – Alternaria Leaf Spot
+25 – 35 °C
+>80 % RH
+Frequent light showers; prolonged
+dew
+Fungus
+Groundnut – Early Leaf Spot
+23 – 30 °C
+>85 % RH
+Intermittent rainfall + high humidity
+Ascomycete
+Groundnut – Rosette
+25 – 35 °C
+Dry
+conditions
+favour aphid
+vector
+Low rainfall increases aphid
+populations
+Virus
+Groundnut – Rust
+20 – 28 °C
+>80 % RH
+Moderate rain + high humidity; leaf
+wetness >6 h
+Basidiomycet
+e
+Maize – Cercospora Leaf Spot (Gray
+Leaf Spot)
+22 – 30 °C
+>90 % RH
+Extended dew / fog periods; high
+moisture
+Ascomycete
+Maize – Common Rust
+15 – 25 °C
+>95 % RH
+Cool, moist conditions; dew critical
+Basidiomycet
+e
+Maize – Northern Leaf Blight
+18 – 27 °C
+>90 % RH
+Heavy dew / drizzle; wet, cool
+evenings
+Ascomycete
+Millet – Blast
+20 – 30 °C
+>90 % RH
+Prolonged leaf wetness (>10 h);
+light intermittent rain…
+Ascomycete
+Millet – Rust
+20 – 28 °C
+>80 % RH
+Light rains and dew; wet leaf
+surface >6 h
+Basidiomycet
+e
+Potato – Early Blight
+24 – 30 °C
+80 – 90 %
+RH
+Light intermittent rain; dew >8 h
+Ascomycete
+Potato – Late Blight
+10 – 25 °C
+>90 % RH
+Prolonged rain / cool wet weather;
+leaf wetness >10 h
+Oomycete
+
+
+=== PAGE 20 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 20
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+Crop / Disease
+Temp (°C)
+RH (%)
+Rainfall/Wetness
+Pathogen
+Type
+Sorghum – Anthracnose
+25 – 35 °C
+>80 % RH
+Frequent rains during grain fill;
+high humidity
+Ascomycete
+Sorghum – Head Smut
+19 – 28 °C
+Moderate
+moisture at
+germination
+Cool-moist soils at planting
+Basidiomycet
+e
+Sorghum – Kernel Smut
+20 – 30 °C
+High
+humidity at
+flowering
+Rainfall at anthesis increases
+infection
+Basidiomycet
+e
+Sorghum – Loose Smut
+22 – 30 °C
+Moderate-hig
+h humidity at
+heading
+Rainfall during heading
+Basidiomycet
+e
+Sorghum – Rust
+18 – 30 °C
+>80 % RH
+Moderate rain + dew; leaf wetness
+>6 h
+Basidiomycet
+e
+Soybean – Powdery Mildew
+17 – 28 °C
+50 – 80 %
+RH
+Dry periods; no rain needed
+Ascomycete
+Soybean – Sudden Death Syndrome
+(SDS)
+10 – 25 °C
+High soil
+moisture at
+planting
+High rainfall early season +
+waterlogging
+Ascomycete
+Soybean – Yellow Mosaic
+25 – 35 °C
+Dry-warm
+conditions
+favour
+whitefly
+vector
+Low rainfall increases whitefly
+populations
+Virus
+Sugarcane – Bacterial Blight
+25 – 35 °C
+>80 % RH
+Heavy rain + waterlogging
+Bacterium
+Sugarcane – Mosaic
+20 – 32 °C
+Moderate;
+vector
+favoured in
+dry
+conditions
+Low rainfall favours aphid vector
+activity
+Virus
+Sugarcane – Red Rot
+25 – 33 °C
+>85 % RH
+Waterlogging; flooding promotes
+infection
+Ascomycete
+Sugarcane – Rust (Orange Rust)
+18 – 28 °C
+>80 % RH
+Dew / light rains; leaf wetness >8
+h
+Basidiomycet
+e
+Sugarcane – Yellow (Yellow Leaf
+Disease)
+25 – 32 °C
+Warm-moder
+ate humidity;
+aphid-vector
+conditions
+Moderate rainfall; drought stress
+exacerbates symptoms
+Virus
+Tomato – Bacterial Spot
+24 – 30 °C
+>85 % RH
+Frequent rain; wind-driven rain
+splashes bacteria
+Bacterium
+Tomato – Early Blight
+24 – 30 °C
+80 – 90 %
+RH
+Intermittent rain + dew; leaf
+wetness >8 h
+Ascomycete
+Tomato – Late Blight
+10 – 25 °C
+>90 % RH
+Cool, wet weather; fog; rain >25
+mm/week
+Oomycete
+Tomato – Leaf Curl Virus (ToLCV)
+30 – 40 °C
+30 – 60 %
+RH
+Low rainfall = higher whitefly
+population
+Virus
+Tomato – Leaf Mold
+22 – 25 °C
+>85 % RH
+Free water not needed; high RH
+sufficient
+Ascomycete
+Tomato – Mosaic Virus (ToMV/TMV)
+20 – 30 °C
+Not humidity-
+dependent
+Irrigation water can spread virus
+on hands/tools
+Virus
+
+
+=== PAGE 21 ===
+AgriPath Analytics  |  Crop Disease Epidemiological Reference
+Page 21
+CROP DISEASE EPIDEMIOLOGICAL RULES
+Temperature · Humidity · Rainfall · Management
+Crop / Disease
+Temp (°C)
+RH (%)
+Rainfall/Wetness
+Pathogen
+Type
+Tomato – Septoria Leaf Spot
+20 – 25 °C
+>85 % RH
+Prolonged wet weather; rain >10
+mm; leaf wetness >6 h
+Ascomycete
+Tomato – Spider Mites (Two-Spotted)
+26 – 35 °C
+<50 % RH
+Low rainfall; dry, dusty conditions
+Mite (Pest)
+Tomato – Target Spot
+24 – 30 °C
+>80 % RH
+Warm-wet conditions; long dew
+periods
+Ascomycete
+Wheat – Crown and Root Rot
+15 – 25 °C
+Moderate-hig
+h soil
+moisture
+Waterlogged or excessively wet
+soils at sowing/tillerin…
+Fungus
+Wheat – Leaf Rust (Brown Rust)
+15 – 22 °C
+>95 % RH
+Dew / light rain; leaf wetness ≥3–4
+h (shorter than ste…
+Basidiomycet
+e
+Wheat – Loose Smut
+16 – 22 °C
+Moderate
+humidity at
+anthesis
+Rain at anthesis allows teliospore
+dispersal and stigma…
+Basidiomycet
+e
+
+

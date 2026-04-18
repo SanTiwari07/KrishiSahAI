@@ -818,6 +818,17 @@ weather_service = WeatherService()
 news_service = NewsService()
 agri_agent = AgriAgent()
 
+# --- Pest & Disease Forecaster Setup ---
+forecaster = None
+try:
+    from services.PestDiseaseForecaster.forecaster_service import PestDiseaseForecaster
+    print("Initializing Pest & Disease Forecaster...")
+    forecaster = PestDiseaseForecaster()
+    print("Pest & Disease Forecaster initialized successfully")
+except Exception as e:
+    print(f"Warning: Pest & Disease Forecaster failed to initialize: {e}")
+    traceback.print_exc()
+
 @app.route('/api/news/general', methods=['GET', 'OPTIONS'])
 def get_general_news():
     """
@@ -1100,6 +1111,155 @@ def get_current_weather():
         return jsonify({'error': str(e)}), 500
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Pest & Disease Forecasting Routes
+# ──────────────────────────────────────────────────────────────────────────────
+
+_forecast_cache = {}
+_forecast_cache_date = None
+
+@app.route('/api/forecast/predict', methods=['POST', 'OPTIONS'])
+@require_auth
+def forecast_predict():
+    """Main forecasting endpoint — returns multi-day risk predictions."""
+    if not forecaster:
+        return jsonify({'success': False, 'error': 'Forecasting service not available'}), 503
+    try:
+        data = request.get_json()
+        crop_name = data.get('crop', '')
+        location = data.get('location', 'Pune')
+        soil_type = data.get('soil_type', 'Unknown')
+        sowing_date = data.get('sowing_date')  # YYYY-MM-DD or None
+        language = data.get('language', 'en')
+
+        if not crop_name:
+            return jsonify({'success': False, 'error': 'Crop name is required'}), 400
+
+        global _forecast_cache, _forecast_cache_date
+        current_date = datetime.now().date()
+        if current_date != _forecast_cache_date:
+            _forecast_cache.clear()
+            _forecast_cache_date = current_date
+
+        cache_key = f"{crop_name}_{location}_{soil_type}_{sowing_date}_{language}"
+        if cache_key in _forecast_cache:
+            print(f"[FORECAST] Returning cached prediction for {cache_key}")
+            return jsonify({'success': True, 'forecast': _forecast_cache[cache_key]})
+
+        # Fetch extended weather forecast
+        weather_forecast = asyncio.run(
+            weather_service.get_forecast_for_prediction(location, days=3)
+        )
+
+        if isinstance(weather_forecast, dict) and 'error' in weather_forecast:
+            return jsonify({'success': False, 'error': f"Weather data unavailable: {weather_forecast['error']}"}), 502
+
+        # Run prediction
+        result = forecaster.predict_risk(
+            crop_name=crop_name,
+            location=location,
+            soil_type=soil_type,
+            sowing_date=sowing_date,
+            weather_forecast=weather_forecast,
+            language=language,
+        )
+
+        _forecast_cache[cache_key] = result
+
+        return jsonify({'success': True, 'forecast': result})
+    except Exception as e:
+        print(f"[FORECAST] Prediction error: {e}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/forecast/pest-calendar', methods=['GET', 'OPTIONS'])
+@require_auth
+def forecast_pest_calendar():
+    """Get pest calendar entries for a crop and optional month."""
+    if not forecaster:
+        return jsonify({'success': False, 'error': 'Forecasting service not available'}), 503
+    try:
+        from services.PestDiseaseForecaster.pest_calendar import get_pest_calendar
+        crop = request.args.get('crop', '')
+        month = request.args.get('month')
+
+        if not crop:
+            return jsonify({'success': False, 'error': 'Crop name is required'}), 400
+
+        month_int = int(month) if month else None
+        entries = get_pest_calendar(crop, month_int)
+        return jsonify({'success': True, 'calendar': entries, 'crop': crop})
+    except Exception as e:
+        print(f"[FORECAST] Pest calendar error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/forecast/ipm-advisory', methods=['POST', 'OPTIONS'])
+@require_auth
+def forecast_ipm_advisory():
+    """Stream a detailed IPM advisory via SSE."""
+    if not forecaster:
+        return jsonify({'success': False, 'error': 'Forecasting service not available'}), 503
+    try:
+        data = request.get_json()
+        crop_name = data.get('crop', '')
+        location = data.get('location', 'Pune')
+        soil_type = data.get('soil_type', 'Unknown')
+        sowing_date = data.get('sowing_date')
+        language = data.get('language', 'en')
+
+        if not crop_name:
+            return jsonify({'success': False, 'error': 'Crop name is required'}), 400
+
+        # Fetch weather
+        weather_forecast = asyncio.run(
+            weather_service.get_forecast_for_prediction(location, days=3)
+        )
+        if isinstance(weather_forecast, dict) and 'error' in weather_forecast:
+            weather_forecast = []  # Proceed without weather
+
+        def generate():
+            for chunk in forecaster.stream_ipm_advisory(
+                crop_name=crop_name,
+                location=location,
+                soil_type=soil_type,
+                sowing_date=sowing_date,
+                weather_forecast=weather_forecast,
+                language=language,
+            ):
+                yield f"data: {json.dumps({'text': chunk})}\n\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
+
+        return Response(
+            generate(),
+            mimetype='text/event-stream',
+            headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'}
+        )
+    except Exception as e:
+        print(f"[FORECAST] IPM advisory error: {e}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/forecast/phase', methods=['GET', 'OPTIONS'])
+@require_auth
+def forecast_crop_phase():
+    """Detect the current crop growth phase from sowing date."""
+    if not forecaster:
+        return jsonify({'success': False, 'error': 'Forecasting service not available'}), 503
+    try:
+        crop = request.args.get('crop', '')
+        sowing_date = request.args.get('sowing_date')
+
+        if not crop:
+            return jsonify({'success': False, 'error': 'Crop name is required'}), 400
+
+        phase_info = forecaster.get_phase_info(crop, sowing_date)
+        return jsonify({'success': True, 'phase': phase_info})
+    except Exception as e:
+        print(f"[FORECAST] Phase detection error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 if __name__ == '__main__':

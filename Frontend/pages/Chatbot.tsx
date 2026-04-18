@@ -117,9 +117,8 @@ const Chatbot: React.FC = () => {
     const [selectedFeature, setSelectedFeature] = useState<{ id: string; name: string; description: string; path?: string } | null>(null);
 
     const featureButtons = [
-        { id: 'plan', name: t.featurePlannerTitle || 'CropCycle', description: t.featurePlannerSub || 'Know the crop lifecycle in simple 4 phases.', path: '/plan', icon: <Map className="w-8 h-8 md:w-10 md:h-10 text-[#1B5E20]" /> },
-        { id: 'advisory', name: t.featureBusinessTitle || 'Business Advisory', description: t.featureBusinessSub || 'Get business recommendations based on your farm and market.', path: '/advisory', icon: <Briefcase className="w-8 h-8 md:w-10 md:h-10 text-[#1B5E20]" /> },
         { id: 'disease-pest', name: t.featureCropCareTitle || 'Crop Care', description: t.featureCropCareSub || 'Detect diseases and pests in your crops using AI.', path: '/crop-care', icon: <Sprout className="w-8 h-8 md:w-10 md:h-10 text-[#1B5E20]" /> },
+        { id: 'plan', name: t.featurePlannerTitle || 'CropCycle', description: t.featurePlannerSub || 'Know the crop lifecycle in simple 4 phases.', path: '/plan', icon: <Map className="w-8 h-8 md:w-10 md:h-10 text-[#1B5E20]" /> },
         { id: 'waste', name: t.featureWasteTitle || 'Waste to Value', description: t.featureWasteSub || 'Explore profitable ways to reuse, sell, or compost farm waste.', path: '/waste-to-value', icon: <Recycle className="w-8 h-8 md:w-10 md:h-10 text-[#1B5E20]" /> }
     ];
 
@@ -720,7 +719,9 @@ const Chatbot: React.FC = () => {
                                     <button
                                         key={f.id}
                                         onClick={() => handleFeatureSelect(f)}
-                                        className="flex flex-col items-center justify-center gap-3 p-6 md:p-8 bg-white border-2 border-[#E0E6E6] hover:border-[#1B5E20] rounded-2xl text-center transition-all shadow-sm hover:shadow-lg active:scale-95 min-h-[120px] md:min-h-[140px]"
+                                        className={`flex flex-col items-center justify-center gap-3 p-6 md:p-8 bg-white border-2 border-[#E0E6E6] hover:border-[#1B5E20] rounded-2xl text-center transition-all shadow-sm hover:shadow-lg active:scale-95 ${
+                                            f.id === 'disease-pest' ? 'col-span-2 min-h-[140px] md:min-h-[160px]' : 'col-span-1 min-h-[120px] md:min-h-[140px]'
+                                        }`}
                                     >
                                         <div className="w-12 h-12 md:w-14 md:h-14 bg-[#E8F5E9] rounded-xl flex items-center justify-center">
                                             {f.icon}

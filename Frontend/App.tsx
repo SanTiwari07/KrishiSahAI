@@ -14,6 +14,7 @@ import EditProfile from './pages/EditProfile';
 import FarmHealth from './pages/FarmHealth';
 import ArticleDetail from './pages/ArticleDetail';
 import Planner from './pages/Planner';
+import PestForecast from './pages/PestForecast';
 import Chatbot from './pages/Chatbot';
 import { Leaf } from 'lucide-react';
 import { Language, UserProfile, Farm } from './types';
@@ -78,9 +79,7 @@ const Header: React.FC<{
 
   const navItems = [
     { label: t.navHome, path: '/' },
-    { label: t.navAdvisory, path: '/advisory' },
     { label: t.navNews, path: '/news' },
-    { label: t.navHub, path: '/hub' },
   ];
 
   const getWeatherDisplay = () => {
@@ -94,7 +93,6 @@ const Header: React.FC<{
   const quickFeatures = [
     { icon: <Sprout size={22} />, path: '/crop-care', label: t.navCropCare },
     { icon: <Layout size={22} />, path: '/plan', label: t.navPlan },
-    { icon: <Briefcase size={22} />, path: '/advisory', label: t.navAdvisory },
     { icon: <Recycle size={22} />, path: '/waste-to-value', label: t.navWaste },
   ];
 
@@ -166,13 +164,6 @@ const Header: React.FC<{
                 >
                   <Cloud size={22} className="text-[#043744] group-hover:scale-110 transition-transform" />
                 </button>
-                <Link
-                  to="/hub"
-                  className="relative flex items-center justify-center w-12 h-12 bg-[#FAFAF7] border border-[#E6E6E6] rounded-full hover:bg-[#E8F5E9] transition-all shadow-sm group"
-                  title={t.navHub || "Knowledge Hub"}
-                >
-                  <BookOpen size={22} className="text-[#043744] group-hover:scale-110 transition-transform" />
-                </Link>
               </div>
             )}
             {user ? (
@@ -213,13 +204,14 @@ const Header: React.FC<{
                     </div>
                   </div>
 
-                  {isFeaturePage && (
-                    <Link to="/hub" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
-                      <BookOpen size={16} /> {t.navHub || "Knowledge Hub"}
-                    </Link>
-                  )}
+                  <Link to="/hub" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
+                    <BookOpen size={16} /> {t.navHub || "Knowledge Hub"}
+                  </Link>
                   <Link to="/" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
                     <Layout size={16} /> {t.navHome || "Home"}
+                  </Link>
+                  <Link to="/advisory" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 w-full px-5 py-4 text-sm font-bold text-[#1B5E20] hover:bg-green-50 transition-colors border-b border-gray-100">
+                    <Briefcase size={16} /> {t.navAdvisory || "Business Advisory"}
                   </Link>
                   {isFeaturePage && (
                     <>
@@ -1040,6 +1032,7 @@ const AppContent: React.FC = () => {
             <Route path="/crop-care" element={<CropCare />} />
             <Route path="/crop-care/disease" element={<DiseaseDetector />} />
             <Route path="/crop-care/pest" element={<PestDetector />} />
+            <Route path="/crop-care/forecast" element={<PestForecast />} />
             <Route path="/waste-to-value" element={<WasteToValue />} />
             <Route path="/hub" element={<KnowledgeHub />} />
             <Route path="/knowledge/:slug" element={<ArticleDetail />} />
@@ -1047,6 +1040,18 @@ const AppContent: React.FC = () => {
             <Route path="/roadmap/:businessName" element={<Roadmap />} />
             <Route path="/planner" element={<Planner />} />
             <Route path="/profile/edit" element={<EditProfile />} />
+            <Route path="*" element={
+              <div className="flex flex-col items-center justify-center min-h-[80vh] text-center p-8">
+                <div className="w-24 h-24 bg-red-50 text-red-500 rounded-full flex flex-col items-center justify-center mb-6 shadow-sm">
+                  <span className="text-4xl font-black">404</span>
+                </div>
+                <h1 className="text-3xl font-extrabold text-[#1B5E20] mb-4">Page Not Found</h1>
+                <p className="text-gray-500 font-medium mb-8">The page you are looking for has been moved or doesn't exist.</p>
+                <Link to="/" className="px-8 py-4 bg-[#1B5E20] text-white rounded-xl font-bold hover:bg-[#2E7D32] transition-colors shadow-lg">
+                  Return to Home
+                </Link>
+              </div>
+            } />
           </Routes>
 
           {/* Floating Chatbot Button — hidden on chat, home, and plan page */}

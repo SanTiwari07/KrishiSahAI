@@ -140,6 +140,28 @@ def predict(image_path):
         # Convert detections to DataFrame
         df = results.pandas().xyxy[0]  # columns: xmin, ymin, xmax, ymax, confidence, class, name
 
+        ALLOWED_PESTS = {
+            "rice leaf roller", "rice leaf caterpillar", "paddy stem maggot", "asiatic rice borer",
+            "yellow rice borer", "rice gall midge", "rice stemfly", "brown plant hopper",
+            "white backed plant hopper", "small brown plant hopper", "rice water weevil",
+            "rice leafhopper", "grain spreader thrips", "grub", "mole cricket", "wireworm",
+            "black cutworm", "large cutworm", "yellow cutworm", "red spider", "corn borer",
+            "army worm", "aphids", "english grain aphid", "green bug", "bird cherry-oataphid",
+            "wheat blossom midge", "longlegged spider mite", "wheat phloeothrips", "wheat sawfly",
+            "beet fly", "flea beetle", "cabbage army worm", "beet army worm", "meadow moth",
+            "beet weevil", "alfalfa weevil", "alfalfa plant bug", "tarnished plant bug",
+            "locustoidea", "thrips", "viteus vitifoliae", "colomerus vitis",
+            "polyphagotarsonemus latus", "pseudococcus comstocki kuwana", "panonchus citri mcgregor",
+            "phyllocoptes oleiverus ashmead", "aleurocanthus spiniferus", "dacus dorsalis(hendel)",
+            "prodenia litura", "phyllocnistis citrella stainton", "toxoptera citricidus",
+            "toxoptera aurantii", "aphis citricola vander goot", "scirtothrips dorsalis hood",
+            "mango flat beak leafhopper", "sternochetus frigidus"
+        }
+
+        # Filter for allowed pests using case-insensitive check
+        if not df.empty:
+            df = df[df['name'].str.lower().isin(ALLOWED_PESTS)]
+
         if df.empty:
             return {
                 'pest_name': 'No Pest Detected',

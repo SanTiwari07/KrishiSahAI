@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { History, X, Sprout, Bug, Trash2 } from 'lucide-react';
 import { useLanguage } from '../src/context/LanguageContext';
+import { useFarm } from '../src/context/FarmContext';
+import { normalizeValue } from '../src/utils/localizationUtils';
 
 interface DetectionEntry {
     id: string;
@@ -47,6 +49,32 @@ const DetectionHistorySidebar: React.FC<DetectionHistorySidebarProps> = ({
     isOpen, onClose, type, entries, onSelect, onClear
 }) => {
     const { t } = useLanguage();
+    const { activeFarm } = useFarm();
+    const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
+
+    const availableCrops = activeFarm?.crops 
+        ? [...new Set(activeFarm.crops.map((c: string) => normalizeValue(c, 'crops')))] 
+        : [];
+
+    useEffect(() => {
+        if (availableCrops.length > 0) {
+            const saved = localStorage.getItem('global_selected_crop');
+            if (saved && availableCrops.includes(saved)) {
+                setSelectedCrop(saved);
+            } else {
+                setSelectedCrop(availableCrops[0]);
+                localStorage.setItem('global_selected_crop', availableCrops[0]);
+            }
+        }
+    }, [activeFarm]);
+
+    const handleCropChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newCrop = e.target.value;
+        setSelectedCrop(newCrop);
+        localStorage.setItem('global_selected_crop', newCrop);
+        window.dispatchEvent(new CustomEvent('global-crop-changed', { detail: newCrop }));
+    };
+
     const icon = type === 'pest' ? <Bug size={16} /> : <Sprout size={16} />;
     const title = type === 'aggregate' 
         ? ((t.sidebar as any)?.aggregateHistory || 'Crop Care History') 
@@ -70,7 +98,27 @@ const DetectionHistorySidebar: React.FC<DetectionHistorySidebarProps> = ({
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-3 space-y-2" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+                {availableCrops.length > 0 && (
+                    <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5">
+                            {(t.sidebar as any)?.selectedCrop || 'Selected Crop'}
+                        </label>
+                        <select 
+                            value={selectedCrop || ''}
+                            onChange={handleCropChange}
+                            className="w-full bg-white border border-gray-300 text-gray-800 text-sm rounded-lg focus:ring-[#1B5E20] focus:border-[#1B5E20] block p-2.5 font-bold shadow-sm"
+                        >
+                            {availableCrops.map(crop => (
+                                <option key={crop} value={crop}>{crop}</option>
+                            ))}
+                        </select>
+                        <p className="text-[10px] text-gray-400 font-medium mt-1.5">
+                            Showing advisory context for: <span className="font-bold text-[#1B5E20]">{selectedCrop}</span>
+                        </p>
+                    </div>
+                )}
+
+                <div className="flex-1 overflow-y-auto p-3 space-y-2" style={{ maxHeight: 'calc(100vh - 180px)' }}>
                     {entries.length === 0 ? (
                         <div className="text-center text-gray-400 py-12">
                             <History size={32} className="mx-auto mb-3 opacity-40" />

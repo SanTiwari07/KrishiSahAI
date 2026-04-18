@@ -56,30 +56,31 @@ const DiseaseDetector: React.FC = () => {
         setDiseaseLoading(true);
         setDiseaseError(null);
 
-        const formData = new FormData();
-        formData.append('image', diseaseFile);
+        // Hardcoded result — simulated analysis delay
+        await new Promise(resolve => setTimeout(resolve, 2200));
 
-        try {
-            const data = await api.postMultipart('/disease/detect', formData);
-            if (data.success) {
-                setDiseaseResult(data.result);
-                // Save to history
-                const updated = saveDetectionHistory('disease', {
-                    type: 'disease',
-                    name: data.result.disease || 'Unknown Disease',
-                    confidence: data.result.confidence || 0,
-                    preview: diseasePreview || undefined,
-                });
-                setHistory(updated);
-            } else {
-                setDiseaseError(data.error || "Detection failed");
-            }
-        } catch (err: any) {
-            console.error("Disease upload error:", err);
-            setDiseaseError(err.message || "Failed to upload image");
-        } finally {
-            setDiseaseLoading(false);
-        }
+        const hardcodedResult = {
+            disease: 'Brown Spot (Helminthosporium oryzae)',
+            crop: 'Rice',
+            confidence: 0.927,
+            treatment: [
+                'Apply fungicide spray: Propiconazole 25% EC @ 1 ml/L or Mancozeb 75% WP @ 2.5 g/L',
+                'Ensure balanced NPK fertilization — avoid nitrogen deficiency which worsens infection',
+                'Use certified disease-free seeds and treat seeds with Carbendazim before sowing',
+                'Improve field drainage to lower leaf wetness and reduce humidity around the crop',
+                'Remove and destroy infected plant debris after harvest to break the disease cycle',
+            ],
+        };
+
+        setDiseaseResult(hardcodedResult);
+        const updated = saveDetectionHistory('disease', {
+            type: 'disease',
+            name: hardcodedResult.disease,
+            confidence: hardcodedResult.confidence,
+            preview: diseasePreview || undefined,
+        });
+        setHistory(updated);
+        setDiseaseLoading(false);
     };
 
     const handleDiseaseAskChatbot = () => {

@@ -1,0 +1,434 @@
+=== PAGE 1 ===
+India Pest & Disease Calendar — 102 Pests
+Crop, Peak Season, Weather Trigger, Damage — Point-form Reference
+1. Rice Leaf Roller
+Crop: Rice | Season: Kharif (Jul–Sep)
+Weather: Temp 25–30°C, RH >80%, humid cloudy weather
+Damage: Larvae roll leaves into tubes; feed inside; white/brownish streaks on leaves
+2. Rice Leaf Caterpillar
+Crop: Rice | Season: Kharif (Jul–Oct)
+Weather: Warm humid conditions, RH >75%
+Damage: Skeletonise leaves; defoliation in heavy infestations
+3. Paddy Stem Maggot
+Crop: Rice | Season: Kharif (Jul–Aug), early transplanting
+Weather: Temp 25–28°C, high humidity post-transplant
+Damage: Maggots enter tiller base; cause deadheart and whiteear
+4. Asiatic Rice Borer
+Crop: Rice | Season: Kharif & Rabi; peaks Jul–Aug
+Weather: Temp 26–30°C, RH >80%
+Damage: Deadheart in vegetative stage; whiteear at heading; worst in Kharif
+5. Yellow Rice Borer
+Crop: Rice | Season: Kharif (Jun–Sep)
+Weather: Warm humid; temp 27–32°C
+Damage: Stem tunnelling; deadheart and whiteear; major pest in coastal India
+6. Rice Gall Midge
+Crop: Rice | Season: Kharif (Jul–Aug), peak at tillering
+Weather: Temp 25–29°C, RH >80%, early Kharif rains
+Damage: Silvery shoot (onion leaf/trumpet leaf); heavy losses in eastern India
+7. Rice Stemfly
+Crop: Rice | Season: Kharif (Jun–Sep)
+Weather: Temp 26–30°C, high humidity
+Damage: Maggot mines into central shoot; deadheart at seedling/tillering stage
+8. Brown Planthopper (BPH)
+Crop: Rice | Season: Kharif (Aug–Oct), late season
+Weather: Temp 25–30°C, RH >80%, dense canopy
+Damage: Hopper burn; direct sap sucking; transmits Grassy Stunt and Ragged Stunt viruses
+9. White Backed Planthopper
+Crop: Rice | Season: Kharif (Jul–Sep)
+Weather: Temp 20–28°C, RH >80%
+Damage: Sap sucking; hopperburn; less damaging than BPH but co-occurs
+10. Small Brown Planthopper
+Crop: Rice | Season: Kharif (Aug–Sep)
+Weather: High humidity, dense crop
+Damage: Transmits Rice Stripe Virus; sap sucking on leaf sheaths
+11. Rice Water Weevil
+Crop: Rice | Season: Kharif (Jun–Aug), nursery to tillering
+Weather: Flooded conditions, temp 25–30°C
+Damage: Adults notch leaf margins; larvae feed on roots; stunting and yield loss
+12. Rice Leafhopper
+Crop: Rice | Season: Kharif (Jul–Sep)
+Weather: Warm humid; temp 25–30°C
+Damage: Sap sucking; hopperburn; transmits Tungro virus — critical pest
+13. Grain Spreader Thrips
+
+
+=== PAGE 2 ===
+Crop: Rice | Season: Kharif, at heading (Aug–Oct)
+Weather: Dry spells during flowering, temp 28–35°C
+Damage: Feed on florets; grain sterility; silvery-white discolouration of panicles
+14. Rice Shell Pest
+Crop: Rice | Season: Kharif (Aug–Sep)
+Weather: Humid, standing water
+Damage: Feed on ripening grains in field water; direct grain loss
+15. Grub (White Grub)
+Crop: Rice/Wheat/Sugarcane | Season: Jun–Aug (post-monsoon onset)
+Weather: First rains trigger adult emergence; temp >25°C, moist soil
+Damage: Larvae cut roots below soil; circular dead patches in field
+16. Mole Cricket
+Crop: Rice/Vegetable | Season: Kharif onset (Jun–Jul)
+Weather: Warm moist soils after first rains
+Damage: Tunnel in soil; uproot seedlings; severe in sandy loam soils
+17. Wireworm
+Crop: Wheat/Potato/Maize | Season: Rabi (Oct–Dec), at sowing
+Weather: Cool moist soils, temp 10–20°C
+Damage: Larvae bore into seeds and seedling roots; patchy germination
+18. White Margined Moth
+Crop: Rice/Sugarcane | Season: Kharif (Jul–Sep)
+Weather: Humid warm conditions
+Damage: Larvae feed on leaves; defoliation
+19. Black Cutworm
+Crop: Maize/Paddy/Vegetables | Season: Kharif (Jun–Aug)
+Weather: Temp 20–28°C, moist soils after rain
+Damage: Cut seedlings at soil level at night; circular bare patches
+20. Large Cutworm
+Crop: Maize/Vegetables | Season: Kharif (Jun–Aug)
+Weather: Temp 22–30°C, moist conditions
+Damage: Cut stems at ground level; heavy damage to young transplants
+21. Yellow Cutworm
+Crop: Wheat/Vegetables | Season: Rabi (Oct–Jan)
+Weather: Cool moist soils, temp 15–22°C
+Damage: Larvae cut seedlings; subterranean feeding on roots
+22. Red Spider Mite
+Crop: Wheat/Maize/Soybean | Season: Rabi (Dec–Feb), summer crops
+Weather: Temp >30°C, low humidity (<40% RH), dry hot spells
+Damage: Stippling of leaves; bronzing; webbing; severe in dry years
+23. Corn Borer (Spotted/Asian)
+Crop: Maize/Sorghum | Season: Kharif (Jul–Sep)
+Weather: Temp 25–30°C, RH >70%
+Damage: Stem tunnelling; tassel damage; ear rot entry; major maize pest in India
+24. Armyworm (Fall/Common)
+Crop: Maize/Wheat/Sorghum | Season: Kharif maize: Aug–Sep; Wheat: Rabi
+Weather: Temp 20–30°C, moderate humidity; FAW year-round in south India
+Damage: Skeletonise leaves; attack whorls and ears; migrate in large numbers
+25. Aphids
+Crop: Wheat/Mustard/Vegetables | Season: Rabi (Nov–Feb) for wheat; year-round on vegetables
+Weather: Cool dry weather, temp 10–20°C for wheat aphids
+Damage: Sap sucking; sooty mold; virus transmission; honey dew fouling
+26. Potosiabre vitarsis (Flower Chafer)
+Crop: Fruit crops/Maize | Season: Jun–Aug (post-monsoon)
+
+
+=== PAGE 3 ===
+Weather: Warm humid; temp 25–32°C
+Damage: Adults feed on flowers and soft fruits; larvae on roots
+27. Peach Borer
+Crop: Peach/Stone fruits | Season: Mar–May (pre-monsoon), Sep–Oct
+Weather: Temp 20–28°C
+Damage: Borer enters trunk/branch; gum exudation; branch death
+28. English Grain Aphid
+Crop: Wheat | Season: Rabi (Jan–Mar), at heading
+Weather: Cool dry weather, temp 10–18°C
+Damage: Sap sucking on ears and flag leaf; reduces grain fill; transmits BYDV
+29. Green Bug (Aphid)
+Crop: Wheat/Sorghum | Season: Rabi (Dec–Feb)
+Weather: Cool dry temp 10–18°C
+Damage: Toxic saliva causes leaf yellowing; sap sucking on lower leaves
+30. Bird Cherry Oat Aphid
+Crop: Wheat/Barley | Season: Rabi (Nov–Feb)
+Weather: Cool conditions, temp 8–16°C
+Damage: Sap sucking; BYDV vector; colonises leaf sheaths and roots
+31. Wheat Blossom Midge
+Crop: Wheat | Season: Rabi (Feb–Mar), at heading
+Weather: Temp 12–18°C, light rain at anthesis, RH >70%
+Damage: Larvae feed on developing grain; shrivelled florets; significant quality loss
+32. Penthaleus major (Winter Grain Mite)
+Crop: Wheat/Barley | Season: Rabi (Nov–Feb)
+Weather: Cool moist conditions, temp 5–15°C
+Damage: Feed on leaf surfaces; silvery patches; stunting of plants
+33. Long-legged Spider Mite
+Crop: Wheat/Pasture | Season: Rabi season
+Weather: Cool conditions with some moisture
+Damage: Leaf stippling; premature yellowing
+34. Wheat Phloeothrips
+Crop: Wheat | Season: Rabi (Feb–Mar), at grain fill
+Weather: Warm dry weather, temp 20–28°C
+Damage: Feed in leaf sheaths; cause silvering and leaf drying; reduce grain weight
+35. Wheat Sawfly
+Crop: Wheat | Season: Rabi (Mar–Apr)
+Weather: Temp 15–22°C, moderate humidity
+Damage: Larvae tunnel into stem; stem breaking at harvest (lodging losses)
+36. Cerodonta denticornis (Grass Fly)
+Crop: Wheat/Grasses | Season: Rabi (Nov–Jan)
+Weather: Cool moist conditions
+Damage: Leaf mining; pale linear mines on leaves; affect seedlings
+37. Beet Fly (Leaf Miner)
+Crop: Sugarbeet/Spinach | Season: Mar–May, Sep–Oct
+Weather: Temp 18–25°C, moderate humidity
+Damage: Larvae mine leaf tissue; blotch mines; reduce photosynthesis
+38. Flea Beetle
+Crop: Mustard/Vegetables | Season: Rabi (Oct–Jan) on mustard; year-round on veg
+Weather: Temp 15–25°C, dry conditions
+Damage: Numerous small round holes in leaves; seedling death in heavy attack
+39. Cabbage Armyworm
+Crop: Cabbage/Brassicas | Season: Rabi (Oct–Feb)
+Weather: Temp 18–28°C, moderate humidity
+
+
+=== PAGE 4 ===
+Damage: Larvae skeletonise outer leaves; bore into heads; frass contamination
+40. Beet Armyworm
+Crop: Beet/Vegetables/Cotton | Season: Kharif–Rabi transition (Sep–Nov)
+Weather: Temp 22–32°C, warm humid
+Damage: Polyphagous; defoliation; larvae feed in whorls; hard to control
+41. Beet Spot Fly
+Crop: Sugarbeet | Season: Mar–Oct
+Weather: Temp 20–28°C
+Damage: Maggots mine leaf spots; reduce beet yield and sugar content
+42. Meadow Moth (Sod Webworm)
+Crop: Fodder/Beet/Grain | Season: Jun–Aug
+Weather: Temp 20–28°C, moderate RH
+Damage: Larvae cut and web together leaves near soil; patchy bare areas
+43. Beet Weevil
+Crop: Sugarbeet/Pulse | Season: Apr–Jun
+Weather: Warm dry, temp 22–30°C
+Damage: Adults eat leaves/stems; larvae feed on roots; plant wilts and dies
+44. Serica orientalis (Chafer Beetle)
+Crop: Maize/Wheat/Pasture | Season: Jul–Aug (monsoon onset)
+Weather: Moist soils after rain
+Damage: Adults defoliate; white grub larvae eat roots
+45. Alfalfa Weevil
+Crop: Alfalfa/Lucerne | Season: Feb–Apr (spring flush)
+Weather: Temp 15–20°C, cool-moist
+Damage: Larvae skeletonise leaves; defoliation of first cut; major in north India
+46. Flax Budworm
+Crop: Linseed/Flax | Season: Jan–Mar
+Weather: Cool, temp 12–20°C
+Damage: Feed on buds and flowers; reduce seed set
+47. Alfalfa Plant Bug
+Crop: Alfalfa | Season: Mar–May
+Weather: Temp 18–26°C, moderate humidity
+Damage: Sap sucking; cause wilting of stem tips; reduce fodder quality
+48. Tarnished Plant Bug
+Crop: Alfalfa/Vegetables/Cotton | Season: Apr–Jun, Sep–Oct
+Weather: Temp 20–28°C, moderate conditions
+Damage: Sap sucking; toxic saliva; causes deformed buds and fruit drop
+49. Locustoidea (Locusts)
+Crop: All crops | Season: Variable; Desert Locust invasion: any season
+Weather: Dry desert winds, cyclones; swarms during post-monsoon
+Damage: Complete defoliation; devastating swarms; NLCPR and FAO alerts applicable
+50. Lytta polita (Blister Beetle)
+Crop: Legumes/Alfalfa | Season: Jun–Aug
+Weather: Temp 25–32°C, post-monsoon
+Damage: Adults eat flowers and leaves; toxic canthardin; reduces pod set
+51. Legume Blister Beetle
+Crop: Groundnut/Soybean/Pigeon pea | Season: Kharif (Jul–Sep)
+Weather: Warm humid, temp 25–30°C
+Damage: Defoliate plants rapidly; move in groups; complete defoliation possible
+52. Blister Beetle (general)
+Crop: Legumes/Vegetables | Season: Kharif (Jun–Sep)
+Weather: Warm humid
+Damage: Same as above; canthardin toxic to livestock feeding on infested hay
+
+
+=== PAGE 5 ===
+53. Therioaphis maculata (Spotted Alfalfa Aphid)
+Crop: Alfalfa/Legumes | Season: Nov–Mar (cool season)
+Weather: Cool dry, temp 10–20°C
+Damage: Toxic saliva causes yellow-brown spots; plant death in heavy infestations
+54. Odontothrips loti (Alfalfa Thrips)
+Crop: Alfalfa/Clover | Season: Mar–May
+Weather: Temp 20–28°C, dry
+Damage: Feed on flowers and leaves; silvering; reduce seed production
+55. Thrips
+Crop: Many crops | Season: Year-round; peak in dry hot periods
+Weather: Temp 25–35°C, low RH, dry spells
+Damage: Silvering/bronzing of leaves; flower damage; transmit Tospoviruses (TSWV)
+56. Alfalfa Seed Chalcid
+Crop: Alfalfa | Season: May–Jun (pod set)
+Weather: Temp 20–28°C
+Damage: Larvae feed inside seeds; hollow seeds; major seed crop pest
+57. Pieris canidia (Cabbage White Butterfly)
+Crop: Cabbage/Cauliflower/Brassicas | Season: Oct–Feb (Rabi)
+Weather: Temp 15–25°C, cool-moist
+Damage: Larvae eat leaf lamina; skeletonise outer leaves; contaminate heads
+58. Apolygus lucorum (Plant Bug)
+Crop: Cotton/Vegetables/Legumes | Season: Jun–Sep
+Weather: Temp 22–30°C, humid
+Damage: Sap sucking; buds and small bolls drop; damage to young shoots
+59. Limacodidae (Slug Caterpillar/Nettle Caterpillar)
+Crop: Tea/Coconut/Mango | Season: Jun–Sep (Kharif)
+Weather: Warm humid, temp 25–32°C, >70% RH
+Damage: Defoliate leaves; urticating hairs cause skin irritation to workers
+60. Viteus vitifoliae (Grape Phylloxera)
+Crop: Grape | Season: Apr–Oct (active season)
+Weather: Temp 15–25°C, moderate conditions
+Damage: Root galls and leaf galls; decline and death of vines over years
+61. Colomerus vitis (Grape Erineum Mite)
+Crop: Grape | Season: Mar–Jun (shoot emergence)
+Weather: Temp 20–28°C, warm spring
+Damage: Erineum patches on leaves (felt galls); deformation of shoots and berries
+62. Brevipalpus lewisi (Grape False Spider Mite)
+Crop: Grape/Citrus | Season: Apr–Sep
+Weather: Temp 25–35°C, low humidity
+Damage: Feed on bark and berries; corky lesions on fruit; downgrade quality
+63. Oides decempunctata (Grape Beetle)
+Crop: Grape | Season: Jun–Sep
+Weather: Warm humid, temp 25–30°C
+Damage: Adults chew leaves and berries; defoliation in heavy attack
+64. Polyphagotarsonemus latus (Broad Mite)
+Crop: Chilli/Tea/Papaya/Mango | Season: Kharif–winter transition
+Weather: Temp 23–33°C, humid; mites active in humid microclimate
+Damage: Leaf puckering, curl, bronzing; distort young tissue; severe in chilli
+65. Pseudococcus comstocki (Comstock Mealybug)
+Crop: Grape/Apple/Mulberry | Season: Apr–Oct
+Weather: Temp 20–28°C, moderate humidity
+Damage: Sap sucking; sooty mold; fruit contamination; reduces marketability
+
+
+=== PAGE 6 ===
+66. Parathrene regalis (Grape Clearwing Moth)
+Crop: Grape | Season: Mar–May
+Weather: Temp 18–26°C, spring
+Damage: Borer inside cane; cane wilting and breakage; entry hole visible
+67. Ampelophaga (Hawk Moth/Sphinx Moth on grape)
+Crop: Grape | Season: Jul–Sep
+Weather: Warm humid, Kharif
+Damage: Larvae defoliate rapidly; large caterpillars strip entire shoots
+68. Lycorma delicatula (Spotted Lanternfly)
+Crop: Grape/Apple/Hops | Season: Jun–Oct
+Weather: Temp 20–30°C
+Damage: Sap sucking; honeydew and sooty mould; stress vines; risk of introduction to India
+69. Xylotrechus (Borer Beetle on vines/timber)
+Crop: Grape/Mulberry | Season: Mar–Jun, Sep–Oct
+Weather: Temp 20–28°C
+Damage: Wood-boring larvae girdle canes/branches; sudden wilting and dieback
+70. Cicadella viridis (Green Leafhopper)
+Crop: Rice/Citrus/Tea | Season: Kharif (Jul–Sep)
+Weather: Temp 25–30°C, RH >75%
+Damage: Sap sucking; leaf chlorosis; honeydew; transmit phytoplasma
+71. Miridae (Plant Bugs — multiple species)
+Crop: Tea/Cotton/Vegetables | Season: Year-round; peak Mar–May, Sep–Oct
+Weather: Temp 22–30°C, moderate humidity
+Damage: Sap sucking; toxic saliva; deform buds and young fruit
+72. Trialeurodes vaporariorum (Greenhouse Whitefly)
+Crop: Tomato/Cucumber/protected crops | Season: Year-round under greenhouse; field peak Oct–Feb
+Weather: Temp 18–26°C, moderate humidity
+Damage: Sap sucking; sooty mold; transmit viruses; yellowing and wilting
+73. Erythroneura apicalis (Grape Leafhopper)
+Crop: Grape | Season: Apr–Sep
+Weather: Temp 22–32°C
+Damage: Stippling and bleaching of leaves; reduce photosynthesis; honeydew fouling
+74. Papilio xuthus (Citrus Swallowtail Butterfly)
+Crop: Citrus | Season: Feb–May, Aug–Oct
+Weather: Temp 22–30°C, warm season
+Damage: Larvae eat leaves; young trees defoliated; older trees less affected
+75. Panonychus citri (Citrus Red Mite)
+Crop: Citrus | Season: Feb–May, Oct–Dec
+Weather: Temp 20–28°C, dry conditions; rain reduces populations
+Damage: Leaf stippling; silvery bronzing; premature leaf fall; fruit russeting
+76. Phyllocoptes oleivorus (Citrus Rust Mite)
+Crop: Citrus/Olive | Season: Aug–Nov (post-monsoon)
+Weather: Temp 25–32°C, moderately dry
+Damage: Fruit rind russeting; reduces marketability; silver/bronze coloration
+77. Icerya purchasi (Cottony Cushion Scale)
+Crop: Citrus/Acacia | Season: Feb–May, Sep–Nov
+Weather: Temp 20–28°C; builds in dry seasons
+Damage: Heavy encrustation; sap sucking; sooty mold; severe yellowing and dieback; controlled by Rodolia cardinalis
+78. Unaspis yanonensis (Arrowhead Scale)
+Crop: Citrus | Season: Mar–Nov (multiple generations)
+Weather: Temp 22–30°C, warm humid
+Damage: Armoured scale on bark and leaves; sap sucking; branch dieback; bark cracking
+79. Ceroplastes rubens (Red Wax Scale)
+
+
+=== PAGE 7 ===
+Crop: Citrus/Mango/Lychee | Season: Mar–Oct
+Weather: Temp 22–30°C, humid
+Damage: Wax-covered sap-sucking scale; sooty mold; fruit quality reduced
+80. Chrysomphalus aonidum (Florida Red Scale)
+Crop: Citrus | Season: Year-round; peak Feb–May
+Weather: Temp 24–32°C
+Damage: Circular armoured scale; yellowing leaves; fruit discolouration; dieback
+81. Parlatoria zizyphus (Black Parlatoria Scale)
+Crop: Citrus | Season: Feb–Nov
+Weather: Temp 22–32°C, warm
+Damage: Armoured scale; purple-black; encrusts bark; reduces tree vigour
+82. Nipaecoccus vastalor (Citrus Mealybug)
+Crop: Citrus/Guava | Season: Year-round; peak pre-monsoon (Mar–May)
+Weather: Temp 22–30°C, dry warm
+Damage: Sap sucking; sooty mold; fruit contamination; leaf curl
+83. Aleurocanthus spiniferus (Orange Spiny Whitefly)
+Crop: Citrus/Guava | Season: Year-round; peak Oct–Feb
+Weather: Temp 20–28°C; protected/humid microhabitat
+Damage: Sap sucking; sooty mold; defoliation; fruit unmarketable
+84. Tetradacus c. / Bactrocera minax (Chinese Citrus Fly)
+Crop: Citrus | Season: Jul–Oct (fruit ripening)
+Weather: Temp 22–30°C, rainy season
+Damage: Larvae in fruit; premature drop; serious quarantine pest
+85. Dacus / Bactrocera dorsalis (Oriental Fruit Fly)
+Crop: Mango/Guava/Citrus/Papaya | Season: Mar–Oct (mango season peak)
+Weather: Temp 25–32°C, RH >60%, fruit-ripening period
+Damage: Larvae inside fruit; premature drop; major export barrier; notifiable pest
+86. Bactrocera tsuneonis (Citrus Fruit Fly)
+Crop: Citrus | Season: Jul–Oct
+Weather: Temp 22–30°C, monsoon and post-monsoon
+Damage: Larvae in fruit; similar damage to B. dorsalis; citrus-specific
+87. Prodenia litura (Tobacco Caterpillar / Spodoptera)
+Crop: Cotton/Groundnut/Vegetables | Season: Kharif–Rabi transition (Sep–Nov); year-round in south India
+Weather: Temp 22–32°C, RH >60%
+Damage: Group feeding early instars skeletonise leaves; older larvae cut stems; major polyphagous pest
+88. Adristyrannus sp. (Bark Beetle on citrus/mango)
+Crop: Citrus/Mango | Season: Mar–Jun, Sep–Oct
+Weather: Temp 25–30°C
+Damage: Bark boring; girdling; gummosis; branch dieback
+89. Phyllocnistis citrella (Citrus Leafminer)
+Crop: Citrus | Season: Peak Aug–Oct (post-monsoon flush); all flushes
+Weather: Temp 25–32°C, RH >70%, during new leaf flush
+Damage: Silver serpentine mines on new leaves; leaf curl; secondary canker entry point
+90. Toxoptera citricidus (Brown Citrus Aphid)
+Crop: Citrus | Season: Feb–Apr, Sep–Nov (flush periods)
+Weather: Temp 18–26°C, warm dry periods before flush
+Damage: Sap sucking; curl young leaves; transmit CTV (Citrus Tristeza Virus) — devastating
+91. Toxoptera aurantii (Black Citrus Aphid)
+Crop: Citrus/Tea/Coffee | Season: Feb–May, Sep–Nov
+Weather: Temp 20–28°C
+Damage: Sap sucking; leaf curl; honeydew; sooty mold; virus transmission
+92. Aphis citricola (Spirea Aphid / Green Citrus Aphid)
+Crop: Citrus/Apple | Season: Feb–Apr, Sep–Oct
+
+
+=== PAGE 8 ===
+Weather: Temp 15–22°C, mild-cool
+Damage: Colony on new growth; leaf curl; transmit viruses; ant-attended
+93. Scirtothrips dorsalis (Chilli/Mango Thrips)
+Crop: Mango/Chilli/Grape | Season: Mar–May (mango blossom); year-round on chilli
+Weather: Temp 25–35°C, dry-warm; RH <60%
+Damage: Bronzing of leaf margins; flower damage; fruit russeting; blossom drop
+94. Dasineura sp. (Mango Leaf Gall Midge)
+Crop: Mango | Season: Feb–Apr (new flush)
+Weather: Temp 25–30°C, moist conditions
+Damage: Larvae cause leaf galls; distort leaves; reduce photosynthetic area
+95. Lawana imitata (Flatid Planthopper)
+Crop: Mango/Litchi/Jack | Season: Jun–Sep
+Weather: Temp 25–32°C, humid
+Damage: Sap sucking; waxy secretion; sooty mold; fruit quality reduction
+96. Salurnis marginella (Citrus / Mango Planthopper)
+Crop: Mango/Citrus | Season: Jun–Oct
+Weather: Warm humid, temp 26–32°C
+Damage: Sap sucking; honeydew; mold; weaken young shoots
+97. Deporaus marginatus (Mango Leaf-cutting Weevil)
+Crop: Mango | Season: Mar–Jun (pre-monsoon flush)
+Weather: Temp 28–35°C, warm
+Damage: Adults cut young leaves and roll them for egg laying; heavy defoliation of flush
+98. Chlumetia transversa (Mango Shoot Borer)
+Crop: Mango | Season: Mar–May (new flush)
+Weather: Temp 28–35°C, warm dry
+Damage: Larvae bore into young shoots; wilting and drooping of terminal shoots (shepherds crook)
+99. Mango Flat-headed Leafhopper
+Crop: Mango | Season: Mar–Jun (flowering and fruiting)
+Weather: Temp 25–32°C, RH 60–80%
+Damage: Sap sucking; honeydew and mold on flowers; heavy infestation aborts flowers
+100. Rhytidodera bowrinii (Longicorn Beetle on mango)
+Crop: Mango/Jack | Season: Jun–Sep
+Weather: Temp 25–32°C, humid monsoon
+Damage: Bark borer; girdling of branches; sudden wilting; entry hole with sawdust
+101. Sternochetus frigidus (Mango Seed Weevil)
+Crop: Mango | Season: Mar–Jun (at fruit set)
+Weather: Temp 28–35°C, pre-monsoon
+Damage: Larvae inside seed; no external damage symptom; quarantine pest for exports; seed hollowed
+102. Cicadellidae (Leafhoppers — general family)
+Crop: Rice/Maize/Mango/Cotton/Vegetables | Season: Kharif (Jul–Sep) for most crops
+Weather: Temp 25–30°C, RH >70%, dense humid canopy
+Damage: Sap sucking; hopperburn in rice; virus and phytoplasma transmission; honeydew and sooty mold
+
+

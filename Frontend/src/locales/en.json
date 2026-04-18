@@ -812,6 +812,27 @@
         "makingPlan": "Making 10-year plan for",
         "analyzingMarket": "Analyzing market trends and regional data."
     },
+    "forecast": {
+        "title": "Pest & Disease Forecast",
+        "subtitle": "AI-powered weather-based risk predictions. Know what's coming before it hits your crop.",
+        "viewForecast": "View Forecast",
+        "sowingTitle": "When Did You Sow?",
+        "sowingSubtitle": "Enter the sowing date to get accurate growth-phase-aware predictions.",
+        "selectCrop": "Select Crop",
+        "generateForecast": "Generate Forecast",
+        "skipSowing": "Skip — Use Regional Calendar Default",
+        "analyzing": "Analyzing Weather & Risk Data...",
+        "analyzingDesc": "Predicting pest & disease risks for your crop",
+        "tryAgain": "Try Again",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "askChatbot": "Ask AI for Protection Plan",
+        "ipmSummary": "IPM Advisory",
+        "dailyForecast": "Daily Risk Forecast",
+        "noRisks": "No significant risks detected for this day",
+        "seasonalThreats": "Seasonal Threats This Month",
+        "refresh": "Refresh"
+    },
     "history": "History",
     "waste": {
         "circularEconomy": "Circular Economy",
