@@ -1,6 +1,7 @@
 import React from 'react';
-import { MessageSquare, Plus, Trash2, X } from 'lucide-react';
+import { MessageSquare, Plus, Trash2, ArrowLeft } from 'lucide-react';
 import { ChatSession } from '../src/services/chatService';
+import { useLanguage } from '../src/context/LanguageContext';
 
 interface ChatSidebarProps {
     chats: ChatSession[];
@@ -21,27 +22,40 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     isOpen,
     onClose
 }) => {
+    const { t } = useLanguage();
+
     return (
         <>
+            {/* Dim overlay — all breakpoints so desktop can tap outside to close; sidebar sits above */}
             {isOpen && (
-                <div 
-                    className="fixed inset-0 bg-black/50 z-[100] md:hidden"
+                <div
+                    className="fixed inset-0 z-[105] bg-black/50"
                     onClick={onClose}
+                    aria-hidden
                 />
             )}
 
-            {/* Sidebar Container */}
-            <div className={`
-                fixed inset-y-0 left-0 bg-white z-[110]
-                w-[280px] md:w-72 h-full border-r border-[#E0E6E6] flex flex-col
-                transition-transform duration-300 ease-in-out
+            {/* Sidebar Container — slides over content (covers header hamburger); Back always visible */}
+            <div
+                className={`
+                fixed inset-y-0 left-0 z-[110] flex h-full w-[280px] flex-col border-r border-[#E0E6E6] bg-white
+                transition-transform duration-300 ease-in-out md:w-72
                 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-            `}>
-                <div className="p-4 flex items-center justify-between border-b border-[#E0E6E6]">
-                    <h2 className="text-lg font-bold text-[#002105]">Chats</h2>
-                    <button onClick={onClose} className="md:hidden p-2 text-stone-500 hover:text-stone-800">
-                        <X className="w-5 h-5" />
+            `}
+            >
+                <div className="border-b border-[#E0E6E6] p-3 sm:p-4">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex w-full items-center gap-2 rounded-xl px-2 py-2.5 text-[#002105] transition-colors hover:bg-stone-100 sm:w-auto sm:px-3"
+                        aria-label={t.common.back}
+                    >
+                        <ArrowLeft className="h-5 w-5 shrink-0" />
+                        <span className="text-sm font-bold">{t.common.back}</span>
                     </button>
+                    <h2 className="mt-1 text-center text-base font-bold text-[#002105] sm:mt-2 sm:text-lg">
+                        {t.chat.sidebarTitle}
+                    </h2>
                 </div>
 
                 <div className="p-4">

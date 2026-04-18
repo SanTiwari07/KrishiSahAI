@@ -10,7 +10,8 @@ export default defineConfig(({ mode }) => {
     // Load `Frontend/.env` for VITE_* (matches INSTALLATION.md). Do not use `..` or root `.env` is required instead.
     envDir: path.resolve(__dirname),
     server: {
-      port: 3000,
+      // Match INSTALLATION.md and avoid 3000 (often used by other tools).
+      port: 5173,
       host: '0.0.0.0',
     },
     plugins: [
